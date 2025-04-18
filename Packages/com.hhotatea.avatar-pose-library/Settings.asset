@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8223018be3024ae4f9bbee470130752d, type: 3}
+  m_Script: {fileID: 11500000, guid: 0590e1b030db8b84195bb25ea9128bd2, type: 3}
   m_Name: Settings
   m_EditorClassIdentifier: 
   mainMenu:
@@ -19,6 +19,9 @@ MonoBehaviour:
     title: 
     thumbnail: {fileID: 0}
   poseMenu:
+    title: 
+    thumbnail: {fileID: 0}
+  trackingMenu:
     title: 
     thumbnail: {fileID: 0}
   resetMenu:
@@ -48,8 +51,10 @@ MonoBehaviour:
   locomotionMenu:
     title: 
     thumbnail: {fileID: 0}
-  maxAnimationState: 200
+  mirrorMenu:
+    title: 
+    thumbnail: {fileID: 0}
   thumbnailLayer: 4
   texSize: 128
-  motionNoiseTime: 0.1
-  motionNoiseScale: 0.5
+  motionLong: 15
+  motionDuration: 0.5
