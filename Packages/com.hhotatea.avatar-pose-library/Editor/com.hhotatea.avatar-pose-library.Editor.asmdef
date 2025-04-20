@@ -8,7 +8,9 @@
         "VRC.SDKBase.Editor",
         "com.hhotatea.avatar-pose-library",
         "nadena.dev.ndmf",
-        "nadena.dev.modular-avatar.core"
+        "nadena.dev.ndmf.runtime",
+        "nadena.dev.modular-avatar.core",
+        "nadena.dev.modular-avatar.core.editor"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

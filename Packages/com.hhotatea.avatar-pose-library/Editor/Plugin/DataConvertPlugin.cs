@@ -8,16 +8,16 @@ using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.model;
 using UnityEngine;
 
-[assembly: ExportsPlugin(typeof(ConvertPlugin))]
+[assembly: ExportsPlugin(typeof(DataConvertPlugin))]
 namespace com.hhotatea.avatar_pose_library.editor
 {
-    public class ConvertPlugin : Plugin<ConvertPlugin>
+    public class DataConvertPlugin : Plugin<DataConvertPlugin>
     {
         protected override void Configure()
         {
             InPhase(BuildPhase.Generating)
                 .BeforePlugin("nadena.dev.modular-avatar")
-                .Run("AvatarPose: Converting...", ctx =>
+                .Run("AvatarPose: Data Converting...", ctx =>
                 {
                     var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrarySettings>();
 

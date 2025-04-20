@@ -28,6 +28,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                             {
                                 foreach (var pose in category.poses)
                                 {
+                                    if(!pose.autoThumbnail) continue;
                                     var c = SearchMenu(ctx.AvatarDescriptor.expressionsMenu,pose);
                                     if (c == null)
                                     {
