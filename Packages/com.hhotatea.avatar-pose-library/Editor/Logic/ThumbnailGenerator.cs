@@ -32,7 +32,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 return;
             }
             
-            var animator = contextObject.GetComponentInParent<Animator>();
+            var animator = descriptor.GetComponent<Animator>();
             if (animator)
             {
                 if (animator.avatar.isHuman)
@@ -69,8 +69,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             camera.transform.LookAt(center);
 
             // カリング設定
-            camera.nearClipPlane = 0.01f;
-            camera.farClipPlane = distance * 2f;
+            camera.nearClipPlane = distance * 0.01f;
+            camera.farClipPlane = distance * 2.5f;
 
             // RenderTexture
             renderTexture = new RenderTexture(DynamicVariables.Settings.texSize, DynamicVariables.Settings.texSize, 24);
@@ -99,7 +99,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var aPos = avatarGO.transform.position;
                 var hPos = headTransform.position;
                 Vector3 center = (aPos + hPos) * 0.5f;
-                float height = Mathf.Max(Mathf.Abs(aPos.y - hPos.y),AvatarHeight*0.5f);
+                //cameraGO.transform.position = center + distance * headTransform.forward;
                 cameraGO.transform.position = center + new Vector3(0, 0, distance);
                 cameraGO.transform.LookAt(hPos);
             }
@@ -129,7 +129,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             if (cameraGO != null)
             {
                 camera.targetTexture = null;
-                Object.Destroy(cameraGO);
+                Object.DestroyImmediate(cameraGO);
                 cameraGO = null;
             }
 

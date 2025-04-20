@@ -58,3 +58,5 @@ MonoBehaviour:
   texSize: 128
   motionLong: 15
   motionDuration: 0.5
+  motionNoiseScale: 0.6
+  minMaxHeight: 1

@@ -38,7 +38,9 @@ namespace com.hhotatea.avatar_pose_library.component
         public float motionLong = 15f;
         public float motionDuration = 0.5f;
         // public float motionNoiseTime = 0.1f;
-        // public float motionNoiseScale = 0.2f;
+        public float motionNoiseScale = 0.6f;
+
+        public float minMaxHeight = 1f;
     
         [Serializable]
         public class MenuItem

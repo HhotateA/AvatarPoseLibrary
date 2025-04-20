@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using com.hhotatea.avatar_pose_library.editor;
 using UnityEngine;
 using UnityEditor.Animations;
 using com.hhotatea.avatar_pose_library.model;
@@ -353,18 +354,18 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 var blendTree = new BlendTree();
                 var motionClip0 = MotionBuilder.IdleAnimation(pose.animationClip,0f);
-                var motionClip1 = MotionBuilder.IdleAnimation(pose.animationClip,0.5f);
+                var motionClip1 = MotionBuilder.IdleAnimation(pose.animationClip,DynamicVariables.Settings.motionNoiseScale);
                 blendTree.blendType = BlendTreeType.FreeformCartesian2D;
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
                 blendTree.blendParameterY = $"{ConstVariables.SpeedParamPrefix}_{guid}";
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip0,-1f), new Vector2(0f,0f));
+                    MotionBuilder.BuildMotionLevel(motionClip0,-DynamicVariables.Settings.minMaxHeight), new Vector2(0f,0f));
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip0,+1f), new Vector2(1f,0f));
+                    MotionBuilder.BuildMotionLevel(motionClip0,+DynamicVariables.Settings.minMaxHeight), new Vector2(1f,0f));
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip1,-1f), new Vector2(0f,1f));
+                    MotionBuilder.BuildMotionLevel(motionClip1,-DynamicVariables.Settings.minMaxHeight), new Vector2(0f,1f));
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip1,+1f), new Vector2(1f,1f));
+                    MotionBuilder.BuildMotionLevel(motionClip1,+DynamicVariables.Settings.minMaxHeight), new Vector2(1f,1f));
                 poseState.motion = blendTree;
             }
 

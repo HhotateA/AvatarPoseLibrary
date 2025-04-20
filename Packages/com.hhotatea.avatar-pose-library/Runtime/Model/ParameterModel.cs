@@ -13,6 +13,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool foot = true;
         public bool finger = true;
         public bool locomotion = true;
+        public bool customSetting = false; 
     }
     
     
@@ -45,6 +46,7 @@ namespace com.hhotatea.avatar_pose_library.model
     public class AvatarPoseData
     {
         public string name = "";
+        public Texture2D thumbnail;
         public List<PoseCategory> categories = new List<PoseCategory>();
         public string guid { get; set; }//プロパティ
         public List<string> Parameters => 
