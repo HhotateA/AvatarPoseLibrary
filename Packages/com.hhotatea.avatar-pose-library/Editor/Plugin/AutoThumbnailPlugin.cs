@@ -5,6 +5,7 @@ using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.model;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
 [assembly: ExportsPlugin(typeof(AutoThumbnailPlugin))]
@@ -80,19 +81,13 @@ namespace com.hhotatea.avatar_pose_library.editor
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="data"></param>
-        void UpdateThumbnail(GameObject obj,AvatarPoseData data)
+        Texture2D UpdateThumbnail(GameObject obj,AnimationClip pose)
         {
-            using (var capture = new ThumbnailGenerator(obj))
-            {
-                foreach (var category in data.categories)
-                {
-                    foreach (var pose in category.poses)
-                    {
-                        if(!pose.autoThumbnail) continue;
-                        pose.thumbnail = capture.Capture(pose.animationClip);
-                    }
-                }
-            }
+            var avatar = obj.GetComponentInParent<VRCAvatarDescriptor>();
+            if(avatar == null) return null;
+
+            using var capture = new ThumbnailGenerator(obj);
+            return capture.Capture(pose);
         }
     }
 }

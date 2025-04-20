@@ -17,7 +17,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var settings = AnimationUtility.GetAnimationClipSettings(anim);
             var result = Object.Instantiate(anim);
             result.name = $"{anim.name}_level{level}";
-            result.wrapMode = anim.wrapMode;
+            //result.wrapMode = anim.wrapMode;
             settings.level += level;
             AnimationUtility.SetAnimationClipSettings(result, settings);
             return result;
@@ -47,8 +47,28 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             return false;
         }
+
+        public static bool IsLoopAnimation(AnimationClip anim)
+        {
+            if (!anim) return false;
+            
+            var result = Object.Instantiate(anim);
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(result);
+            return settings.loopTime;
+        }
         
-        
+        public static AnimationClip SetAnimationLoop(AnimationClip anim, bool loop)
+        {
+            if (!anim) return null;
+            
+            var result = Object.Instantiate(anim);
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(result);
+            settings.loopTime = loop;
+            result.wrapMode = loop ? WrapMode.Loop : WrapMode.Default;
+            AnimationUtility.SetAnimationClipSettings(result, settings);
+            return result;
+        }
+
         public static AnimationClip IdleAnimation(AnimationClip anim,float noiseScale)
         {
             if (!anim) return null;

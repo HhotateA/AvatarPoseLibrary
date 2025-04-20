@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using com.hhotatea.avatar_pose_library.editor;
 using UnityEngine;
 using UnityEditor.Animations;
 using com.hhotatea.avatar_pose_library.model;
@@ -322,7 +323,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                     name = $"{ConstVariables.SpeedParamPrefix}_{guid}",
-                    value = pose.motionSpeed * 0.5f,
+                    value = pose.tracking.motionSpeed == 0f ?  0f : 0.5f,
                 });
             }
             {
@@ -334,37 +335,38 @@ namespace com.hhotatea.avatar_pose_library.logic
             poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
 
             // blendTree
-            if (MotionBuilder.IsMoveAnimation(pose.animationClip))
+            var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
+            if (MotionBuilder.IsMoveAnimation(anim))
             {
                 var blendTree = new BlendTree();
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(pose.animationClip,-1f), 0);
+                    MotionBuilder.BuildMotionLevel(anim,-1f), 0);
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(pose.animationClip,+1f), 1);
+                    MotionBuilder.BuildMotionLevel(anim,+1f), 1);
                 poseState.motion = blendTree;
                 
                 // スピードを制御可能にする
-                poseState.speed = 2f;
+                poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
             }
             else
             {
                 var blendTree = new BlendTree();
-                var motionClip0 = MotionBuilder.IdleAnimation(pose.animationClip,0f);
-                var motionClip1 = MotionBuilder.IdleAnimation(pose.animationClip,0.5f);
+                var motionClip0 = MotionBuilder.IdleAnimation(anim,0f);
+                var motionClip1 = MotionBuilder.IdleAnimation(anim,DynamicVariables.Settings.motionNoiseScale);
                 blendTree.blendType = BlendTreeType.FreeformCartesian2D;
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
                 blendTree.blendParameterY = $"{ConstVariables.SpeedParamPrefix}_{guid}";
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip0,-1f), new Vector2(0f,0f));
+                    MotionBuilder.BuildMotionLevel(motionClip0,-DynamicVariables.Settings.minMaxHeight), new Vector2(0f,0f));
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip0,+1f), new Vector2(1f,0f));
+                    MotionBuilder.BuildMotionLevel(motionClip0,+DynamicVariables.Settings.minMaxHeight), new Vector2(1f,0f));
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip1,-1f), new Vector2(0f,1f));
+                    MotionBuilder.BuildMotionLevel(motionClip1,-DynamicVariables.Settings.minMaxHeight), new Vector2(0f,1f));
                 blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip1,+1f), new Vector2(1f,1f));
+                    MotionBuilder.BuildMotionLevel(motionClip1,+DynamicVariables.Settings.minMaxHeight), new Vector2(1f,1f));
                 poseState.motion = blendTree;
             }
 
@@ -489,6 +491,15 @@ namespace com.hhotatea.avatar_pose_library.logic
                     threshold = pose.value
                 }
             };
+
+            if (!pose.tracking.loop)
+            {
+                var endTransition = poseState.AddTransition(preResetState);
+                endTransition.canTransitionToSelf = false;
+                endTransition.hasExitTime = true;
+                endTransition.hasFixedDuration = true;
+                endTransition.duration = 0.0f;
+            }
         }
 
     }
