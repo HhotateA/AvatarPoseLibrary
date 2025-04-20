@@ -89,7 +89,15 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             // 撮影の開始
             AnimationMode.BeginSampling();
-            AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0f);
+            if (MotionBuilder.IsMoveAnimation(poseClip))
+            {
+                // アニメーションはちょっと再生する
+                AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0.5f);
+            }
+            else
+            {
+                AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0f);
+            }
             AnimationMode.EndSampling();
 
             // 頭にカメラを合わせる

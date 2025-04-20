@@ -8,12 +8,14 @@ namespace com.hhotatea.avatar_pose_library.model
     [Serializable]
     public class TrackingSetting
     {
+        public bool customSetting = false; 
         public bool head = true;
         public bool arm = true;
         public bool foot = true;
         public bool finger = true;
         public bool locomotion = true;
-        public bool customSetting = false; 
+        public float motionSpeed = 1f;
+        public bool loop = true;
     }
     
     
@@ -24,7 +26,6 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool autoThumbnail;
         public Texture2D thumbnail;
         public AnimationClip animationClip;
-        public float motionSpeed;
         
         // 固定するパラメーターの選択
         public TrackingSetting tracking;

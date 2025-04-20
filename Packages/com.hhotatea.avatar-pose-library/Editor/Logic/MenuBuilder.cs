@@ -15,11 +15,10 @@ namespace com.hhotatea.avatar_pose_library.logic
             mResult.MenuSource = SubmenuSource.Children;
             mResult.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
 
-            var settings = new GameObject("SettingsMenu");
+            var settings = new GameObject(DynamicVariables.Settings.settingMenu.title);
             settings.transform.SetParent(result.transform);
             var mSettings = settings.AddComponent<ModularAvatarMenuItem>();
             mSettings.MenuSource = SubmenuSource.Children;
-            mSettings.Control.name = DynamicVariables.Settings.settingMenu.title;
             mSettings.Control.icon = DynamicVariables.Settings.settingMenu.thumbnail;
             mSettings.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
             SettingsMenu(mSettings.transform,poseLibrary);
@@ -27,22 +26,19 @@ namespace com.hhotatea.avatar_pose_library.logic
             // メニューの構造を作る
             foreach (var category in poseLibrary.categories)
             {
-                var folder = new GameObject("CategoriesMenu");
+                var folder = new GameObject(category.name);
                 folder.transform.SetParent(result.transform);
                 var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
                 mFolder.MenuSource = SubmenuSource.Children;
-                mSettings.Control.name = category.name;
                 mSettings.Control.icon = category.thumbnail;
                 mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
 
                 // 各ポーズステート
                 foreach (var pose in category.poses)
                 {
-                    var item = new GameObject("PoseMenu");
+                    var item = new GameObject(pose.name);
                     item.transform.SetParent(folder.transform);
                     var mItem = item.AddComponent<ModularAvatarMenuItem>();
-                    
-                    mItem.Control.name = pose.name;
                     mItem.Control.icon = pose.thumbnail;
                     mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
                     mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
@@ -66,7 +62,6 @@ namespace com.hhotatea.avatar_pose_library.logic
             // --- Radialメニューを追加（例: 身長・速度） ---
             CreateRadialMenu(
                 parent,
-                "HeightMenu",
                 DynamicVariables.Settings.heightMenu.title,
                 DynamicVariables.Settings.heightMenu.thumbnail,
                 $"{ConstVariables.HeightParamPrefix}_{poseLibrary.guid}"
@@ -74,7 +69,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             CreateRadialMenu(
                 parent,
-                "SpeedMenu",
                 DynamicVariables.Settings.speedMenu.title,
                 DynamicVariables.Settings.speedMenu.thumbnail,
                 $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.guid}"
@@ -82,7 +76,6 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             CreateToggleMenu(
                 parent,
-                "Mirror",
                 DynamicVariables.Settings.mirrorMenu.title,
                 DynamicVariables.Settings.mirrorMenu.thumbnail,
                 $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}"
@@ -90,7 +83,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             CreateToggleMenu(
                 parent,
-                "ResetMotion",
                 DynamicVariables.Settings.resetMenu.title,
                 DynamicVariables.Settings.resetMenu.thumbnail,
                 $"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}"
@@ -98,7 +90,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             CreateToggleMenu(
                 parent,
-                "LocomotionMenu",
                 DynamicVariables.Settings.locomotionMenu.title,
                 DynamicVariables.Settings.locomotionMenu.thumbnail,
                 $"{ConstVariables.BaseParamPrefix}_{poseLibrary.guid}"
@@ -119,7 +110,6 @@ namespace com.hhotatea.avatar_pose_library.logic
             // --- トグルメニューを追加（例: トラッキング制御） ---
             CreateToggleMenu(
                 parent,
-                "HeadMenu",
                 DynamicVariables.Settings.headMenu.title,
                 DynamicVariables.Settings.headMenu.thumbnail,
                 $"{ConstVariables.HeadParamPrefix}_{poseLibrary.guid}"
@@ -127,7 +117,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             CreateToggleMenu(
                 parent,
-                "ArmMenu",
                 DynamicVariables.Settings.armMenu.title,
                 DynamicVariables.Settings.armMenu.thumbnail,
                 $"{ConstVariables.ArmParamPrefix}_{poseLibrary.guid}"
@@ -135,7 +124,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             CreateToggleMenu(
                 parent,
-                "FootMenu",
                 DynamicVariables.Settings.footMenu.title,
                 DynamicVariables.Settings.footMenu.thumbnail,
                 $"{ConstVariables.FootParamPrefix}_{poseLibrary.guid}"
@@ -143,7 +131,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             CreateToggleMenu(
                 parent,
-                "FingerMenu",
                 DynamicVariables.Settings.fingerMenu.title,
                 DynamicVariables.Settings.fingerMenu.thumbnail,
                 $"{ConstVariables.FingerParamPrefix}_{poseLibrary.guid}"
@@ -153,13 +140,12 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <summary>
         /// Radial型のメニュー項目を作成します（例: 身長、速度）
         /// </summary>
-        static void CreateRadialMenu(Transform parent, string name, string title, Texture2D icon, string parameterName)
+        static void CreateRadialMenu(Transform parent, string name, Texture2D icon, string parameterName)
         {
             var obj = new GameObject(name);
             obj.transform.SetParent(parent);
 
             var item = obj.AddComponent<ModularAvatarMenuItem>();
-            item.Control.name = title;
             item.Control.icon = icon;
             item.Control.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
             item.Control.subParameters = new VRCExpressionsMenu.Control.Parameter[]
@@ -171,13 +157,12 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <summary>
         /// トグル型のメニュー項目を作成します（例: 各部位のトラッキング切り替え）
         /// </summary>
-        static void CreateToggleMenu(Transform parent, string name, string title, Texture2D icon, string parameterName)
+        static void CreateToggleMenu(Transform parent, string name, Texture2D icon, string parameterName)
         {
             var obj = new GameObject(name);
             obj.transform.SetParent(parent);
 
             var item = obj.AddComponent<ModularAvatarMenuItem>();
-            item.Control.name = title;
             item.Control.icon = icon;
             item.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
             item.Control.parameter = new VRCExpressionsMenu.Control.Parameter { name = parameterName };

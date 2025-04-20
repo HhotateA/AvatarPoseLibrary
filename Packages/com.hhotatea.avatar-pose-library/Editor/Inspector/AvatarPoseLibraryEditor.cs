@@ -36,14 +36,39 @@ namespace com.hhotatea.avatar_pose_library.editor
         private void OnEnable()
         {
             poseLibrary = (AvatarPoseLibrarySettings)target;
+            poseLibrary.onInitialize += OnResetAction;
             SetupCategoryList();
+        }
+
+        private void OnDisable()
+        {
+            poseLibrary.onInitialize -= OnResetAction;
+        }
+
+        private void OnResetAction(AvatarPoseData data)
+        {
+            data.name = DynamicVariables.Settings.mainMenu.title;
+            data.thumbnail = DynamicVariables.Settings.mainMenu.thumbnail;
         }
 
         // インスペクターGUIの描画処理
         public override void OnInspectorGUI()
         {
+            float lineHeight = EditorGUIUtility.singleLineHeight;
+            float texSize = lineHeight * 5f;
             EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
-            poseLibrary.data.name = EditorGUILayout.TextField("Library Name", poseLibrary.data.name);
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.Label(DynamicVariables.Settings.categoryMenu.thumbnail, GUILayout.Width(texSize), GUILayout.Height(texSize));
+                GUILayout.FlexibleSpace();
+                using (new GUILayout.VerticalScope(GUILayout.Width(300)))
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField("Library Name", EditorStyles.label);
+                    poseLibrary.data.name = EditorGUILayout.TextField(poseLibrary.data.name);
+                }
+            }
+            EditorGUILayout.Space();
             categoryReorderableList.DoLayoutList();
         }
 
@@ -55,7 +80,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 drawHeaderCallback = rect => EditorGUI.LabelField(rect, "Pose Categories"),
                 elementHeightCallback = index => GetCategoryElementHeight(index),
                 drawElementCallback = (rect, index, isActive, isFocused) => DrawCategoryElement(rect, index),
-                onReorderCallback = list => ResetCategoryLists()
+                onReorderCallback = list => ResetCategoryLists(),
+                onAddCallback = list => poseLibrary.data.categories.Add(CreateCategory()),
+                onRemoveCallback = list => poseLibrary.data.categories.RemoveAt(list.index)
             };
         }
 
@@ -63,9 +90,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         private float GetCategoryElementHeight(int index)
         {
             EnsurePoseList(index);
-            var category = poseLibrary.data.categories[index];
             float poseListHeight = categoryLists[index].GetHeight();
-            return EditorGUIUtility.singleLineHeight + 8f + Mathf.Max(EditorGUIUtility.singleLineHeight * 5f, EditorGUIUtility.singleLineHeight) + poseListHeight + 60f + 40f;
+            return EditorGUIUtility.singleLineHeight + 8f + Mathf.Max(EditorGUIUtility.singleLineHeight * 5f, EditorGUIUtility.singleLineHeight) + poseListHeight + 60f;
         }
 
         // ReorderableListのリストを再構築
@@ -79,23 +105,22 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var category = poseLibrary.data.categories[index];
             float spacing = 4f, lineHeight = EditorGUIUtility.singleLineHeight, y = rect.y + spacing;
-            float thumbnailSize = lineHeight * 5f;
-            float totalWidth = rect.width;
-            float nameWidth = totalWidth - thumbnailSize - spacing;
+            float thumbnailSize = lineHeight * 4f;
+            float nameWidth = rect.width - spacing;
 
             // カテゴリ名とサムネイル
-            EditorGUI.LabelField(new Rect(rect.x, y, 100, lineHeight), "Category Name");
-            category.name = EditorGUI.TextField(new Rect(rect.x + 100, y, nameWidth - 100, lineHeight), category.name);
-            category.thumbnail = (Texture2D)EditorGUI.ObjectField(new Rect(rect.x + nameWidth + spacing, y, thumbnailSize, thumbnailSize), category.thumbnail, typeof(Texture2D), false);
+            category.thumbnail = (Texture2D)EditorGUI.ObjectField(new Rect(rect.x + spacing, y, thumbnailSize, thumbnailSize), category.thumbnail, typeof(Texture2D), false);
+            EditorGUI.LabelField(new Rect(rect.x + spacing * 2f + thumbnailSize, y , 100, lineHeight), "Category Name");
+            category.name = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight, nameWidth - 100, lineHeight), category.name);
             y += Mathf.Max(thumbnailSize, lineHeight) + spacing;
 
             // 一括開閉ボタン
             Rect btnRect = new Rect(rect.x, y, 200, lineHeight);
-            if (GUI.Button(new Rect(btnRect.x, btnRect.y, 90f, lineHeight), "すべて展開"))
+            if (GUI.Button(new Rect( btnRect.x + rect.width - 200f, btnRect.y, 90f, lineHeight), "すべて展開"))
             {
                 foreach (var pose in category.poses) poseFoldouts[pose] = true;
             }
-            if (GUI.Button(new Rect(btnRect.x + 100f, btnRect.y, 90f, lineHeight), "すべて折りたたむ"))
+            if (GUI.Button(new Rect( btnRect.x + rect.width - 100f, btnRect.y, 90f, lineHeight), "すべて折りたたむ"))
             {
                 foreach (var pose in category.poses) poseFoldouts[pose] = false;
             }
@@ -121,7 +146,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 drawHeaderCallback = rect => EditorGUI.LabelField(rect, "Pose List"),
                 elementHeightCallback = i => GetPoseElementHeight(category.poses[i]),
-                drawElementCallback = (rect, i, isActive, isFocused) => DrawPoseElement(rect, i, category)
+                drawElementCallback = (rect, i, isActive, isFocused) => DrawPoseElement(rect, i, category),
+                onAddCallback = list => category.poses.Add(CreatePose(null)),
+                onRemoveCallback = list => category.poses.RemoveAt(list.index)
             };
 
             categoryLists[index] = list;
@@ -133,31 +160,34 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (!poseFoldouts.TryGetValue(pose, out var expanded) || !expanded)
                 return EditorGUIUtility.singleLineHeight * 1.5f;
 
-            return EditorGUIUtility.singleLineHeight * 7f;
+            return EditorGUIUtility.singleLineHeight * 8f;
         }
 
         // Pose 要素の描画処理
         private void DrawPoseElement(Rect rect, int i, PoseCategory category)
         {
             var pose = category.poses[i];
-            float lineHeight = EditorGUIUtility.singleLineHeight, spacing = 4f, y = rect.y + spacing;
-
-            if (!poseFoldouts.ContainsKey(pose)) poseFoldouts[pose] = true;
-
-            // 削除ボタン
-            if (GUI.Button(new Rect(rect.x + rect.width - 20f, rect.y, 20f, 20f), "✖"))
+            float lineHeight = EditorGUIUtility.singleLineHeight, spacing = 4f, y = rect.y + 2f;
+            
+            GUI.Label(new Rect(rect.x + 14f, y, rect.width - 34f, lineHeight),pose.name);
+            poseFoldouts.TryAdd(pose, false);
+            if (poseFoldouts[pose])
             {
-                category.poses.RemoveAt(i);
-                generatedThumbnails.Remove(pose);
-                lastClips.Remove(pose);
-                poseFoldouts.Remove(pose);
+                if (GUI.Button(new Rect(rect.x + rect.width - 40f, y, 40f, 20f), "Close"))
+                {
+                    poseFoldouts[pose] = false;
+                }
+            }
+            else
+            {
+                if (GUI.Button(new Rect(rect.x + rect.width - 40f, y, 40f, 20f), "Open"))
+                {
+                    poseFoldouts[pose] = true;
+                }
                 return;
             }
-
-            // フォールドアウトで詳細表示
-            poseFoldouts[pose] = EditorGUI.Foldout(new Rect(rect.x + 14f, y, rect.width - 34f, lineHeight), poseFoldouts[pose], pose.name, true);
-            if (!poseFoldouts[pose]) return;
-            y += lineHeight + spacing;
+            
+            y += lineHeight + spacing + 4f;
 
             float thumbnailSize = lineHeight * 4f;
             float leftWidth = thumbnailSize + spacing, rightWidth = rect.width - leftWidth - 20f, rightX = rect.x + leftWidth;
@@ -184,11 +214,15 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
 
             // 基本情報と設定の入力欄
-            float infoY = rect.y + lineHeight + spacing;
+            float infoY = rect.y + lineHeight + spacing + 4f;
             float fieldWidth = (rightWidth - spacing) / 2;
 
             pose.name = EditorGUI.TextField(new Rect(rightX, infoY, fieldWidth, lineHeight), pose.name);
-            pose.animationClip = (AnimationClip)EditorGUI.ObjectField(new Rect(rightX + fieldWidth + spacing, infoY, fieldWidth, lineHeight), pose.animationClip, typeof(AnimationClip), false);
+            var animationClip = (AnimationClip)EditorGUI.ObjectField(new Rect(rightX + fieldWidth + spacing, infoY, fieldWidth, lineHeight), pose.animationClip, typeof(AnimationClip), false);
+            if (pose.animationClip != animationClip)
+            {
+                ChangePoseAnimation(pose, animationClip);
+            }
             infoY += lineHeight + spacing;
 
             // トラッキングタイプ選択
@@ -198,28 +232,33 @@ namespace com.hhotatea.avatar_pose_library.editor
             infoY += lineHeight;
 
             // カスタム設定トグル
-            EditorGUI.BeginDisabledGroup(selectedType != AnimationType.Custom);
-            DrawTrackingToggles(pose, rightX, rightWidth, infoY);
-            EditorGUI.EndDisabledGroup();
+            DrawTrackingToggles(pose, rightX, rightWidth, infoY, selectedType != AnimationType.Custom);
         }
 
         // 各トラッキング項目のチェックボックス表示
-        private void DrawTrackingToggles(PoseEntry pose, float rightX, float rightWidth, float infoY)
+        private void DrawTrackingToggles(PoseEntry pose, float rightX, float rightWidth, float infoY, bool enable)
         {
             float spacing = 4f, lineHeight = EditorGUIUtility.singleLineHeight;
             float columnWidth = (rightWidth - spacing) / 2, colX1 = rightX, colX2 = rightX + columnWidth + spacing;
 
-            pose.tracking.head = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Head", pose.tracking.head);
-            pose.tracking.arm = EditorGUI.ToggleLeft(new Rect(colX2, infoY, columnWidth, lineHeight), "Arm", pose.tracking.arm);
-            infoY += lineHeight;
+            using (new EditorGUI.DisabledScope(enable))
+            {
+                pose.tracking.head = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Head", pose.tracking.head);
+                pose.tracking.arm = EditorGUI.ToggleLeft(new Rect(colX2, infoY, columnWidth, lineHeight), "Arm", pose.tracking.arm);
+                infoY += lineHeight;
 
-            pose.tracking.foot = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Foot", pose.tracking.foot);
-            pose.tracking.finger = EditorGUI.ToggleLeft(new Rect(colX2, infoY, columnWidth, lineHeight), "Finger", pose.tracking.finger);
-            infoY += lineHeight;
+                pose.tracking.foot = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Foot", pose.tracking.foot);
+                pose.tracking.finger = EditorGUI.ToggleLeft(new Rect(colX2, infoY, columnWidth, lineHeight), "Finger", pose.tracking.finger);
+                infoY += lineHeight;
 
-            pose.tracking.locomotion = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Locomotion", pose.tracking.locomotion);
+                pose.tracking.locomotion = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Locomotion", pose.tracking.locomotion);
+            }
+            
+            pose.tracking.loop = EditorGUI.ToggleLeft(new Rect(colX2, infoY, columnWidth, lineHeight), "Loop", pose.tracking.loop);
+            infoY += lineHeight;
+            
             EditorGUI.LabelField(new Rect(colX2, infoY, 90f, lineHeight), "Motion Speed:");
-            pose.motionSpeed = EditorGUI.FloatField(new Rect(colX2 + 90f + spacing, infoY, 50f, lineHeight), pose.motionSpeed);
+            pose.tracking.motionSpeed = EditorGUI.FloatField(new Rect(colX2 + 90f + spacing, infoY, 50f, lineHeight), pose.tracking.motionSpeed);
         }
 
         // Pose ドロップ用エリア
@@ -238,17 +277,53 @@ namespace com.hhotatea.avatar_pose_library.editor
                     DragAndDrop.AcceptDrag();
                     foreach (var dragged in DragAndDrop.objectReferences.OfType<AnimationClip>())
                     {
-                        category.poses.Add(new PoseEntry
-                        {
-                            name = dragged.name,
-                            animationClip = dragged,
-                            autoThumbnail = true,
-                            tracking = new TrackingSetting()
-                        });
+                        category.poses.Add(CreatePose(dragged));
                     }
                     GUI.changed = true;
                     evt.Use();
                 }
+            }
+        }
+
+        private PoseCategory CreateCategory()
+        {
+            return new PoseCategory
+            {
+                name = DynamicVariables.Settings.categoryMenu.title,
+                thumbnail = DynamicVariables.Settings.categoryMenu.thumbnail,
+                poses = new List<PoseEntry>()
+            };
+        }
+
+        private PoseEntry CreatePose(AnimationClip clip)
+        {
+            var result = new PoseEntry
+            {
+                name = DynamicVariables.Settings.poseMenu.title,
+                thumbnail = DynamicVariables.Settings.poseMenu.thumbnail,
+                autoThumbnail = true,
+                tracking = new TrackingSetting()
+            };
+
+            ChangePoseAnimation(result, clip);
+
+            return result;
+        }
+
+        void ChangePoseAnimation(PoseEntry pose, AnimationClip anim)
+        {
+            pose.animationClip = anim;
+            if(anim==null) return;
+            pose.name = anim.name;
+            if (MotionBuilder.IsMoveAnimation(anim))
+            {
+                pose.tracking.motionSpeed = 1f;
+                pose.tracking.loop = MotionBuilder.IsLoopAnimation(anim) ? true : false;
+            }
+            else
+            {
+                pose.tracking.motionSpeed = 0f;
+                pose.tracking.loop = true;
             }
         }
 

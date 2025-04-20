@@ -1,3 +1,4 @@
+using System;
 using com.hhotatea.avatar_pose_library.model;
 using UnityEngine;
 using VRC.SDKBase;
@@ -11,5 +12,12 @@ namespace com.hhotatea.avatar_pose_library.component
     public class AvatarPoseLibrarySettings : MonoBehaviour, IEditorOnly
     {
         public AvatarPoseData data = new AvatarPoseData();
+        public Action<AvatarPoseData> onInitialize;
+        
+        private void Reset()
+        {
+            data = new AvatarPoseData();
+            onInitialize?.Invoke(data);
+        }
     }
 }
