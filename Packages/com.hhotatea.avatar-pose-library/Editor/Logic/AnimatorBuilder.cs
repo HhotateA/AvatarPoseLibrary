@@ -84,13 +84,14 @@ namespace com.hhotatea.avatar_pose_library.logic
                 stateMachine = new AnimatorStateMachine(),
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
-            
+
+            var noneClip = MotionBuilder.NoneAnimation();
             // ステートの初期化
             var defaultState = layer.stateMachine.AddState("Default");
-            defaultState.motion = new AnimationClip();
+            defaultState.motion = noneClip;
             
             var resetState = layer.stateMachine.AddState("Reset");
-            resetState.motion = new AnimationClip();
+            resetState.motion = noneClip;
             
             var paramReset = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             foreach (var parameter in poseLibrary.Parameters)
@@ -113,6 +114,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var resetTransition = defaultState.AddTransition(resetState);
             resetTransition.canTransitionToSelf = false;
             resetTransition.hasExitTime = true;
+            resetTransition.exitTime = 0f;
             resetTransition.hasFixedDuration = true;
             resetTransition.duration = 0.0f;
             resetTransition.conditions = new AnimatorCondition[]
@@ -127,6 +129,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var defaultTransition = resetState.AddTransition(defaultState);
             defaultTransition.canTransitionToSelf = false;
             defaultTransition.hasExitTime = true;
+            defaultTransition.exitTime = 0f;
             defaultTransition.hasFixedDuration = true;
             defaultTransition.duration = 0.0f;
 
@@ -153,18 +156,20 @@ namespace com.hhotatea.avatar_pose_library.logic
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
 
+            var noneClip = MotionBuilder.NoneAnimation();
+            
             // ステートの初期化
             var offIdleState = layer.stateMachine.AddState("OffIdle");
-            offIdleState.motion = new AnimationClip();
+            offIdleState.motion = noneClip;
             
             var offConState = layer.stateMachine.AddState("OffConState");
-            offConState.motion = new AnimationClip();
+            offConState.motion = noneClip;
 
             var onIdleState = layer.stateMachine.AddState("OnIdle");
-            onIdleState.motion = new AnimationClip();
+            onIdleState.motion = noneClip;
             
             var onConState = layer.stateMachine.AddState("OnConState");
-            onConState.motion = new AnimationClip();
+            onConState.motion = noneClip;
             
             // コンポーネント
             switch (type)
@@ -236,6 +241,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var fromOffToOn = offIdleState.AddTransition(onConState);
             fromOffToOn.canTransitionToSelf = false;
             fromOffToOn.hasExitTime = true;
+            fromOffToOn.exitTime = 0f;
             fromOffToOn.hasFixedDuration = true;
             fromOffToOn.duration = 0.0f;
             fromOffToOn.conditions = new AnimatorCondition[]
@@ -250,12 +256,14 @@ namespace com.hhotatea.avatar_pose_library.logic
             var fromOnToOn = onConState.AddTransition(onIdleState);
             fromOnToOn.canTransitionToSelf = false;
             fromOnToOn.hasExitTime = true;
+            fromOnToOn.exitTime = 0f;
             fromOnToOn.hasFixedDuration = true;
             fromOnToOn.duration = 0.0f;
             
             var fromOnToOff = onIdleState.AddTransition(offConState);
             fromOnToOff.canTransitionToSelf = false;
             fromOnToOff.hasExitTime = true;
+            fromOnToOff.exitTime = 0f;
             fromOnToOff.hasFixedDuration = true;
             fromOnToOff.duration = 0.0f;
             fromOnToOff.conditions = new AnimatorCondition[]
@@ -270,6 +278,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var fromOffToOff = offConState.AddTransition(offIdleState);
             fromOffToOff.canTransitionToSelf = false;
             fromOffToOff.hasExitTime = true;
+            fromOffToOff.exitTime = 0f;
             fromOffToOff.hasFixedDuration = true;
             fromOffToOff.duration = 0.0f;
 
@@ -303,11 +312,13 @@ namespace com.hhotatea.avatar_pose_library.logic
                 (pose.tracking.finger, ConstVariables.FingerParamPrefix),
                 (pose.tracking.locomotion, ConstVariables.BaseParamPrefix)
             };
+            var noneClip = MotionBuilder.NoneAnimation();
             
-            // ステートの作成
-            var poseState = layer.stateMachine.AddState(pose.name);
+            // 準備ステートの作成
+            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.value.ToString());
+            reserveState.motion = noneClip;
             {
-                var trackingOnParam = poseState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 foreach (var (enabled, prefix) in trackingMap)
                 {
                     if (!enabled) continue;
@@ -325,12 +336,13 @@ namespace com.hhotatea.avatar_pose_library.logic
                     name = $"{ConstVariables.SpeedParamPrefix}_{guid}",
                     value = pose.tracking.motionSpeed == 0f ?  0f : 0.5f,
                 });
-            }
-            {
-                var additive = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                 additive.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                 additive.goalWeight = 0f;
             }
+            
+            // メインステートの作成
+            var poseState = layer.stateMachine.AddState("Pose_"+pose.value.ToString());
             poseState.mirrorParameterActive = true;
             poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
 
@@ -370,25 +382,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                 poseState.motion = blendTree;
             }
 
-            // 遷移を作成
-            var transition = defaultState.AddTransition(poseState);
-            transition.canTransitionToSelf = false;
-            transition.hasExitTime = false;
-            transition.hasFixedDuration = true;
-            transition.duration = 0.0f;
-            transition.conditions = new AnimatorCondition[]
-            {
-                new AnimatorCondition
-                {
-                    mode = AnimatorConditionMode.Equals,
-                    parameter = pose.parameter,
-                    threshold = pose.value
-                }
-            };
-
             // トラッキングリセット用のステート
-            var resetState = layer.stateMachine.AddState("Reset");
-            resetState.motion = new AnimationClip();
+            var resetState = layer.stateMachine.AddState("Reset"+pose.value.ToString());
+            resetState.motion = noneClip;
             {
                 var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 foreach (var (enabled, prefix) in trackingMap)
@@ -409,10 +405,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                 additive.goalWeight = 1f;
             }
             
-            
             // 変数リセット用のステート
-            var preResetState = layer.stateMachine.AddState("PreReset");
-            preResetState.motion = new AnimationClip();
+            var preResetState = layer.stateMachine.AddState("PreReset"+pose.value.ToString());
+            preResetState.motion = noneClip;
             var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             {
                 resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
@@ -423,7 +418,31 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
             }
             
-            // 変数からリセットへの遷移
+            // 遷移を作成
+            var reTransition = defaultState.AddTransition(reserveState);
+            reTransition.canTransitionToSelf = false;
+            reTransition.hasExitTime = false;
+            reTransition.hasFixedDuration = true;
+            reTransition.duration = 0.0f;
+            reTransition.conditions = new AnimatorCondition[]
+            {
+                new AnimatorCondition
+                {
+                    mode = AnimatorConditionMode.Equals,
+                    parameter = pose.parameter,
+                    threshold = pose.value
+                }
+            };
+            
+            // メインへの移行
+            var mainTransition = reserveState.AddTransition(poseState);
+            mainTransition.canTransitionToSelf = false;
+            mainTransition.hasExitTime = true;
+            mainTransition.exitTime = 0f;
+            mainTransition.hasFixedDuration = true;
+            mainTransition.duration = 0.0f;
+            
+            // Preからリセットへの遷移
             var bypassTransition = preResetState.AddTransition(resetState);
             bypassTransition.canTransitionToSelf = false;
             bypassTransition.hasExitTime = false;
@@ -497,6 +516,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var endTransition = poseState.AddTransition(preResetState);
                 endTransition.canTransitionToSelf = false;
                 endTransition.hasExitTime = true;
+                endTransition.exitTime = 0f;
                 endTransition.hasFixedDuration = true;
                 endTransition.duration = 0.0f;
             }

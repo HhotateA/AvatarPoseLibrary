@@ -95,11 +95,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                 $"{ConstVariables.BaseParamPrefix}_{poseLibrary.guid}"
             );
             
-            var tracking = new GameObject("TrackingMenu");
+            var tracking = new GameObject(DynamicVariables.Settings.trackingMenu.title);
             tracking.transform.SetParent(parent.transform);
             var mTracking = tracking.AddComponent<ModularAvatarMenuItem>();
             mTracking.MenuSource = SubmenuSource.Children;
-            mTracking.Control.name = DynamicVariables.Settings.trackingMenu.title;
             mTracking.Control.icon = DynamicVariables.Settings.trackingMenu.thumbnail;
             mTracking.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
             TrackingMenu(mTracking.transform,poseLibrary);

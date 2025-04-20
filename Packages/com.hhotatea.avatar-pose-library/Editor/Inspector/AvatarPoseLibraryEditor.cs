@@ -60,13 +60,14 @@ namespace com.hhotatea.avatar_pose_library.editor
             using (new GUILayout.HorizontalScope())
             {
                 GUILayout.Label(DynamicVariables.Settings.categoryMenu.thumbnail, GUILayout.Width(texSize), GUILayout.Height(texSize));
-                GUILayout.FlexibleSpace();
+                // EditorGUILayout.Space();
                 using (new GUILayout.VerticalScope(GUILayout.Width(300)))
                 {
                     EditorGUILayout.Space();
                     EditorGUILayout.LabelField("Library Name", EditorStyles.label);
                     poseLibrary.data.name = EditorGUILayout.TextField(poseLibrary.data.name);
                 }
+                // EditorGUILayout.Space();
             }
             EditorGUILayout.Space();
             categoryReorderableList.DoLayoutList();
@@ -111,7 +112,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             // カテゴリ名とサムネイル
             category.thumbnail = (Texture2D)EditorGUI.ObjectField(new Rect(rect.x + spacing, y, thumbnailSize, thumbnailSize), category.thumbnail, typeof(Texture2D), false);
             EditorGUI.LabelField(new Rect(rect.x + spacing * 2f + thumbnailSize, y , 100, lineHeight), "Category Name");
-            category.name = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight, nameWidth - 100, lineHeight), category.name);
+            category.name = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight, 300f, lineHeight), category.name);
             y += Mathf.Max(thumbnailSize, lineHeight) + spacing;
 
             // 一括開閉ボタン
