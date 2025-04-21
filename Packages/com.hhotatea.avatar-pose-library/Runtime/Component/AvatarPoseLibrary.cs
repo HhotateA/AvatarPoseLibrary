@@ -7,17 +7,21 @@ namespace com.hhotatea.avatar_pose_library.component
 {
     /// <summary>
     /// アバターにアタッチすることでポーズカテゴリを設定可能にするコンポーネント
-    /// 今後、ModularAvatarの拡張機能として動作するように拡張予定
     /// </summary>
     public class AvatarPoseLibrarySettings : MonoBehaviour, IEditorOnly
     {
-        public AvatarPoseData data = new AvatarPoseData();
-        public Action<AvatarPoseData> onInitialize;
-        
+        private AvatarPoseData data;
+
+        public AvatarPoseData Data
+        {
+            get => data;
+            set => data = value;
+        }
+
         private void Reset()
         {
-            data = new AvatarPoseData();
-            onInitialize?.Invoke(data);
+            // エディターでセットするので、Nullにしておく。
+            data = null;
         }
     }
 }

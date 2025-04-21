@@ -23,7 +23,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                     // 全てのコンポーネントを統合する。
                     var data = AvatarPoseData.Combine(
-                        settings.Select(e => e.data).ToArray());
+                        settings.Select(e => e.Data).ToArray());
 
                     foreach (var d in data)
                     {

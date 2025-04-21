@@ -22,6 +22,7 @@ namespace com.hhotatea.avatar_pose_library.editor
     {
         // 対象の設定データ
         private AvatarPoseLibrarySettings poseLibrary;
+        private AvatarPoseData data => poseLibrary.Data;
 
         // カテゴリごとの ReorderableList
         private ReorderableList categoryReorderableList;
@@ -66,36 +67,31 @@ namespace com.hhotatea.avatar_pose_library.editor
         private void OnEnable()
         {
             poseLibrary = (AvatarPoseLibrarySettings)target;
-            poseLibrary.onInitialize += OnResetAction;
+            
+            InitializeData();
             SetupCategoryList();
-        }
-
-        private void OnDisable()
-        {
-            poseLibrary.onInitialize -= OnResetAction;
-        }
-
-        private void OnResetAction(AvatarPoseData data)
-        {
-            data.name = DynamicVariables.Settings.Menu.main.title;
-            data.thumbnail = DynamicVariables.Settings.Menu.main.thumbnail;
         }
 
         // インスペクターGUIの描画処理
         public override void OnInspectorGUI()
         {
+            InitializeData();
+            
+            // ここから描画開始
             float texSize = lineHeight * 6f;
             EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
             using (new GUILayout.HorizontalScope())
             {
-                GUILayout.Label(DynamicVariables.Settings.Menu.category.thumbnail, GUILayout.Width(texSize), GUILayout.Height(texSize));
+                GUILayout.Label(
+                    new GUIContent(data.thumbnail,DynamicVariables.Settings.Context.mainThumbnailTooltip), 
+                    GUILayout.Width(texSize), GUILayout.Height(texSize));
                 // EditorGUILayout.Space();
                 using (new GUILayout.VerticalScope())
                 {
                     EditorGUILayout.Space();
                     EditorGUILayout.LabelField(libraryLabelContext, EditorStyles.label);
                     EditorGUILayout.Space();
-                    poseLibrary.data.name = EditorGUILayout.TextField(poseLibrary.data.name,GUILayout.MaxWidth(textboxWidth));
+                    data.name = EditorGUILayout.TextField(data.name,GUILayout.MaxWidth(textboxWidth));
                     EditorGUILayout.Space();
                 }
             }
@@ -103,23 +99,35 @@ namespace com.hhotatea.avatar_pose_library.editor
             categoryReorderableList.DoLayoutList();
         }
 
+        void InitializeData()
+        {
+            if (poseLibrary.Data != null) return;
+            
+            // 初期化処理
+            var avatarPoseData = new AvatarPoseData();
+            avatarPoseData.name = DynamicVariables.Settings.Menu.main.title;
+            avatarPoseData.thumbnail = DynamicVariables.Settings.Menu.main.thumbnail;
+            poseLibrary.Data = avatarPoseData;
+            SetupCategoryList();
+        }
+
         // カテゴリ一覧の ReorderableList 設定
         private void SetupCategoryList()
         {
-            categoryReorderableList = new ReorderableList(poseLibrary.data.categories, typeof(PoseCategory), true, true, true, true)
+            categoryReorderableList = new ReorderableList(data.categories, typeof(PoseCategory), true, true, true, true)
             {
                 drawHeaderCallback = r => EditorGUI.LabelField(r, categoryListContext),
                 elementHeightCallback = i => GetCategoryElementHeight(i),
                 drawElementCallback = (r, i, isActive, isFocused) => DrawCategoryElement(r, i),
-                onAddCallback = l => poseLibrary.data.categories.Add(CreateCategory()),
-                onRemoveCallback = l => poseLibrary.data.categories.RemoveAt(l.index)
+                onAddCallback = l => data.categories.Add(CreateCategory()),
+                onRemoveCallback = l => data.categories.RemoveAt(l.index)
             };
         }
 
         // カテゴリエレメントの高さを取得
         private float GetCategoryElementHeight(int index)
         {
-            var list = EnsurePoseList(poseLibrary.data.categories[index]);
+            var list = EnsurePoseList(data.categories[index]);
             float poseListHeight = list.GetHeight();
             return EditorGUIUtility.singleLineHeight + 8f + Mathf.Max(EditorGUIUtility.singleLineHeight * 5f, EditorGUIUtility.singleLineHeight) + poseListHeight + 60f;
         }
@@ -127,15 +135,15 @@ namespace com.hhotatea.avatar_pose_library.editor
         // カテゴリエレメントの描画処理
         private void DrawCategoryElement(Rect rect, int index)
         {
-            var category = poseLibrary.data.categories[index];
+            var category = data.categories[index];
             float y = rect.y + spacing;
             float thumbnailSize = lineHeight * 5f;
             float nameWidth = rect.width - spacing;
 
             // カテゴリ名とサムネイル
-            category.thumbnail = (Texture2D)EditorGUI.ObjectField(
-                new Rect(rect.x + spacing, y, thumbnailSize, thumbnailSize), 
-                categoryIconContext, category.thumbnail, typeof(Texture2D), false);
+            var thumbRect = new Rect(rect.x + spacing, y, thumbnailSize, thumbnailSize);
+            category.thumbnail = (Texture2D)EditorGUI.ObjectField( thumbRect, categoryIconContext, category.thumbnail, typeof(Texture2D), false);
+            GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Context.categoryThumbnailTooltip), GUIStyle.none);
             EditorGUI.LabelField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight, 100, lineHeight), categoryTextContext);
             category.name = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight*3f, 
                 Mathf.Min(textboxWidth, nameWidth - thumbnailSize - 15f), lineHeight), category.name);
@@ -155,7 +163,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             y += lineHeight + spacing;
 
-            var list = EnsurePoseList(poseLibrary.data.categories[index]);
+            var list = EnsurePoseList(data.categories[index]);
             list.DoList(new Rect(rect.x, y, rect.width, list.GetHeight()));
             y += list.GetHeight() + spacing;
 
@@ -245,11 +253,13 @@ namespace com.hhotatea.avatar_pose_library.editor
                         thumbRect.yMax - 1f
                     );
                     GUI.DrawTexture(thumbRect, thumb, ScaleMode.StretchToFill, true);
+                    GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Context.posePreviewTooltip), GUIStyle.none);
                 }
             }
             else
             {
                 pose.thumbnail = (Texture2D)EditorGUI.ObjectField(thumbRect, pose.thumbnail, typeof(Texture2D), false);
+                GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Context.poseThumbnailTooltip), GUIStyle.none);
             }
             pose.autoThumbnail = EditorGUI.ToggleLeft(new Rect(rect.x, y + thumbnailSize + spacing, leftWidth, lineHeight), thumbnailAutoContext, pose.autoThumbnail);
             

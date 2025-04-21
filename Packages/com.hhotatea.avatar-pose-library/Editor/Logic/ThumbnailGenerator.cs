@@ -107,9 +107,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var aPos = avatarGO.transform.position;
                 var hPos = headTransform.position;
                 Vector3 center = (aPos + hPos) * 0.5f;
-                Vector3 lookPos = center + distance * headTransform.forward + DynamicVariables.Settings.cameraOffset * AvatarHeight;
-                Vector3 normalPos = center + new Vector3(0, 0, distance) + DynamicVariables.Settings.cameraOffset * AvatarHeight;
-                cameraGO.transform.position = Vector3.Lerp(normalPos,lookPos,DynamicVariables.Settings.lookAtFace);
+                cameraGO.transform.position = center 
+                                              + distance * Vector3.Lerp(Vector3.forward, headTransform.forward, DynamicVariables.Settings.lookAtFace).normalized
+                                              + DynamicVariables.Settings.cameraOffset * AvatarHeight;
                 cameraGO.transform.LookAt((center + hPos) * 0.5f);
             }
             
