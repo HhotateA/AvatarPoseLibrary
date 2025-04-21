@@ -31,7 +31,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 folder.transform.SetParent(result.transform);
                 var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
                 mFolder.MenuSource = SubmenuSource.Children;
-                mSettings.Control.icon = category.thumbnail;
+                mFolder.Control.icon = category.thumbnail;
                 mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
 
                 // 各ポーズステート

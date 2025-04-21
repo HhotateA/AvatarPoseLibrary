@@ -19,11 +19,11 @@ namespace com.hhotatea.avatar_pose_library.editor
                 .BeforePlugin("nadena.dev.modular-avatar")
                 .Run("AvatarPose: Data Converting...", ctx =>
                 {
-                    var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrarySettings>();
+                    var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
 
                     // 全てのコンポーネントを統合する。
                     var data = AvatarPoseData.Combine(
-                        settings.Select(e => e.Data).ToArray());
+                        settings.Select(e => e.data).ToArray());
 
                     foreach (var d in data)
                     {

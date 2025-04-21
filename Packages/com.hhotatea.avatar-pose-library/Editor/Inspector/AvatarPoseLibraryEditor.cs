@@ -1,5 +1,3 @@
-// Unity のエディター拡張に関する名前空間をインポート
-
 using System;
 using UnityEditor;
 using UnityEditorInternal;
@@ -17,12 +15,12 @@ using Object = UnityEngine.Object;
 namespace com.hhotatea.avatar_pose_library.editor
 {
     // AvatarPoseLibrarySettings に対するカスタムインスペクター
-    [CustomEditor(typeof(AvatarPoseLibrarySettings))]
+    [CustomEditor(typeof(AvatarPoseLibrary))]
     public class AvatarPoseLibraryEditor : UnityEditor.Editor
     {
         // 対象の設定データ
-        private AvatarPoseLibrarySettings poseLibrary;
-        private AvatarPoseData data => poseLibrary.Data;
+        private AvatarPoseLibrary poseLibrary;
+        private AvatarPoseData data => poseLibrary.data;
 
         // カテゴリごとの ReorderableList
         private ReorderableList categoryReorderableList;
@@ -66,9 +64,25 @@ namespace com.hhotatea.avatar_pose_library.editor
         // インスペクターが有効化されたときの初期化処理
         private void OnEnable()
         {
-            poseLibrary = (AvatarPoseLibrarySettings)target;
-            
+            poseLibrary = (AvatarPoseLibrary)target;
             InitializeData();
+            SetupCategoryList();
+        }
+        
+        // コンポーネントの初期化処理を行う。
+        void InitializeData()
+        {
+            if (poseLibrary.isInitialized) return;
+            
+            // 初期化処理
+            poseLibrary.data = new AvatarPoseData
+            {
+                name = DynamicVariables.Settings.Menu.main.title,
+                thumbnail = DynamicVariables.Settings.Menu.main.thumbnail,
+                categories = new List<PoseCategory>(),
+                guid = ""
+            };
+            poseLibrary.isInitialized = true;
             SetupCategoryList();
         }
 
@@ -97,18 +111,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             EditorGUILayout.Space(15f);
             categoryReorderableList.DoLayoutList();
-        }
-
-        void InitializeData()
-        {
-            if (poseLibrary.Data != null) return;
-            
-            // 初期化処理
-            var avatarPoseData = new AvatarPoseData();
-            avatarPoseData.name = DynamicVariables.Settings.Menu.main.title;
-            avatarPoseData.thumbnail = DynamicVariables.Settings.Menu.main.thumbnail;
-            poseLibrary.Data = avatarPoseData;
-            SetupCategoryList();
         }
 
         // カテゴリ一覧の ReorderableList 設定
