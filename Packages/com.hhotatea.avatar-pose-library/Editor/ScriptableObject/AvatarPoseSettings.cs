@@ -6,21 +6,25 @@ namespace com.hhotatea.avatar_pose_library.component
 // [CreateAssetMenu(menuName = "HhotateA/AvatarPoseSettings")]
     public class AvatarPoseSettings : ScriptableObject
     {
-        public MenuItem mainMenu;
-        public MenuItem categoryMenu;
-        public MenuItem poseMenu;
-        public MenuItem trackingMenu;
-    
-        public MenuItem resetMenu;
-        public MenuItem settingMenu;
-        public MenuItem heightMenu;
-        public MenuItem headMenu;
-        public MenuItem armMenu;
-        public MenuItem footMenu;
-        public MenuItem fingerMenu;
-        public MenuItem speedMenu;
-        public MenuItem locomotionMenu;
-        public MenuItem mirrorMenu;
+        [SerializeField] MenuContext menuBuff;
+        public MenuContext Menu
+        {
+            get
+            {
+                if (menuBuff != null) return menuBuff;
+                throw new NullReferenceException("MenuContextファイルが見つかりません。再インポートしてください。");
+            }
+        }
+        
+        [SerializeField] InspectorContext contextBuff;
+        public InspectorContext Context
+        {
+            get
+            {
+                if (contextBuff != null) return contextBuff;
+                throw new NullReferenceException("InspectorContextファイルが見つかりません。再インポートしてください。");
+            }
+        }
     
         /// <summary>
         /// サムネイル撮影用のレイヤー
@@ -41,12 +45,13 @@ namespace com.hhotatea.avatar_pose_library.component
         public float motionNoiseScale = 0.6f;
 
         public float minMaxHeight = 1f;
-    
-        [Serializable]
-        public class MenuItem
-        {
-            public string title;
-            public Texture2D thumbnail;
-        }
+
+        /// <summary>
+        /// サムネ撮影の設定
+        /// </summary>
+        public float lookAtFace = 0f;
+        public float fieldOfView = 30f;
+        public float cameraDistance = 1f;
+        public Vector3 cameraOffset = Vector3.zero;
     }
 }

@@ -59,13 +59,13 @@ namespace com.hhotatea.avatar_pose_library.logic
             camera.backgroundColor = Color.clear;
             camera.cullingMask = 1 << DynamicVariables.Settings.thumbnailLayer;
             camera.orthographic = false;
-            camera.fieldOfView = 30f;
+            camera.fieldOfView = DynamicVariables.Settings.fieldOfView;
 
             // カメラ位置調整
             Vector3 center = avatarGO.transform.position + new Vector3(0, AvatarHeight / 2f, 0);
             distance = AvatarHeight / (2f * Mathf.Tan(camera.fieldOfView * 0.5f * Mathf.Deg2Rad));
-            distance = Math.Max(distance,AvatarHeight*0.6f);
-            camera.transform.position = center + new Vector3(0, -AvatarHeight * 0.1f, distance);
+            distance = Math.Max(distance * DynamicVariables.Settings.cameraDistance, AvatarHeight * 0.6f);
+            camera.transform.position = center + new Vector3(0f, 0f, distance) + DynamicVariables.Settings.cameraOffset * AvatarHeight;
             camera.transform.LookAt(center);
 
             // カリング設定
@@ -107,9 +107,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var aPos = avatarGO.transform.position;
                 var hPos = headTransform.position;
                 Vector3 center = (aPos + hPos) * 0.5f;
-                //cameraGO.transform.position = center + distance * headTransform.forward;
-                cameraGO.transform.position = center + new Vector3(0, 0, distance);
-                cameraGO.transform.LookAt(hPos);
+                Vector3 lookPos = center + distance * headTransform.forward + DynamicVariables.Settings.cameraOffset * AvatarHeight;
+                Vector3 normalPos = center + new Vector3(0, 0, distance) + DynamicVariables.Settings.cameraOffset * AvatarHeight;
+                cameraGO.transform.position = Vector3.Lerp(normalPos,lookPos,DynamicVariables.Settings.lookAtFace);
+                cameraGO.transform.LookAt((center + hPos) * 0.5f);
             }
             
             camera.Render();
