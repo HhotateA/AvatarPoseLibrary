@@ -5,7 +5,9 @@
   "description": "VRChat\u306e\u30a8\u30e2\u30fc\u30c8\u30a2\u30cb\u30e1\u30fc\u30b7\u30e7\u30f3\u3092\u81ea\u52d5\u8a2d\u5b9a\u3059\u308b\u30c4\u30fc\u30eb\u7fa4\u3002",
   "gitDependencies": {},
   "vpmDependencies": {
-    "com.vrchat.avatars": "3.8.0"
+    "com.vrchat.avatars": "3.8.0",
+    "nadena.dev.ndmf": "1.7.0",
+    "nadena.dev.modular-avatar": "1.11.0"
   },
   "author": {
     "name": "HhotateA",

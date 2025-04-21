@@ -12,51 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0590e1b030db8b84195bb25ea9128bd2, type: 3}
   m_Name: Settings
   m_EditorClassIdentifier: 
-  mainMenu:
-    title: "\u30A2\u30D0\u30BF\u30FC\u30DD\u30FC\u30BA\u30E9\u30A4\u30D6\u30E9\u30EA\u30FC"
-    thumbnail: {fileID: 2800000, guid: 8967b7286c37ddc468abe07cbd5d1681, type: 3}
-  categoryMenu:
-    title: "\u65B0\u3057\u3044\u30AB\u30C6\u30B4\u30EA\u30FC"
-    thumbnail: {fileID: 2800000, guid: 8967b7286c37ddc468abe07cbd5d1681, type: 3}
-  poseMenu:
-    title: "\u65B0\u3057\u3044\u30DD\u30FC\u30BA"
-    thumbnail: {fileID: 2800000, guid: 8967b7286c37ddc468abe07cbd5d1681, type: 3}
-  trackingMenu:
-    title: "\u30C8\u30E9\u30C3\u30AD\u30F3\u30B0"
-    thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
-  resetMenu:
-    title: "\u30DD\u30FC\u30BA\u3092\u30EA\u30BB\u30C3\u30C8"
-    thumbnail: {fileID: 2800000, guid: 59c1fcfb45762f449a016814ce5532f4, type: 3}
-  settingMenu:
-    title: "\u8A2D\u5B9A"
-    thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
-  heightMenu:
-    title: "\u9AD8\u3055"
-    thumbnail: {fileID: 2800000, guid: 2c83accf528124444b9519d50cf55a91, type: 3}
-  headMenu:
-    title: "\u982D\u56FA\u5B9A"
-    thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
-  armMenu:
-    title: "\u8155\u56FA\u5B9A"
-    thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
-  footMenu:
-    title: "\u8DB3\u56FA\u5B9A"
-    thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
-  fingerMenu:
-    title: "\u6307\u56FA\u5B9A"
-    thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
-  speedMenu:
-    title: "\u901F\u5EA6"
-    thumbnail: {fileID: 2800000, guid: 614dbb744a5622a4c8dd820707ee4eb0, type: 3}
-  locomotionMenu:
-    title: "\u79FB\u52D5\u56FA\u5B9A"
-    thumbnail: {fileID: 2800000, guid: dd6bb7f632fa6ee43ab5b5495099fc3b, type: 3}
-  mirrorMenu:
-    title: "\u5DE6\u53F3\u53CD\u8EE2"
-    thumbnail: {fileID: 2800000, guid: 93f091fcd0da866409a5af967301e6c8, type: 3}
+  menuBuff: {fileID: 11400000, guid: bb5aa47944eb7bc4d96b742e26164cfb, type: 2}
+  contextBuff: {fileID: 11400000, guid: 9115fecda4a9e894ea0d03a34da878e4, type: 2}
   thumbnailLayer: 4
   texSize: 128
   motionLong: 15
   motionDuration: 0.5
   motionNoiseScale: 0.6
   minMaxHeight: 1
+  lookAtFace: 0.8
+  fieldOfView: 30
+  cameraDistance: 0.9
+  cameraOffset: {x: 0, y: 0.1, z: 0}

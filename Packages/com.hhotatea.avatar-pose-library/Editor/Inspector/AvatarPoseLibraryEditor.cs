@@ -1,4 +1,6 @@
 // Unity のエディター拡張に関する名前空間をインポート
+
+using System;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -10,6 +12,7 @@ using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.model;
 using com.hhotatea.avatar_pose_library.logic;
 using VRC.SDK3.Avatars.Components;
+using Object = UnityEngine.Object;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
@@ -21,17 +24,44 @@ namespace com.hhotatea.avatar_pose_library.editor
         private AvatarPoseLibrarySettings poseLibrary;
 
         // カテゴリごとの ReorderableList
-        private List<ReorderableList> categoryLists = new();
         private ReorderableList categoryReorderableList;
+        private Dictionary<PoseCategory,ReorderableList> poseReorderableLists = new Dictionary<PoseCategory, ReorderableList>();
 
         // Pose に対応するサムネイルなどのキャッシュ
         private readonly Dictionary<PoseEntry, Texture2D> generatedThumbnails = new();
         private readonly Dictionary<PoseEntry, AnimationClip> lastClips = new();
         private readonly Dictionary<PoseEntry, bool> poseFoldouts = new();
-
-        // アニメーションの種類の列挙体
-        private enum AnimationType { FullLock, Movable, FaceOnly, FingerOnly, LockFeet, Custom }
-
+        
+        // 固定値
+        private const float textboxWidth = 350f;
+        private float lineHeight = EditorGUIUtility.singleLineHeight;
+        private float spacing = 4f;
+        
+        GUIContent libraryLabelContext = new GUIContent(DynamicVariables.Settings.Context.libraryMenuLabel, DynamicVariables.Settings.Context.libraryMenuTooltip);
+        GUIContent categoryListContext = new GUIContent(DynamicVariables.Settings.Context.categoriesLabel, DynamicVariables.Settings.Context.categoriesTooltip);
+        GUIContent categoryIconContext = new GUIContent(DynamicVariables.Settings.Context.categoryIconLabel, DynamicVariables.Settings.Context.categoryIconTooltip);
+        GUIContent categoryTextContext = new GUIContent(DynamicVariables.Settings.Context.categoryTextLabel, DynamicVariables.Settings.Context.categoryTextTooltip);
+        GUIContent openAllContext = new GUIContent(DynamicVariables.Settings.Context.openAllLabel, DynamicVariables.Settings.Context.openAllTooltip);
+        GUIContent closeAllContext = new GUIContent(DynamicVariables.Settings.Context.closeAllLabel, DynamicVariables.Settings.Context.closeAllTooltip);
+        GUIContent poseListContext = new GUIContent(DynamicVariables.Settings.Context.poseListLabel, DynamicVariables.Settings.Context.poseListTooltip);
+        GUIContent openButtonContext = new GUIContent(DynamicVariables.Settings.Context.openLabel, DynamicVariables.Settings.Context.openTooltip);
+        GUIContent closeButtonContext = new GUIContent(DynamicVariables.Settings.Context.closeLabel, DynamicVariables.Settings.Context.closeTooltip);
+        GUIContent thumbnailAutoContext = new GUIContent(DynamicVariables.Settings.Context.thumbnailAutoLabel, DynamicVariables.Settings.Context.thumbnailAutoTooltip);
+        GUIContent animationClipContext = new GUIContent(DynamicVariables.Settings.Context.animationClipLabel, DynamicVariables.Settings.Context.animationClipTooltip);
+        GUIContent trackingSettingsContext = new GUIContent(DynamicVariables.Settings.Context.trackingSettingsLabel, DynamicVariables.Settings.Context.trackingSettingsTooltip);
+        GUIContent isLoopContext = new GUIContent(DynamicVariables.Settings.Context.isLoopLabel, DynamicVariables.Settings.Context.isLoopTooltip);
+        GUIContent motionSpeedContext = new GUIContent(DynamicVariables.Settings.Context.motionSpeedLabel, DynamicVariables.Settings.Context.motionSpeedTooltip);
+        GUIContent dropboxContext = new GUIContent(DynamicVariables.Settings.Context.dropboxLabel, DynamicVariables.Settings.Context.dropboxTooltip);
+        
+        string[] trackingOptions = new string[]
+        {
+            DynamicVariables.Settings.Context.headTrackingOption, 
+            DynamicVariables.Settings.Context.armTrackingOption,
+            DynamicVariables.Settings.Context.fingerTrackingOption,
+            DynamicVariables.Settings.Context.footTrackingOption,
+            DynamicVariables.Settings.Context.locomotionTrackingOption,
+        };
+        
         // インスペクターが有効化されたときの初期化処理
         private void OnEnable()
         {
@@ -47,29 +77,29 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void OnResetAction(AvatarPoseData data)
         {
-            data.name = DynamicVariables.Settings.mainMenu.title;
-            data.thumbnail = DynamicVariables.Settings.mainMenu.thumbnail;
+            data.name = DynamicVariables.Settings.Menu.main.title;
+            data.thumbnail = DynamicVariables.Settings.Menu.main.thumbnail;
         }
 
         // インスペクターGUIの描画処理
         public override void OnInspectorGUI()
         {
-            float lineHeight = EditorGUIUtility.singleLineHeight;
-            float texSize = lineHeight * 5f;
+            float texSize = lineHeight * 6f;
             EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
             using (new GUILayout.HorizontalScope())
             {
-                GUILayout.Label(DynamicVariables.Settings.categoryMenu.thumbnail, GUILayout.Width(texSize), GUILayout.Height(texSize));
+                GUILayout.Label(DynamicVariables.Settings.Menu.category.thumbnail, GUILayout.Width(texSize), GUILayout.Height(texSize));
                 // EditorGUILayout.Space();
-                using (new GUILayout.VerticalScope(GUILayout.Width(300)))
+                using (new GUILayout.VerticalScope())
                 {
                     EditorGUILayout.Space();
-                    EditorGUILayout.LabelField("Library Name", EditorStyles.label);
-                    poseLibrary.data.name = EditorGUILayout.TextField(poseLibrary.data.name);
+                    EditorGUILayout.LabelField(libraryLabelContext, EditorStyles.label);
+                    EditorGUILayout.Space();
+                    poseLibrary.data.name = EditorGUILayout.TextField(poseLibrary.data.name,GUILayout.MaxWidth(textboxWidth));
+                    EditorGUILayout.Space();
                 }
-                // EditorGUILayout.Space();
             }
-            EditorGUILayout.Space();
+            EditorGUILayout.Space(15f);
             categoryReorderableList.DoLayoutList();
         }
 
@@ -78,81 +108,78 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             categoryReorderableList = new ReorderableList(poseLibrary.data.categories, typeof(PoseCategory), true, true, true, true)
             {
-                drawHeaderCallback = rect => EditorGUI.LabelField(rect, "Pose Categories"),
-                elementHeightCallback = index => GetCategoryElementHeight(index),
-                drawElementCallback = (rect, index, isActive, isFocused) => DrawCategoryElement(rect, index),
-                onReorderCallback = list => ResetCategoryLists(),
-                onAddCallback = list => poseLibrary.data.categories.Add(CreateCategory()),
-                onRemoveCallback = list => poseLibrary.data.categories.RemoveAt(list.index)
+                drawHeaderCallback = r => EditorGUI.LabelField(r, categoryListContext),
+                elementHeightCallback = i => GetCategoryElementHeight(i),
+                drawElementCallback = (r, i, isActive, isFocused) => DrawCategoryElement(r, i),
+                onAddCallback = l => poseLibrary.data.categories.Add(CreateCategory()),
+                onRemoveCallback = l => poseLibrary.data.categories.RemoveAt(l.index)
             };
         }
 
         // カテゴリエレメントの高さを取得
         private float GetCategoryElementHeight(int index)
         {
-            EnsurePoseList(index);
-            float poseListHeight = categoryLists[index].GetHeight();
+            var list = EnsurePoseList(poseLibrary.data.categories[index]);
+            float poseListHeight = list.GetHeight();
             return EditorGUIUtility.singleLineHeight + 8f + Mathf.Max(EditorGUIUtility.singleLineHeight * 5f, EditorGUIUtility.singleLineHeight) + poseListHeight + 60f;
-        }
-
-        // ReorderableListのリストを再構築
-        private void ResetCategoryLists()
-        {
-            categoryLists = Enumerable.Repeat<ReorderableList>(null, poseLibrary.data.categories.Count).ToList();
         }
 
         // カテゴリエレメントの描画処理
         private void DrawCategoryElement(Rect rect, int index)
         {
             var category = poseLibrary.data.categories[index];
-            float spacing = 4f, lineHeight = EditorGUIUtility.singleLineHeight, y = rect.y + spacing;
-            float thumbnailSize = lineHeight * 4f;
+            float y = rect.y + spacing;
+            float thumbnailSize = lineHeight * 5f;
             float nameWidth = rect.width - spacing;
 
             // カテゴリ名とサムネイル
-            category.thumbnail = (Texture2D)EditorGUI.ObjectField(new Rect(rect.x + spacing, y, thumbnailSize, thumbnailSize), category.thumbnail, typeof(Texture2D), false);
-            EditorGUI.LabelField(new Rect(rect.x + spacing * 2f + thumbnailSize, y , 100, lineHeight), "Category Name");
-            category.name = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight, 300f, lineHeight), category.name);
+            category.thumbnail = (Texture2D)EditorGUI.ObjectField(
+                new Rect(rect.x + spacing, y, thumbnailSize, thumbnailSize), 
+                categoryIconContext, category.thumbnail, typeof(Texture2D), false);
+            EditorGUI.LabelField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight, 100, lineHeight), categoryTextContext);
+            category.name = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight*3f, 
+                Mathf.Min(textboxWidth, nameWidth - thumbnailSize - 15f), lineHeight), category.name);
             y += Mathf.Max(thumbnailSize, lineHeight) + spacing;
 
             // 一括開閉ボタン
             Rect btnRect = new Rect(rect.x, y, 200, lineHeight);
-            if (GUI.Button(new Rect( btnRect.x + rect.width - 200f, btnRect.y, 90f, lineHeight), "すべて展開"))
+            var buttonWidth = Mathf.Max(GUI.skin.button.CalcSize(openAllContext).x,GUI.skin.button.CalcSize(closeAllContext).x) + 5f;
+            if (GUI.Button(new Rect( btnRect.x + rect.width - buttonWidth*2f - 10f, btnRect.y, buttonWidth, lineHeight), openAllContext))
             {
                 foreach (var pose in category.poses) poseFoldouts[pose] = true;
             }
-            if (GUI.Button(new Rect( btnRect.x + rect.width - 100f, btnRect.y, 90f, lineHeight), "すべて折りたたむ"))
+            if (GUI.Button(new Rect( btnRect.x + rect.width - buttonWidth - 5f, btnRect.y, buttonWidth, lineHeight), closeAllContext))
             {
                 foreach (var pose in category.poses) poseFoldouts[pose] = false;
             }
 
             y += lineHeight + spacing;
 
-            EnsurePoseList(index);
-            categoryLists[index].DoList(new Rect(rect.x, y, rect.width, categoryLists[index].GetHeight()));
-            y += categoryLists[index].GetHeight() + spacing;
+            var list = EnsurePoseList(poseLibrary.data.categories[index]);
+            list.DoList(new Rect(rect.x, y, rect.width, list.GetHeight()));
+            y += list.GetHeight() + spacing;
 
             // ドロップエリアの描画
             DrawPoseDropArea(new Rect(rect.x, y, rect.width, 40f), category);
         }
 
         // Pose リストの初期化
-        private void EnsurePoseList(int index)
+        private ReorderableList EnsurePoseList(PoseCategory category)
         {
-            while (categoryLists.Count <= index) categoryLists.Add(null);
-            if (categoryLists[index] != null) return;
+            poseReorderableLists.TryGetValue(category,out var list);
+            if (list != null) return poseReorderableLists[category];
 
-            var category = poseLibrary.data.categories[index];
-            var list = new ReorderableList(category.poses, typeof(PoseEntry), true, true, true, true)
+            list = new ReorderableList(category.poses, typeof(PoseEntry), true, true, true, true)
             {
-                drawHeaderCallback = rect => EditorGUI.LabelField(rect, "Pose List"),
+                drawHeaderCallback = rect => EditorGUI.LabelField(rect, poseListContext),
                 elementHeightCallback = i => GetPoseElementHeight(category.poses[i]),
                 drawElementCallback = (rect, i, isActive, isFocused) => DrawPoseElement(rect, i, category),
-                onAddCallback = list => category.poses.Add(CreatePose(null)),
-                onRemoveCallback = list => category.poses.RemoveAt(list.index)
+                onAddCallback = l => category.poses.Add(CreatePose(null)),
+                onRemoveCallback = l => category.poses.RemoveAt(l.index)
             };
 
-            categoryLists[index] = list;
+            poseReorderableLists[category] = list;
+            return list;
         }
 
         // Pose 要素の高さ取得
@@ -161,27 +188,30 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (!poseFoldouts.TryGetValue(pose, out var expanded) || !expanded)
                 return EditorGUIUtility.singleLineHeight * 1.5f;
 
-            return EditorGUIUtility.singleLineHeight * 8f;
+            return EditorGUIUtility.singleLineHeight * 7f;
         }
 
         // Pose 要素の描画処理
         private void DrawPoseElement(Rect rect, int i, PoseCategory category)
         {
             var pose = category.poses[i];
-            float lineHeight = EditorGUIUtility.singleLineHeight, spacing = 4f, y = rect.y + 2f;
+            float y = rect.y + 2f;
             
-            GUI.Label(new Rect(rect.x + 14f, y, rect.width - 34f, lineHeight),pose.name);
+            // Labelの表示（Open時にはInputFieldにする）
             poseFoldouts.TryAdd(pose, false);
+            var buttonWidth = Mathf.Max(GUI.skin.button.CalcSize(closeButtonContext).x,GUI.skin.button.CalcSize(openButtonContext).x) + 2f;
             if (poseFoldouts[pose])
             {
-                if (GUI.Button(new Rect(rect.x + rect.width - 40f, y, 40f, 20f), "Close"))
+                pose.name = GUI.TextField(new Rect(rect.x + 10f, y, Mathf.Min(textboxWidth,rect.width - 60f), lineHeight),pose.name);
+                if (GUI.Button(new Rect(rect.x + rect.width - buttonWidth, y, buttonWidth, 20f), closeButtonContext))
                 {
                     poseFoldouts[pose] = false;
                 }
             }
             else
             {
-                if (GUI.Button(new Rect(rect.x + rect.width - 40f, y, 40f, 20f), "Open"))
+                GUI.Label(new Rect(rect.x + 10f, y, rect.width - 60f, lineHeight),pose.name);
+                if (GUI.Button(new Rect(rect.x + rect.width - buttonWidth, y, buttonWidth, 20f), openButtonContext))
                 {
                     poseFoldouts[pose] = true;
                 }
@@ -191,11 +221,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             y += lineHeight + spacing + 4f;
 
             float thumbnailSize = lineHeight * 4f;
-            float leftWidth = thumbnailSize + spacing, rightWidth = rect.width - leftWidth - 20f, rightX = rect.x + leftWidth;
-
-            // 自動サムネイル
-            pose.autoThumbnail = EditorGUI.ToggleLeft(new Rect(rect.x, y, leftWidth, lineHeight), "Auto", pose.autoThumbnail);
-            y += lineHeight + spacing;
+            float leftWidth = thumbnailSize + spacing;
+            float rightWidth = rect.width - leftWidth - spacing * 3f;;
+            float rightX = rect.x + leftWidth + spacing * 2f;
 
             // サムネイル表示・編集
             var thumbRect = new Rect(rect.x, y, thumbnailSize, thumbnailSize);
@@ -206,20 +234,35 @@ namespace com.hhotatea.avatar_pose_library.editor
                     lastClips[pose] = pose.animationClip;
                     generatedThumbnails[pose] = UpdateThumbnail(poseLibrary.gameObject, pose.animationClip);
                 }
+
                 if (generatedThumbnails.TryGetValue(pose, out var thumb) && thumb != null)
-                    GUI.DrawTexture(thumbRect, thumb, ScaleMode.ScaleToFit);
+                {
+                    GUI.DrawTexture(thumbRect, DynamicVariables.Settings.Context.thumbnailBg, ScaleMode.StretchToFill, false);
+                    thumbRect = Rect.MinMaxRect(
+                        thumbRect.xMin + 1f,
+                        thumbRect.yMin + 1f,
+                        thumbRect.xMax - 1f,
+                        thumbRect.yMax - 1f
+                    );
+                    GUI.DrawTexture(thumbRect, thumb, ScaleMode.StretchToFill, true);
+                }
             }
             else
             {
                 pose.thumbnail = (Texture2D)EditorGUI.ObjectField(thumbRect, pose.thumbnail, typeof(Texture2D), false);
             }
+            pose.autoThumbnail = EditorGUI.ToggleLeft(new Rect(rect.x, y + thumbnailSize + spacing, leftWidth, lineHeight), thumbnailAutoContext, pose.autoThumbnail);
+            
+            // 縦線を引く
+            GUI.Box(new Rect(rightX - spacing, y, 1f, thumbnailSize + lineHeight),"");
 
             // 基本情報と設定の入力欄
             float infoY = rect.y + lineHeight + spacing + 4f;
-            float fieldWidth = (rightWidth - spacing) / 2;
+            float fieldWidth = (rightWidth - spacing);
 
-            pose.name = EditorGUI.TextField(new Rect(rightX, infoY, fieldWidth, lineHeight), pose.name);
-            var animationClip = (AnimationClip)EditorGUI.ObjectField(new Rect(rightX + fieldWidth + spacing, infoY, fieldWidth, lineHeight), pose.animationClip, typeof(AnimationClip), false);
+            var animationClip = (AnimationClip)EditorGUI.ObjectField(
+                new Rect(rightX, infoY, fieldWidth, lineHeight), 
+                animationClipContext, pose.animationClip, typeof(AnimationClip), false);
             if (pose.animationClip != animationClip)
             {
                 ChangePoseAnimation(pose, animationClip);
@@ -227,39 +270,18 @@ namespace com.hhotatea.avatar_pose_library.editor
             infoY += lineHeight + spacing;
 
             // トラッキングタイプ選択
-            var type = GetAnimationType(pose.tracking);
-            var selectedType = (AnimationType)EditorGUI.EnumPopup(new Rect(rightX, infoY, rightWidth, lineHeight), "Animation Type", type);
-            ApplyTrackingFromType(selectedType, pose.tracking);
-            infoY += lineHeight;
-
-            // カスタム設定トグル
-            DrawTrackingToggles(pose, rightX, rightWidth, infoY, selectedType != AnimationType.Custom);
-        }
-
-        // 各トラッキング項目のチェックボックス表示
-        private void DrawTrackingToggles(PoseEntry pose, float rightX, float rightWidth, float infoY, bool enable)
-        {
-            float spacing = 4f, lineHeight = EditorGUIUtility.singleLineHeight;
-            float columnWidth = (rightWidth - spacing) / 2, colX1 = rightX, colX2 = rightX + columnWidth + spacing;
-
-            using (new EditorGUI.DisabledScope(enable))
-            {
-                pose.tracking.head = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Head", pose.tracking.head);
-                pose.tracking.arm = EditorGUI.ToggleLeft(new Rect(colX2, infoY, columnWidth, lineHeight), "Arm", pose.tracking.arm);
-                infoY += lineHeight;
-
-                pose.tracking.foot = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Foot", pose.tracking.foot);
-                pose.tracking.finger = EditorGUI.ToggleLeft(new Rect(colX2, infoY, columnWidth, lineHeight), "Finger", pose.tracking.finger);
-                infoY += lineHeight;
-
-                pose.tracking.locomotion = EditorGUI.ToggleLeft(new Rect(colX1, infoY, columnWidth, lineHeight), "Locomotion", pose.tracking.locomotion);
-            }
+            var flags = GetAnimationType(pose.tracking);
+            flags = EditorGUI.MaskField(new Rect(rightX, infoY, rightWidth, lineHeight), trackingSettingsContext, flags, trackingOptions);
+            ApplyTrackingFromType(flags,pose.tracking);
             
-            pose.tracking.loop = EditorGUI.ToggleLeft(new Rect(colX2, infoY, columnWidth, lineHeight), "Loop", pose.tracking.loop);
-            infoY += lineHeight;
+            // 横線を引く
+            infoY += lineHeight + lineHeight/2f + spacing;
+            GUI.Box(new Rect(rightX, infoY, rightWidth, 1f),"");
+            infoY += lineHeight/2f;
             
-            EditorGUI.LabelField(new Rect(colX2, infoY, 90f, lineHeight), "Motion Speed:");
-            pose.tracking.motionSpeed = EditorGUI.FloatField(new Rect(colX2 + 90f + spacing, infoY, 50f, lineHeight), pose.tracking.motionSpeed);
+            pose.tracking.loop = EditorGUI.Toggle(new Rect(rightX, infoY, rightWidth, lineHeight), isLoopContext, pose.tracking.loop);
+            infoY += lineHeight;
+            pose.tracking.motionSpeed = EditorGUI.FloatField(new Rect(rightX, infoY, rightWidth, lineHeight), motionSpeedContext, pose.tracking.motionSpeed);
         }
 
         // Pose ドロップ用エリア
@@ -267,7 +289,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             float dropHeight = 30f;
             Rect dropArea = new Rect(rect.x, rect.y + 4f, rect.width, dropHeight);
-            GUI.Box(dropArea, "Drop AnimationClips here to add Poses", EditorStyles.helpBox);
+            GUI.Box(dropArea, dropboxContext, EditorStyles.helpBox);
 
             Event evt = Event.current;
             if ((evt.type == EventType.DragUpdated || evt.type == EventType.DragPerform) && dropArea.Contains(evt.mousePosition))
@@ -288,20 +310,23 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private PoseCategory CreateCategory()
         {
-            return new PoseCategory
+            var result = new PoseCategory
             {
-                name = DynamicVariables.Settings.categoryMenu.title,
-                thumbnail = DynamicVariables.Settings.categoryMenu.thumbnail,
+                name = DynamicVariables.Settings.Menu.category.title,
+                thumbnail = DynamicVariables.Settings.Menu.category.thumbnail,
                 poses = new List<PoseEntry>()
             };
+            Repaint();
+
+            return result;
         }
 
         private PoseEntry CreatePose(AnimationClip clip)
         {
             var result = new PoseEntry
             {
-                name = DynamicVariables.Settings.poseMenu.title,
-                thumbnail = DynamicVariables.Settings.poseMenu.thumbnail,
+                name = DynamicVariables.Settings.Menu.pose.title,
+                thumbnail = DynamicVariables.Settings.Menu.pose.thumbnail,
                 autoThumbnail = true,
                 tracking = new TrackingSetting()
             };
@@ -329,45 +354,25 @@ namespace com.hhotatea.avatar_pose_library.editor
         }
 
         // トラッキング設定をプリセットに基づき適用
-        private void ApplyTrackingFromType(AnimationType type, TrackingSetting tracking)
+        private void ApplyTrackingFromType(int flag, TrackingSetting tracking)
         {
-            tracking.customSetting = (type == AnimationType.Custom);
-            switch (type)
-            {
-                case AnimationType.FullLock:
-                    tracking.head = tracking.arm = tracking.foot = tracking.finger = tracking.locomotion = true;
-                    break;
-                case AnimationType.Movable:
-                    tracking.head = tracking.arm = tracking.foot = tracking.finger = true;
-                    tracking.locomotion = false;
-                    break;
-                case AnimationType.FaceOnly:
-                    tracking.head = false;
-                    tracking.arm = tracking.foot = tracking.finger = true;
-                    tracking.locomotion = false;
-                    break;
-                case AnimationType.FingerOnly:
-                    tracking.head = tracking.arm = tracking.foot = false;
-                    tracking.finger = true;
-                    tracking.locomotion = false;
-                    break;
-                case AnimationType.LockFeet:
-                    tracking.head = tracking.arm = tracking.finger = tracking.locomotion = false;
-                    tracking.foot = true;
-                    break;
-            }
+            tracking.head = Convert.ToBoolean(flag & (1 << 0));
+            tracking.arm = Convert.ToBoolean(flag & (1 << 1));
+            tracking.finger = Convert.ToBoolean(flag & (1 << 2));
+            tracking.foot = Convert.ToBoolean(flag & (1 << 3));
+            tracking.locomotion = Convert.ToBoolean(flag & (1 << 4));
         }
 
         // トラッキング設定からプリセットを判別
-        private AnimationType GetAnimationType(TrackingSetting t)
+        private int GetAnimationType(TrackingSetting t)
         {
-            if (t.customSetting) return AnimationType.Custom;
-            if (t.head && t.arm && t.foot && t.finger && t.locomotion) return AnimationType.FullLock;
-            if (t.head && t.arm && t.foot && t.finger && !t.locomotion) return AnimationType.Movable;
-            if (!t.head && t.arm && t.foot && t.finger && !t.locomotion) return AnimationType.FaceOnly;
-            if (!t.head && !t.arm && !t.foot && t.finger && !t.locomotion) return AnimationType.FingerOnly;
-            if (!t.head && !t.arm && t.foot && !t.finger && !t.locomotion) return AnimationType.LockFeet;
-            return AnimationType.Custom;
+            int flag = 0;
+            if (t.head) flag |= (1 << 0);
+            if (t.arm) flag |= (1 << 1);
+            if (t.finger) flag |= (1 << 2);
+            if (t.foot) flag |= (1 << 3);
+            if (t.locomotion) flag |= (1 << 4);
+            return flag;
         }
 
         // アニメーションのサムネイル生成

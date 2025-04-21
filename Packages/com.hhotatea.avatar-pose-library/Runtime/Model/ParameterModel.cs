@@ -8,7 +8,6 @@ namespace com.hhotatea.avatar_pose_library.model
     [Serializable]
     public class TrackingSetting
     {
-        public bool customSetting = false; 
         public bool head = true;
         public bool arm = true;
         public bool foot = true;
@@ -17,7 +16,6 @@ namespace com.hhotatea.avatar_pose_library.model
         public float motionSpeed = 1f;
         public bool loop = true;
     }
-    
     
     [Serializable]
     public class PoseEntry
