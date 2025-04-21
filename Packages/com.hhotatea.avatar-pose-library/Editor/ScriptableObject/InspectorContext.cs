@@ -7,35 +7,39 @@ namespace com.hhotatea.avatar_pose_library.component
     public class InspectorContext : ScriptableObject
     {
         public string libraryMenuLabel = "Library Name";
-        public string libraryMenuTooltip = "ここの文字列が同じメニューは統合されます。";
+        [Multiline] public string libraryMenuTooltip = "ここの文字列が同じメニューは統合されます。";
         public string categoriesLabel = "Pose Categories";
-        public string categoriesTooltip = "カテゴリーのリストです。";
+        [Multiline] public string categoriesTooltip = "カテゴリーのリストです。";
         public string categoryIconLabel = "";
-        public string categoryIconTooltip = "メニューに表示される、カテゴリーアイコン。";
+        [Multiline] public string categoryIconTooltip = "メニューに表示される、カテゴリーアイコン。";
         public string categoryTextLabel = "Category Name";
-        public string categoryTextTooltip = "メニューに表示される、カテゴリー名。";
+        [Multiline] public string categoryTextTooltip = "メニューに表示される、カテゴリー名。";
         public string openAllLabel = "Open All";
-        public string openAllTooltip = "Pose項目を全て開きます。";
+        [Multiline] public string openAllTooltip = "Pose項目を全て開きます。";
         public string closeAllLabel = "Close All";
-        public string closeAllTooltip = "Pose項目を全て閉じます。";
+        [Multiline] public string closeAllTooltip = "Pose項目を全て閉じます。";
         public string openLabel = "Open";
-        public string openTooltip = "Pose項目を展開して編集します。";
+        [Multiline] public string openTooltip = "Pose項目を展開して編集します。";
         public string closeLabel = "Close";
-        public string closeTooltip = "Pose項目を閉じます。";
+        [Multiline] public string closeTooltip = "Pose項目を閉じます。";
         public string poseListLabel = "Pose List";
-        public string poseListTooltip = "登録されたポーズリストです。";
+        [Multiline] public string poseListTooltip = "登録されたポーズリストです。";
         public string thumbnailAutoLabel = "Auto Thumbnail";
-        public string thumbnailAutoTooltip = "サムネイルの自動撮影機能を有効にします。";
+        [Multiline] public string thumbnailAutoTooltip = "サムネイルの自動撮影機能を有効にします。";
         public string animationClipLabel = "Animation Clip";
-        public string animationClipTooltip = "再生するアニメーションクリック。";
+        [Multiline] public string animationClipTooltip = "再生するアニメーションクリック。";
         public string trackingSettingsLabel = "Tracking Settings";
-        public string trackingSettingsTooltip = "トラッキングの設定。";
+        [Multiline] public string trackingSettingsTooltip = "トラッキングの設定。";
         public string isLoopLabel = "Is Loop";
-        public string isLoopTooltip = "アニメーションをループさせる。";
+        [Multiline] public string isLoopTooltip = "アニメーションをループさせる。";
         public string motionSpeedLabel = "Motion Speed";
-        public string motionSpeedTooltip = "アニメーションの再生速度。";
+        [Multiline] public string motionSpeedTooltip = "アニメーションの再生速度。";
         public string dropboxLabel = "Drop AnimationClips here to add Poses";
-        public string dropboxTooltip = "ここにアニメーションを一括ドロップすることでPoseを生成できます。";
+        [Multiline] public string dropboxTooltip = "ここにアニメーションを一括ドロップすることでPoseを生成できます。";
+        [Multiline] public string mainThumbnailTooltip = "アバターポーズライブラリー by.HhotateA_xR";
+        [Multiline] public string categoryThumbnailTooltip = "メニューに表示されるサムネイル画像のプレビューです。";
+        [Multiline] public string poseThumbnailTooltip = "メニューに表示されるサムネイル画像のプレビューです。";
+        [Multiline] public string posePreviewTooltip = "メニューに表示されるサムネイル画像のプレビューです。\nプレビューでは服などの表示がずれるケースが有りますが、アップロード時に再撮影されます。";
 
         public Texture2D thumbnailBg;
         

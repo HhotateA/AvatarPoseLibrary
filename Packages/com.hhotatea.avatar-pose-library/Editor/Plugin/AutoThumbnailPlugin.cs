@@ -24,7 +24,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     {
                         using (var capture = new ThumbnailGenerator(ctx.AvatarRootObject))
                         {
-                            foreach (var category in setting.data.categories)
+                            foreach (var category in setting.Data.categories)
                             {
                                 foreach (var pose in category.poses)
                                 {
