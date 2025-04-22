@@ -97,6 +97,7 @@ namespace com.hhotatea.avatar_pose_library.model
                 {
                     if(d.name != apd.name) continue;
                     apd.categories.AddRange(d.categories);
+                    apd.thumbnail = d.thumbnail;
                 }
                 apd.UpdateParameter();
                 result[i] = apd;

@@ -6,22 +6,22 @@ namespace com.hhotatea.avatar_pose_library.component
 // [CreateAssetMenu(menuName = "HhotateA/AvatarPoseSettings")]
     public class AvatarPoseSettings : ScriptableObject
     {
-        [SerializeField] MenuContext menuBuff;
+        [SerializeField] MenuContext menuContext;
         public MenuContext Menu
         {
             get
             {
-                if (menuBuff != null) return menuBuff;
+                if (menuContext != null) return menuContext;
                 throw new NullReferenceException("MenuContextファイルが見つかりません。再インポートしてください。");
             }
         }
         
-        [SerializeField] InspectorContext contextBuff;
-        public InspectorContext Context
+        [SerializeField] InspectorContext inspectorContext;
+        public InspectorContext Inspector
         {
             get
             {
-                if (contextBuff != null) return contextBuff;
+                if (inspectorContext != null) return inspectorContext;
                 throw new NullReferenceException("InspectorContextファイルが見つかりません。再インポートしてください。");
             }
         }

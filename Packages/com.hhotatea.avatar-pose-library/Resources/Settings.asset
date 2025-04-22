@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0590e1b030db8b84195bb25ea9128bd2, type: 3}
   m_Name: Settings
   m_EditorClassIdentifier: 
-  menuBuff: {fileID: 11400000, guid: bb5aa47944eb7bc4d96b742e26164cfb, type: 2}
-  contextBuff: {fileID: 11400000, guid: 9115fecda4a9e894ea0d03a34da878e4, type: 2}
+  menuContext: {fileID: 11400000, guid: bb5aa47944eb7bc4d96b742e26164cfb, type: 2}
+  inspectorContext: {fileID: 11400000, guid: 9115fecda4a9e894ea0d03a34da878e4, type: 2}
   thumbnailLayer: 4
   texSize: 128
   motionLong: 15

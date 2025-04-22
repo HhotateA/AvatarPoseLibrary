@@ -36,29 +36,29 @@ namespace com.hhotatea.avatar_pose_library.editor
         private float lineHeight = EditorGUIUtility.singleLineHeight;
         private float spacing = 4f;
         
-        GUIContent libraryLabelContext = new GUIContent(DynamicVariables.Settings.Context.libraryMenuLabel, DynamicVariables.Settings.Context.libraryMenuTooltip);
-        GUIContent categoryListContext = new GUIContent(DynamicVariables.Settings.Context.categoriesLabel, DynamicVariables.Settings.Context.categoriesTooltip);
-        GUIContent categoryIconContext = new GUIContent(DynamicVariables.Settings.Context.categoryIconLabel, DynamicVariables.Settings.Context.categoryIconTooltip);
-        GUIContent categoryTextContext = new GUIContent(DynamicVariables.Settings.Context.categoryTextLabel, DynamicVariables.Settings.Context.categoryTextTooltip);
-        GUIContent openAllContext = new GUIContent(DynamicVariables.Settings.Context.openAllLabel, DynamicVariables.Settings.Context.openAllTooltip);
-        GUIContent closeAllContext = new GUIContent(DynamicVariables.Settings.Context.closeAllLabel, DynamicVariables.Settings.Context.closeAllTooltip);
-        GUIContent poseListContext = new GUIContent(DynamicVariables.Settings.Context.poseListLabel, DynamicVariables.Settings.Context.poseListTooltip);
-        GUIContent openButtonContext = new GUIContent(DynamicVariables.Settings.Context.openLabel, DynamicVariables.Settings.Context.openTooltip);
-        GUIContent closeButtonContext = new GUIContent(DynamicVariables.Settings.Context.closeLabel, DynamicVariables.Settings.Context.closeTooltip);
-        GUIContent thumbnailAutoContext = new GUIContent(DynamicVariables.Settings.Context.thumbnailAutoLabel, DynamicVariables.Settings.Context.thumbnailAutoTooltip);
-        GUIContent animationClipContext = new GUIContent(DynamicVariables.Settings.Context.animationClipLabel, DynamicVariables.Settings.Context.animationClipTooltip);
-        GUIContent trackingSettingsContext = new GUIContent(DynamicVariables.Settings.Context.trackingSettingsLabel, DynamicVariables.Settings.Context.trackingSettingsTooltip);
-        GUIContent isLoopContext = new GUIContent(DynamicVariables.Settings.Context.isLoopLabel, DynamicVariables.Settings.Context.isLoopTooltip);
-        GUIContent motionSpeedContext = new GUIContent(DynamicVariables.Settings.Context.motionSpeedLabel, DynamicVariables.Settings.Context.motionSpeedTooltip);
-        GUIContent dropboxContext = new GUIContent(DynamicVariables.Settings.Context.dropboxLabel, DynamicVariables.Settings.Context.dropboxTooltip);
+        GUIContent libraryLabelContext = new GUIContent(DynamicVariables.Settings.Inspector.libraryMenuLabel, DynamicVariables.Settings.Inspector.libraryMenuTooltip);
+        GUIContent categoryListContext = new GUIContent(DynamicVariables.Settings.Inspector.categoriesLabel, DynamicVariables.Settings.Inspector.categoriesTooltip);
+        GUIContent categoryIconContext = new GUIContent(DynamicVariables.Settings.Inspector.categoryIconLabel, DynamicVariables.Settings.Inspector.categoryIconTooltip);
+        GUIContent categoryTextContext = new GUIContent(DynamicVariables.Settings.Inspector.categoryTextLabel, DynamicVariables.Settings.Inspector.categoryTextTooltip);
+        GUIContent openAllContext = new GUIContent(DynamicVariables.Settings.Inspector.openAllLabel, DynamicVariables.Settings.Inspector.openAllTooltip);
+        GUIContent closeAllContext = new GUIContent(DynamicVariables.Settings.Inspector.closeAllLabel, DynamicVariables.Settings.Inspector.closeAllTooltip);
+        GUIContent poseListContext = new GUIContent(DynamicVariables.Settings.Inspector.poseListLabel, DynamicVariables.Settings.Inspector.poseListTooltip);
+        GUIContent openButtonContext = new GUIContent(DynamicVariables.Settings.Inspector.openLabel, DynamicVariables.Settings.Inspector.openTooltip);
+        GUIContent closeButtonContext = new GUIContent(DynamicVariables.Settings.Inspector.closeLabel, DynamicVariables.Settings.Inspector.closeTooltip);
+        GUIContent thumbnailAutoContext = new GUIContent(DynamicVariables.Settings.Inspector.thumbnailAutoLabel, DynamicVariables.Settings.Inspector.thumbnailAutoTooltip);
+        GUIContent animationClipContext = new GUIContent(DynamicVariables.Settings.Inspector.animationClipLabel, DynamicVariables.Settings.Inspector.animationClipTooltip);
+        GUIContent trackingSettingsContext = new GUIContent(DynamicVariables.Settings.Inspector.trackingSettingsLabel, DynamicVariables.Settings.Inspector.trackingSettingsTooltip);
+        GUIContent isLoopContext = new GUIContent(DynamicVariables.Settings.Inspector.isLoopLabel, DynamicVariables.Settings.Inspector.isLoopTooltip);
+        GUIContent motionSpeedContext = new GUIContent(DynamicVariables.Settings.Inspector.motionSpeedLabel, DynamicVariables.Settings.Inspector.motionSpeedTooltip);
+        GUIContent dropboxContext = new GUIContent(DynamicVariables.Settings.Inspector.dropboxLabel, DynamicVariables.Settings.Inspector.dropboxTooltip);
         
         string[] trackingOptions = new string[]
         {
-            DynamicVariables.Settings.Context.headTrackingOption, 
-            DynamicVariables.Settings.Context.armTrackingOption,
-            DynamicVariables.Settings.Context.fingerTrackingOption,
-            DynamicVariables.Settings.Context.footTrackingOption,
-            DynamicVariables.Settings.Context.locomotionTrackingOption,
+            DynamicVariables.Settings.Inspector.headTrackingOption, 
+            DynamicVariables.Settings.Inspector.armTrackingOption,
+            DynamicVariables.Settings.Inspector.fingerTrackingOption,
+            DynamicVariables.Settings.Inspector.footTrackingOption,
+            DynamicVariables.Settings.Inspector.locomotionTrackingOption,
         };
         
         // インスペクターが有効化されたときの初期化処理
@@ -66,24 +66,36 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             poseLibrary = (AvatarPoseLibrary)target;
             InitializeData();
-            SetupCategoryList();
         }
         
         // コンポーネントの初期化処理を行う。
         void InitializeData()
         {
-            if (poseLibrary.isInitialized) return;
-            
-            // 初期化処理
-            poseLibrary.data = new AvatarPoseData
+            if (poseLibrary.isInitialized == false)
             {
-                name = DynamicVariables.Settings.Menu.main.title,
-                thumbnail = DynamicVariables.Settings.Menu.main.thumbnail,
-                categories = new List<PoseCategory>(),
-                guid = ""
-            };
-            poseLibrary.isInitialized = true;
-            SetupCategoryList();
+                // 初期化処理
+                poseLibrary.data = new AvatarPoseData
+                {
+                    name = DynamicVariables.Settings.Menu.main.title,
+                    thumbnail = DynamicVariables.Settings.Menu.main.thumbnail,
+                    categories = new List<PoseCategory>(),
+                    guid = ""
+                };
+                poseLibrary.isInitialized = true;
+                categoryReorderableList = null;
+            }
+
+            if (categoryReorderableList == null)
+            {
+                categoryReorderableList = new ReorderableList(data.categories, typeof(PoseCategory), true, true, true, true)
+                {
+                    drawHeaderCallback = r => EditorGUI.LabelField(r, categoryListContext),
+                    elementHeightCallback = i => GetCategoryElementHeight(i),
+                    drawElementCallback = (r, i, isActive, isFocused) => DrawCategoryElement(r, i),
+                    onAddCallback = l => data.categories.Add(CreateCategory()),
+                    onRemoveCallback = l => data.categories.RemoveAt(l.index)
+                };
+            }
         }
 
         // インスペクターGUIの描画処理
@@ -97,7 +109,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             using (new GUILayout.HorizontalScope())
             {
                 GUILayout.Label(
-                    new GUIContent(data.thumbnail,DynamicVariables.Settings.Context.mainThumbnailTooltip), 
+                    new GUIContent(data.thumbnail,DynamicVariables.Settings.Inspector.mainThumbnailTooltip), 
                     GUILayout.Width(texSize), GUILayout.Height(texSize));
                 // EditorGUILayout.Space();
                 using (new GUILayout.VerticalScope())
@@ -111,19 +123,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             EditorGUILayout.Space(15f);
             categoryReorderableList.DoLayoutList();
-        }
-
-        // カテゴリ一覧の ReorderableList 設定
-        private void SetupCategoryList()
-        {
-            categoryReorderableList = new ReorderableList(data.categories, typeof(PoseCategory), true, true, true, true)
-            {
-                drawHeaderCallback = r => EditorGUI.LabelField(r, categoryListContext),
-                elementHeightCallback = i => GetCategoryElementHeight(i),
-                drawElementCallback = (r, i, isActive, isFocused) => DrawCategoryElement(r, i),
-                onAddCallback = l => data.categories.Add(CreateCategory()),
-                onRemoveCallback = l => data.categories.RemoveAt(l.index)
-            };
         }
 
         // カテゴリエレメントの高さを取得
@@ -145,7 +144,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             // カテゴリ名とサムネイル
             var thumbRect = new Rect(rect.x + spacing, y, thumbnailSize, thumbnailSize);
             category.thumbnail = (Texture2D)EditorGUI.ObjectField( thumbRect, categoryIconContext, category.thumbnail, typeof(Texture2D), false);
-            GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Context.categoryThumbnailTooltip), GUIStyle.none);
+            GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Inspector.categoryThumbnailTooltip), GUIStyle.none);
             EditorGUI.LabelField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight, 100, lineHeight), categoryTextContext);
             category.name = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight*3f, 
                 Mathf.Min(textboxWidth, nameWidth - thumbnailSize - 15f), lineHeight), category.name);
@@ -247,7 +246,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 if (generatedThumbnails.TryGetValue(pose, out var thumb) && thumb != null)
                 {
-                    GUI.DrawTexture(thumbRect, DynamicVariables.Settings.Context.thumbnailBg, ScaleMode.StretchToFill, false);
+                    GUI.DrawTexture(thumbRect, DynamicVariables.Settings.Inspector.thumbnailBg, ScaleMode.StretchToFill, false);
                     thumbRect = Rect.MinMaxRect(
                         thumbRect.xMin + 1f,
                         thumbRect.yMin + 1f,
@@ -255,13 +254,13 @@ namespace com.hhotatea.avatar_pose_library.editor
                         thumbRect.yMax - 1f
                     );
                     GUI.DrawTexture(thumbRect, thumb, ScaleMode.StretchToFill, true);
-                    GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Context.posePreviewTooltip), GUIStyle.none);
+                    GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Inspector.posePreviewTooltip), GUIStyle.none);
                 }
             }
             else
             {
                 pose.thumbnail = (Texture2D)EditorGUI.ObjectField(thumbRect, pose.thumbnail, typeof(Texture2D), false);
-                GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Context.poseThumbnailTooltip), GUIStyle.none);
+                GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Inspector.poseThumbnailTooltip), GUIStyle.none);
             }
             pose.autoThumbnail = EditorGUI.ToggleLeft(new Rect(rect.x, y + thumbnailSize + spacing, leftWidth, lineHeight), thumbnailAutoContext, pose.autoThumbnail);
             
