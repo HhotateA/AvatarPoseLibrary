@@ -1,4 +1,3 @@
-using System;
 using com.hhotatea.avatar_pose_library.model;
 using UnityEngine;
 using VRC.SDKBase;
@@ -8,20 +7,17 @@ namespace com.hhotatea.avatar_pose_library.component
     /// <summary>
     /// アバターにアタッチすることでポーズカテゴリを設定可能にするコンポーネント
     /// </summary>
-    public class AvatarPoseLibrarySettings : MonoBehaviour, IEditorOnly
+    public class AvatarPoseLibrary : MonoBehaviour, IEditorOnly
     {
-        private AvatarPoseData data;
+        // データの本体。
+        public AvatarPoseData data;
 
-        public AvatarPoseData Data
-        {
-            get => data;
-            set => data = value;
-        }
+        // Editorで初期化処理を行いたいので、フラグを持っておく。
+        public bool isInitialized = true;
 
         private void Reset()
         {
-            // エディターでセットするので、Nullにしておく。
-            data = null;
+            isInitialized = false;
         }
     }
 }

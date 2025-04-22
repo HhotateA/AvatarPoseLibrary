@@ -19,12 +19,12 @@ namespace com.hhotatea.avatar_pose_library.editor
                 .AfterPlugin("nadena.dev.modular-avatar")
                 .Run("AvatarPose: Replace thumbnail...", ctx =>
                 {
-                    var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrarySettings>();
+                    var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
                     foreach (var setting in settings)
                     {
                         using (var capture = new ThumbnailGenerator(ctx.AvatarRootObject))
                         {
-                            foreach (var category in setting.Data.categories)
+                            foreach (var category in setting.data.categories)
                             {
                                 foreach (var pose in category.poses)
                                 {
