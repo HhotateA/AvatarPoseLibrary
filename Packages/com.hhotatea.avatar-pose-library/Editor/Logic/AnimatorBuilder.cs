@@ -11,7 +11,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 {
     public static class AnimatorBuilder
     {
-        
         public static AnimatorController BuildPoseAnimator(AvatarPoseData poseLibrary)
         {
             var result = new AnimatorController();
@@ -101,6 +100,32 @@ namespace com.hhotatea.avatar_pose_library.logic
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                     name = parameter,
                     value = 0,
+                });
+            }
+            foreach (var parameter in new String[]{
+                         ConstVariables.HeadParamPrefix,
+                         ConstVariables.ArmParamPrefix,
+                         ConstVariables.FootParamPrefix,
+                         ConstVariables.FingerParamPrefix,
+                         ConstVariables.BaseParamPrefix,
+                         ConstVariables.MirrorParamPrefix})
+            {
+                paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{parameter}_{poseLibrary.guid}",
+                    value = 0,
+                });
+            }
+            foreach (var parameter in new String[]{
+                         ConstVariables.SpeedParamPrefix,
+                         ConstVariables.HeightParamPrefix,})
+            {
+                paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{parameter}_{poseLibrary.guid}",
+                    value = 0.5f,
                 });
             }
             paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter

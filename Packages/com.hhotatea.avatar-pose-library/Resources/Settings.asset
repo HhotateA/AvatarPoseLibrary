@@ -22,5 +22,5 @@ MonoBehaviour:
   minMaxHeight: 1
   lookAtFace: 0.8
   fieldOfView: 30
-  cameraDistance: 0.9
+  cameraDistance: 0.8
   cameraOffset: {x: 0, y: 0.1, z: 0}

@@ -60,6 +60,14 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <param name="poseLibrary"></param>
         static void SettingsMenu(Transform parent, AvatarPoseData poseLibrary)
         {
+            // リセットメニュー
+            CreateToggleMenu(
+                parent,
+                DynamicVariables.Settings.Menu.reset.title,
+                DynamicVariables.Settings.Menu.reset.thumbnail,
+                $"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}"
+            );
+            
             // --- Radialメニューを追加（例: 身長・速度） ---
             CreateRadialMenu(
                 parent,
@@ -80,20 +88,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                 DynamicVariables.Settings.Menu.mirror.title,
                 DynamicVariables.Settings.Menu.mirror.thumbnail,
                 $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}"
-            );
-
-            CreateToggleMenu(
-                parent,
-                DynamicVariables.Settings.Menu.reset.title,
-                DynamicVariables.Settings.Menu.reset.thumbnail,
-                $"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}"
-            );
-
-            CreateToggleMenu(
-                parent,
-                DynamicVariables.Settings.Menu.locomotion.title,
-                DynamicVariables.Settings.Menu.locomotion.thumbnail,
-                $"{ConstVariables.BaseParamPrefix}_{poseLibrary.guid}"
             );
             
             var tracking = new GameObject(DynamicVariables.Settings.Menu.tracking.title);
@@ -134,6 +128,13 @@ namespace com.hhotatea.avatar_pose_library.logic
                 DynamicVariables.Settings.Menu.foot.title,
                 DynamicVariables.Settings.Menu.foot.thumbnail,
                 $"{ConstVariables.FootParamPrefix}_{poseLibrary.guid}"
+            );
+
+            CreateToggleMenu(
+                parent,
+                DynamicVariables.Settings.Menu.locomotion.title,
+                DynamicVariables.Settings.Menu.locomotion.thumbnail,
+                $"{ConstVariables.BaseParamPrefix}_{poseLibrary.guid}"
             );
         }
 
