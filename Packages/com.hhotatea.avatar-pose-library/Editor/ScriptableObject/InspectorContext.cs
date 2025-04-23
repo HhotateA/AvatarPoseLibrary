@@ -41,6 +41,14 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string poseThumbnailTooltip = "メニューに表示されるサムネイル画像のプレビューです。";
         [Multiline] public string posePreviewTooltip = "メニューに表示されるサムネイル画像のプレビューです。\nプレビューでは服などの表示がずれるケースが有りますが、アップロード時に再撮影されます。";
 
+        public string enableHeightLabel = "Enable Height";
+        [Multiline] public string enableHeightTooltip = "高さ調整機能を有効にする。";
+        public string enableSpeedLabel = "Enable Speed";
+        [Multiline] public string enableSpeedTooltip = "スピード調整機能を有効にする。";
+        public string enableMirrorLabel = "Enable Mirror";
+        [Multiline] public string enableMirrorTooltip = "ミラー機能を有効にする。";
+        
+        
         public Texture2D thumbnailBg;
         
         public string headTrackingOption = "Head Lock";

@@ -47,6 +47,9 @@ namespace com.hhotatea.avatar_pose_library.model
         public string name = "";
         public Texture2D thumbnail;
         public List<PoseCategory> categories = new List<PoseCategory>();
+        public bool enableHeightParam = true;
+        public bool enableSpeedParam = true;
+        public bool enableMirrorParam = true;
         public string guid { get; set; }//プロパティ
         public List<string> Parameters => 
             categories.SelectMany(c =>
@@ -98,6 +101,10 @@ namespace com.hhotatea.avatar_pose_library.model
                     if(d.name != apd.name) continue;
                     apd.categories.AddRange(d.categories);
                     apd.thumbnail = d.thumbnail;
+
+                    apd.enableHeightParam = d.enableHeightParam;
+                    apd.enableSpeedParam = d.enableSpeedParam;
+                    apd.enableMirrorParam = d.enableMirrorParam;
                 }
                 apd.UpdateParameter();
                 result[i] = apd;

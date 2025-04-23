@@ -25,6 +25,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         // カテゴリごとの ReorderableList
         private ReorderableList categoryReorderableList;
         private Dictionary<PoseCategory,ReorderableList> poseReorderableLists = new Dictionary<PoseCategory, ReorderableList>();
+        private string[] libraryTagList;
+        private int libraryTagIndex;
 
         // Pose に対応するサムネイルなどのキャッシュ
         private readonly Dictionary<PoseEntry, Texture2D> generatedThumbnails = new();
@@ -35,37 +37,62 @@ namespace com.hhotatea.avatar_pose_library.editor
         private const float textboxWidth = 350f;
         private float lineHeight = EditorGUIUtility.singleLineHeight;
         private float spacing = 4f;
-        
-        GUIContent libraryLabelContext = new GUIContent(DynamicVariables.Settings.Inspector.libraryMenuLabel, DynamicVariables.Settings.Inspector.libraryMenuTooltip);
-        GUIContent categoryListContext = new GUIContent(DynamicVariables.Settings.Inspector.categoriesLabel, DynamicVariables.Settings.Inspector.categoriesTooltip);
-        GUIContent categoryIconContext = new GUIContent(DynamicVariables.Settings.Inspector.categoryIconLabel, DynamicVariables.Settings.Inspector.categoryIconTooltip);
-        GUIContent categoryTextContext = new GUIContent(DynamicVariables.Settings.Inspector.categoryTextLabel, DynamicVariables.Settings.Inspector.categoryTextTooltip);
-        GUIContent openAllContext = new GUIContent(DynamicVariables.Settings.Inspector.openAllLabel, DynamicVariables.Settings.Inspector.openAllTooltip);
-        GUIContent closeAllContext = new GUIContent(DynamicVariables.Settings.Inspector.closeAllLabel, DynamicVariables.Settings.Inspector.closeAllTooltip);
-        GUIContent poseListContext = new GUIContent(DynamicVariables.Settings.Inspector.poseListLabel, DynamicVariables.Settings.Inspector.poseListTooltip);
-        GUIContent openButtonContext = new GUIContent(DynamicVariables.Settings.Inspector.openLabel, DynamicVariables.Settings.Inspector.openTooltip);
-        GUIContent closeButtonContext = new GUIContent(DynamicVariables.Settings.Inspector.closeLabel, DynamicVariables.Settings.Inspector.closeTooltip);
-        GUIContent thumbnailAutoContext = new GUIContent(DynamicVariables.Settings.Inspector.thumbnailAutoLabel, DynamicVariables.Settings.Inspector.thumbnailAutoTooltip);
-        GUIContent animationClipContext = new GUIContent(DynamicVariables.Settings.Inspector.animationClipLabel, DynamicVariables.Settings.Inspector.animationClipTooltip);
-        GUIContent trackingSettingsContext = new GUIContent(DynamicVariables.Settings.Inspector.trackingSettingsLabel, DynamicVariables.Settings.Inspector.trackingSettingsTooltip);
-        GUIContent isLoopContext = new GUIContent(DynamicVariables.Settings.Inspector.isLoopLabel, DynamicVariables.Settings.Inspector.isLoopTooltip);
-        GUIContent motionSpeedContext = new GUIContent(DynamicVariables.Settings.Inspector.motionSpeedLabel, DynamicVariables.Settings.Inspector.motionSpeedTooltip);
-        GUIContent dropboxContext = new GUIContent(DynamicVariables.Settings.Inspector.dropboxLabel, DynamicVariables.Settings.Inspector.dropboxTooltip);
-        
-        string[] trackingOptions = new string[]
-        {
-            DynamicVariables.Settings.Inspector.headTrackingOption, 
-            DynamicVariables.Settings.Inspector.armTrackingOption,
-            DynamicVariables.Settings.Inspector.fingerTrackingOption,
-            DynamicVariables.Settings.Inspector.footTrackingOption,
-            DynamicVariables.Settings.Inspector.locomotionTrackingOption,
-        };
+
+        private GUIContent libraryLabelContext,
+            categoryListContext,
+            categoryIconContext,
+            categoryTextContext,
+            openAllContext,
+            closeAllContext,
+            poseListContext,
+            openButtonContext,
+            closeButtonContext,
+            thumbnailAutoContext,
+            animationClipContext,
+            trackingSettingsContext,
+            isLoopContext,
+            motionSpeedContext,
+            dropboxContext,
+            enableHeightContext,
+            enableSpeedContext,
+            enableMirrorContext;
+            
+        string[] trackingOptions;
         
         // インスペクターが有効化されたときの初期化処理
         private void OnEnable()
         {
             poseLibrary = (AvatarPoseLibrary)target;
             InitializeData();
+            FindLibraryObject();
+            
+            libraryLabelContext = new GUIContent(DynamicVariables.Settings.Inspector.libraryMenuLabel, DynamicVariables.Settings.Inspector.libraryMenuTooltip);
+            categoryListContext = new GUIContent(DynamicVariables.Settings.Inspector.categoriesLabel, DynamicVariables.Settings.Inspector.categoriesTooltip);
+            categoryIconContext = new GUIContent(DynamicVariables.Settings.Inspector.categoryIconLabel, DynamicVariables.Settings.Inspector.categoryIconTooltip);
+            categoryTextContext = new GUIContent(DynamicVariables.Settings.Inspector.categoryTextLabel, DynamicVariables.Settings.Inspector.categoryTextTooltip);
+            openAllContext = new GUIContent(DynamicVariables.Settings.Inspector.openAllLabel, DynamicVariables.Settings.Inspector.openAllTooltip);
+            closeAllContext = new GUIContent(DynamicVariables.Settings.Inspector.closeAllLabel, DynamicVariables.Settings.Inspector.closeAllTooltip);
+            poseListContext = new GUIContent(DynamicVariables.Settings.Inspector.poseListLabel, DynamicVariables.Settings.Inspector.poseListTooltip);
+            openButtonContext = new GUIContent(DynamicVariables.Settings.Inspector.openLabel, DynamicVariables.Settings.Inspector.openTooltip);
+            closeButtonContext = new GUIContent(DynamicVariables.Settings.Inspector.closeLabel, DynamicVariables.Settings.Inspector.closeTooltip);
+            thumbnailAutoContext = new GUIContent(DynamicVariables.Settings.Inspector.thumbnailAutoLabel, DynamicVariables.Settings.Inspector.thumbnailAutoTooltip);
+            animationClipContext = new GUIContent(DynamicVariables.Settings.Inspector.animationClipLabel, DynamicVariables.Settings.Inspector.animationClipTooltip);
+            trackingSettingsContext = new GUIContent(DynamicVariables.Settings.Inspector.trackingSettingsLabel, DynamicVariables.Settings.Inspector.trackingSettingsTooltip);
+            isLoopContext = new GUIContent(DynamicVariables.Settings.Inspector.isLoopLabel, DynamicVariables.Settings.Inspector.isLoopTooltip);
+            motionSpeedContext = new GUIContent(DynamicVariables.Settings.Inspector.motionSpeedLabel, DynamicVariables.Settings.Inspector.motionSpeedTooltip);
+            dropboxContext = new GUIContent(DynamicVariables.Settings.Inspector.dropboxLabel, DynamicVariables.Settings.Inspector.dropboxTooltip);
+            enableHeightContext = new GUIContent(DynamicVariables.Settings.Inspector.enableHeightLabel, DynamicVariables.Settings.Inspector.enableHeightTooltip);
+            enableSpeedContext = new GUIContent(DynamicVariables.Settings.Inspector.enableSpeedLabel, DynamicVariables.Settings.Inspector.enableSpeedTooltip);
+            enableMirrorContext = new GUIContent(DynamicVariables.Settings.Inspector.enableMirrorLabel, DynamicVariables.Settings.Inspector.enableMirrorTooltip);
+            
+            trackingOptions = new string[]
+            {
+                DynamicVariables.Settings.Inspector.headTrackingOption, 
+                DynamicVariables.Settings.Inspector.armTrackingOption,
+                DynamicVariables.Settings.Inspector.fingerTrackingOption,
+                DynamicVariables.Settings.Inspector.footTrackingOption,
+                DynamicVariables.Settings.Inspector.locomotionTrackingOption,
+            };
         }
         
         // コンポーネントの初期化処理を行う。
@@ -102,6 +129,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         public override void OnInspectorGUI()
         {
             InitializeData();
+            string name = data.name;
+            int index = libraryTagIndex;
             
             // ここから描画開始
             float texSize = lineHeight * 6f;
@@ -117,12 +146,85 @@ namespace com.hhotatea.avatar_pose_library.editor
                     EditorGUILayout.Space();
                     EditorGUILayout.LabelField(libraryLabelContext, EditorStyles.label);
                     EditorGUILayout.Space();
-                    data.name = EditorGUILayout.TextField(data.name,GUILayout.MaxWidth(textboxWidth));
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        name = EditorGUILayout.TextField(data.name, GUILayout.MaxWidth(textboxWidth));
+                        index = EditorGUILayout.Popup("", libraryTagIndex, libraryTagList, GUILayout.Width(20));
+                    }
+
                     EditorGUILayout.Space();
+
+                    var height = EditorGUILayout.Toggle(enableHeightContext,data.enableHeightParam);
+                    var speed = EditorGUILayout.Toggle(enableSpeedContext,data.enableSpeedParam);
+                    var mirror = EditorGUILayout.Toggle(enableMirrorContext,data.enableMirrorParam);
+                    ApplyLibrarySetting(height, speed, mirror);
                 }
             }
             EditorGUILayout.Space(15f);
             categoryReorderableList.DoLayoutList();
+
+            // 名前の更新
+            if (index != libraryTagIndex)
+            {
+                name = libraryTagList[index];
+            }
+            if (name != data.name)
+            {
+                data.name = name;
+                FindLibraryObject();
+            }
+        }
+
+        private AvatarPoseLibrary[] GetAvatarComponents()
+        {
+            var parent = poseLibrary.transform.GetComponentInParent<VRCAvatarDescriptor>();
+            if (parent == null)
+            {
+                throw new NullReferenceException("コンポーネントがアバター含まれていません。");
+            }
+            return parent.GetComponentsInChildren<AvatarPoseLibrary>();
+        }
+
+        // カテゴリーリストを収集
+        private bool FindLibraryObject()
+        {
+            // 値の整合性を取る
+            var comp = GetAvatarComponents().FirstOrDefault(
+                e => e.data.name == data.name && e != poseLibrary);
+            if (comp)
+            {
+                data.enableHeightParam = comp.data.enableHeightParam;
+                data.enableSpeedParam = comp.data.enableSpeedParam;
+                data.enableMirrorParam = comp.data.enableMirrorParam;
+            }
+            
+            // リストの生成
+            var list = GetAvatarComponents().Select(e => e.data.name).ToArray();
+            libraryTagList = list.Distinct().ToArray();
+            libraryTagIndex = libraryTagList
+                .Select((e, i) => new { e, i })
+                .FirstOrDefault(x => x.e == data.name)?.i ?? -1;
+            return list.Count(e => e == data.name) > 1;
+        }
+
+        // カテゴリーごとに値を同期する。
+        private void ApplyLibrarySetting(bool height,bool speed,bool mirror)
+        {
+            if (data.enableHeightParam == height &&
+                data.enableSpeedParam == speed &&
+                data.enableMirrorParam == mirror)
+            {
+                return;
+            }
+            
+            // 値の書き換え
+            foreach (var apl in GetAvatarComponents())
+            {
+                if(data.name != apl.data.name) continue;
+                apl.data.enableHeightParam = height;
+                apl.data.enableSpeedParam = speed;
+                apl.data.enableMirrorParam = mirror;
+            }
         }
 
         // カテゴリエレメントの高さを取得

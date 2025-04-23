@@ -69,26 +69,35 @@ namespace com.hhotatea.avatar_pose_library.logic
             );
             
             // --- Radialメニューを追加（例: 身長・速度） ---
-            CreateRadialMenu(
-                parent,
-                DynamicVariables.Settings.Menu.height.title,
-                DynamicVariables.Settings.Menu.height.thumbnail,
-                $"{ConstVariables.HeightParamPrefix}_{poseLibrary.guid}"
-            );
+            if (poseLibrary.enableHeightParam)
+            {
+                CreateRadialMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.height.title,
+                    DynamicVariables.Settings.Menu.height.thumbnail,
+                    $"{ConstVariables.HeightParamPrefix}_{poseLibrary.guid}"
+                );
+            }
 
-            CreateRadialMenu(
-                parent,
-                DynamicVariables.Settings.Menu.speed.title,
-                DynamicVariables.Settings.Menu.speed.thumbnail,
-                $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.guid}"
-            );
-            
-            CreateToggleMenu(
-                parent,
-                DynamicVariables.Settings.Menu.mirror.title,
-                DynamicVariables.Settings.Menu.mirror.thumbnail,
-                $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}"
-            );
+            if (poseLibrary.enableSpeedParam)
+            {
+                CreateRadialMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.speed.title,
+                    DynamicVariables.Settings.Menu.speed.thumbnail,
+                    $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.guid}"
+                );
+            }
+
+            if (poseLibrary.enableMirrorParam)
+            {
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.mirror.title,
+                    DynamicVariables.Settings.Menu.mirror.thumbnail,
+                    $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}"
+                );
+            }
             
             var tracking = new GameObject(DynamicVariables.Settings.Menu.tracking.title);
             tracking.transform.SetParent(parent.transform);

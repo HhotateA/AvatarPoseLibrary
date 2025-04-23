@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using com.hhotatea.avatar_pose_library.editor;
 using UnityEngine;
 using UnityEditor.Animations;
@@ -14,18 +15,30 @@ namespace com.hhotatea.avatar_pose_library.logic
         public static AnimatorController BuildPoseAnimator(AvatarPoseData poseLibrary)
         {
             var result = new AnimatorController();
-
-            result.AddParameter(
-                $"{ConstVariables.HeightParamPrefix}_{poseLibrary.guid}", 
-                AnimatorControllerParameterType.Float);
             
-            result.AddParameter(
-                $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.guid}", 
-                AnimatorControllerParameterType.Float);
+            var heightParam = new AnimatorControllerParameter
+            {
+                name = $"{ConstVariables.HeightParamPrefix}_{poseLibrary.guid}",
+                type = AnimatorControllerParameterType.Float,
+                defaultFloat = 0.5f,
+            };
+            result.AddParameter(heightParam);
             
-            result.AddParameter(
-                $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}", 
-                AnimatorControllerParameterType.Bool);
+            var speedParam = new AnimatorControllerParameter
+            {
+                name = $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.guid}",
+                type = AnimatorControllerParameterType.Float,
+                defaultFloat = 0.5f,
+            };
+            result.AddParameter(speedParam);
+            
+            var mirrorParam = new AnimatorControllerParameter
+            {
+                name = $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}",
+                type = AnimatorControllerParameterType.Bool,
+                defaultBool = false,
+            };
+            result.AddParameter(mirrorParam);
             
             foreach (var param in poseLibrary.Parameters)
             {
@@ -66,7 +79,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 foreach (var pose in category.poses)
                 {
-                    AddPoseLayer(pose,layer,defaultState,poseLibrary.Parameters,poseLibrary.guid);
+                    AddPoseLayer(pose,layer,defaultState,poseLibrary.Parameters,
+                        poseLibrary.guid,poseLibrary.enableHeightParam,poseLibrary.enableSpeedParam,poseLibrary.enableMirrorParam);
                 }
             }
 
@@ -306,6 +320,14 @@ namespace com.hhotatea.avatar_pose_library.logic
             fromOffToOff.exitTime = 0f;
             fromOffToOff.hasFixedDuration = true;
             fromOffToOff.duration = 0.0f;
+            
+            // Off設定を維持する
+            var loopTransition = onIdleState.AddTransition(onConState);
+            loopTransition.canTransitionToSelf = false;
+            loopTransition.hasExitTime = true;
+            loopTransition.exitTime = 0f;
+            loopTransition.hasFixedDuration = true;
+            loopTransition.duration = 0.0f;
 
             return layer;
         }
@@ -326,7 +348,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             AnimatorControllerLayer layer,
             AnimatorState defaultState,
             List<string> parameters,
-            string guid)
+            string guid, bool height, bool speed, bool mirror)
         {
             // トラッキング設定用のオブジェクト
             var trackingMap = new (bool enabled, string prefix)[]
@@ -368,19 +390,24 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.value.ToString());
-            poseState.mirrorParameterActive = true;
-            poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
+            if (mirror)
+            {
+                poseState.mirrorParameterActive = true;
+                poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
+            }
 
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
             if (MotionBuilder.IsMoveAnimation(anim))
             {
                 var blendTree = new BlendTree();
+                
+                // アニメーションの生成
+                AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim;
+                AnimationClip motionClip1 = height ? MotionBuilder.BuildMotionLevel(anim, +DynamicVariables.Settings.minMaxHeight) : anim;
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
-                blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(anim,-1f), 0);
-                blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(anim,+1f), 1);
+                blendTree.AddChild(motionClip0, 0);
+                blendTree.AddChild(motionClip1, 1);
                 poseState.motion = blendTree;
                 
                 // スピードを制御可能にする
@@ -391,19 +418,19 @@ namespace com.hhotatea.avatar_pose_library.logic
             else
             {
                 var blendTree = new BlendTree();
-                var motionClip0 = MotionBuilder.IdleAnimation(anim,0f);
-                var motionClip1 = MotionBuilder.IdleAnimation(anim,DynamicVariables.Settings.motionNoiseScale);
+                var motionClip0 = speed ? MotionBuilder.IdleAnimation(anim,0f) : anim;
+                var motionClip1 = speed ? MotionBuilder.IdleAnimation(anim,DynamicVariables.Settings.motionNoiseScale) : anim;
+                var motionClip00 = height ? MotionBuilder.BuildMotionLevel(motionClip0,-DynamicVariables.Settings.minMaxHeight) : motionClip0;
+                var motionClip01 = height ? MotionBuilder.BuildMotionLevel(motionClip0,+DynamicVariables.Settings.minMaxHeight) : motionClip0;
+                var motionClip10 = height ? MotionBuilder.BuildMotionLevel(motionClip1,-DynamicVariables.Settings.minMaxHeight) : motionClip1;
+                var motionClip11 = height ? MotionBuilder.BuildMotionLevel(motionClip1,+DynamicVariables.Settings.minMaxHeight) : motionClip1;
                 blendTree.blendType = BlendTreeType.FreeformCartesian2D;
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
                 blendTree.blendParameterY = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip0,-DynamicVariables.Settings.minMaxHeight), new Vector2(0f,0f));
-                blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip0,+DynamicVariables.Settings.minMaxHeight), new Vector2(1f,0f));
-                blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip1,-DynamicVariables.Settings.minMaxHeight), new Vector2(0f,1f));
-                blendTree.AddChild(
-                    MotionBuilder.BuildMotionLevel(motionClip1,+DynamicVariables.Settings.minMaxHeight), new Vector2(1f,1f));
+                blendTree.AddChild(motionClip00 , new Vector2(0f,0f));
+                blendTree.AddChild(motionClip01, new Vector2(1f,0f));
+                blendTree.AddChild(motionClip10, new Vector2(0f,1f));
+                blendTree.AddChild(motionClip11, new Vector2(1f,1f));
                 poseState.motion = blendTree;
             }
 
