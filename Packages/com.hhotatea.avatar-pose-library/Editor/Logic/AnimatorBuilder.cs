@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using com.hhotatea.avatar_pose_library.editor;
 using UnityEngine;
 using UnityEditor.Animations;
@@ -403,8 +402,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var blendTree = new BlendTree();
                 
                 // アニメーションの生成
-                AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim;
-                AnimationClip motionClip1 = height ? MotionBuilder.BuildMotionLevel(anim, +DynamicVariables.Settings.minMaxHeight) : anim;
+                AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel(anim, +DynamicVariables.Settings.minMaxHeight) : anim;
+                AnimationClip motionClip1 = height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim;
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
                 blendTree.AddChild(motionClip0, 0);
                 blendTree.AddChild(motionClip1, 1);
@@ -420,10 +419,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var blendTree = new BlendTree();
                 var motionClip0 = speed ? MotionBuilder.IdleAnimation(anim,0f) : anim;
                 var motionClip1 = speed ? MotionBuilder.IdleAnimation(anim,DynamicVariables.Settings.motionNoiseScale) : anim;
-                var motionClip00 = height ? MotionBuilder.BuildMotionLevel(motionClip0,-DynamicVariables.Settings.minMaxHeight) : motionClip0;
-                var motionClip01 = height ? MotionBuilder.BuildMotionLevel(motionClip0,+DynamicVariables.Settings.minMaxHeight) : motionClip0;
-                var motionClip10 = height ? MotionBuilder.BuildMotionLevel(motionClip1,-DynamicVariables.Settings.minMaxHeight) : motionClip1;
-                var motionClip11 = height ? MotionBuilder.BuildMotionLevel(motionClip1,+DynamicVariables.Settings.minMaxHeight) : motionClip1;
+                var motionClip00 = height ? MotionBuilder.BuildMotionLevel(motionClip0,+DynamicVariables.Settings.minMaxHeight) : motionClip0;
+                var motionClip01 = height ? MotionBuilder.BuildMotionLevel(motionClip0,-DynamicVariables.Settings.minMaxHeight) : motionClip0;
+                var motionClip10 = height ? MotionBuilder.BuildMotionLevel(motionClip1,+DynamicVariables.Settings.minMaxHeight) : motionClip1;
+                var motionClip11 = height ? MotionBuilder.BuildMotionLevel(motionClip1,-DynamicVariables.Settings.minMaxHeight) : motionClip1;
                 blendTree.blendType = BlendTreeType.FreeformCartesian2D;
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
                 blendTree.blendParameterY = $"{ConstVariables.SpeedParamPrefix}_{guid}";

@@ -16,7 +16,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 {
     // AvatarPoseLibrarySettings に対するカスタムインスペクター
     [CustomEditor(typeof(AvatarPoseLibrary))]
-    public class AvatarPoseLibraryEditor : UnityEditor.Editor
+    public class AvatarPoseLibraryEditor : Editor
     {
         // 対象の設定データ
         private AvatarPoseLibrary poseLibrary;
@@ -37,6 +37,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         private const float textboxWidth = 350f;
         private float lineHeight = EditorGUIUtility.singleLineHeight;
         private float spacing = 4f;
+        private string instanceIdPathBuffer = "";
 
         private GUIContent libraryLabelContext,
             categoryListContext,
@@ -120,7 +121,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                     elementHeightCallback = i => GetCategoryElementHeight(i),
                     drawElementCallback = (r, i, isActive, isFocused) => DrawCategoryElement(r, i),
                     onAddCallback = l => data.categories.Add(CreateCategory()),
-                    onRemoveCallback = l => data.categories.RemoveAt(l.index)
+                    onRemoveCallback = l => data.categories.RemoveAt(l.index),
+                    onChangedCallback = l => EditorUtility.SetDirty(target)
                 };
             }
         }
@@ -129,11 +131,21 @@ namespace com.hhotatea.avatar_pose_library.editor
         public override void OnInspectorGUI()
         {
             InitializeData();
+            
+            // 変更する変数
             string name = data.name;
             int index = libraryTagIndex;
             
+            // 階層構造の変更を検知
+            var pathBuff = GetInstanceIdPath(poseLibrary.transform);
+            if (instanceIdPathBuffer != pathBuff)
+            {
+                FindLibraryObject();
+                instanceIdPathBuffer = pathBuff;
+            }
+
             // ここから描画開始
-            float texSize = lineHeight * 6f;
+            float texSize = lineHeight * 8f;
             EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
             using (new GUILayout.HorizontalScope())
             {
@@ -163,16 +175,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             EditorGUILayout.Space(15f);
             categoryReorderableList.DoLayoutList();
 
-            // 名前の更新
-            if (index != libraryTagIndex)
-            {
-                name = libraryTagList[index];
-            }
-            if (name != data.name)
-            {
-                data.name = name;
-                FindLibraryObject();
-            }
+            ApplyLibraryName(index, name);
         }
 
         private AvatarPoseLibrary[] GetAvatarComponents()
@@ -180,7 +183,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             var parent = poseLibrary.transform.GetComponentInParent<VRCAvatarDescriptor>();
             if (parent == null)
             {
-                throw new NullReferenceException("コンポーネントがアバター含まれていません。");
+                Debug.LogWarning("コンポーネントがアバター含まれていません。");
+                return new AvatarPoseLibrary[1] {poseLibrary};
             }
             return parent.GetComponentsInChildren<AvatarPoseLibrary>();
         }
@@ -197,6 +201,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 data.enableSpeedParam = comp.data.enableSpeedParam;
                 data.enableMirrorParam = comp.data.enableMirrorParam;
             }
+            EditorUtility.SetDirty(target);
             
             // リストの生成
             var list = GetAvatarComponents().Select(e => e.data.name).ToArray();
@@ -207,7 +212,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             return list.Count(e => e == data.name) > 1;
         }
 
-        // カテゴリーごとに値を同期する。
+        // 値を同期する。
         private void ApplyLibrarySetting(bool height,bool speed,bool mirror)
         {
             if (data.enableHeightParam == height &&
@@ -224,6 +229,23 @@ namespace com.hhotatea.avatar_pose_library.editor
                 apl.data.enableHeightParam = height;
                 apl.data.enableSpeedParam = speed;
                 apl.data.enableMirrorParam = mirror;
+                EditorUtility.SetDirty(apl);
+            }
+        }
+
+        // 値を同期する。
+        private void ApplyLibraryName(int index,string name)
+        {
+            // 名前の更新
+            if (index != libraryTagIndex)
+            {
+                name = libraryTagList[index];
+            }
+            if (name != data.name)
+            {
+                data.name = name;
+                FindLibraryObject();
+                EditorUtility.SetDirty(target);
             }
         }
 
@@ -245,11 +267,23 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             // カテゴリ名とサムネイル
             var thumbRect = new Rect(rect.x + spacing, y, thumbnailSize, thumbnailSize);
-            category.thumbnail = (Texture2D)EditorGUI.ObjectField( thumbRect, categoryIconContext, category.thumbnail, typeof(Texture2D), false);
+            var thumbnail = (Texture2D)EditorGUI.ObjectField( thumbRect, categoryIconContext, category.thumbnail, typeof(Texture2D), false);
+            if (category.thumbnail != thumbnail)
+            {
+                // 更新処理
+                category.thumbnail = thumbnail;
+                EditorUtility.SetDirty(target);
+            }
             GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Inspector.categoryThumbnailTooltip), GUIStyle.none);
             EditorGUI.LabelField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight, 100, lineHeight), categoryTextContext);
-            category.name = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight*3f, 
+            var catName = EditorGUI.TextField(new Rect(rect.x + spacing * 2f + thumbnailSize, y + lineHeight*3f, 
                 Mathf.Min(textboxWidth, nameWidth - thumbnailSize - 15f), lineHeight), category.name);
+            if (category.name != catName)
+            {
+                // 更新処理
+                category.name = catName;
+                EditorUtility.SetDirty(target);
+            }
             y += Mathf.Max(thumbnailSize, lineHeight) + spacing;
 
             // 一括開閉ボタン
@@ -286,7 +320,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                 elementHeightCallback = i => GetPoseElementHeight(category.poses[i]),
                 drawElementCallback = (rect, i, isActive, isFocused) => DrawPoseElement(rect, i, category),
                 onAddCallback = l => category.poses.Add(CreatePose(null)),
-                onRemoveCallback = l => category.poses.RemoveAt(l.index)
+                onRemoveCallback = l => category.poses.RemoveAt(l.index),
+                onChangedCallback = l => EditorUtility.SetDirty(target)
             };
 
             poseReorderableLists[category] = list;
@@ -313,7 +348,13 @@ namespace com.hhotatea.avatar_pose_library.editor
             var buttonWidth = Mathf.Max(GUI.skin.button.CalcSize(closeButtonContext).x,GUI.skin.button.CalcSize(openButtonContext).x) + 2f;
             if (poseFoldouts[pose])
             {
-                pose.name = GUI.TextField(new Rect(rect.x + 10f, y, Mathf.Min(textboxWidth,rect.width - 60f), lineHeight),pose.name);
+                var poseName = GUI.TextField(new Rect(rect.x + 10f, y, Mathf.Min(textboxWidth,rect.width - 60f), lineHeight),pose.name);
+                if (pose.name != poseName)
+                {
+                    // 更新処理
+                    pose.name = poseName;
+                    EditorUtility.SetDirty(target);
+                }
                 if (GUI.Button(new Rect(rect.x + rect.width - buttonWidth, y, buttonWidth, 20f), closeButtonContext))
                 {
                     poseFoldouts[pose] = false;
@@ -361,10 +402,22 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             else
             {
-                pose.thumbnail = (Texture2D)EditorGUI.ObjectField(thumbRect, pose.thumbnail, typeof(Texture2D), false);
+                var newThumbnail = (Texture2D)EditorGUI.ObjectField(thumbRect, pose.thumbnail, typeof(Texture2D), false);
+                if (pose.thumbnail != newThumbnail)
+                {
+                    // 更新処理
+                    pose.thumbnail = newThumbnail;
+                    EditorUtility.SetDirty(target);
+                }
                 GUI.Button(thumbRect, new GUIContent("", DynamicVariables.Settings.Inspector.poseThumbnailTooltip), GUIStyle.none);
             }
-            pose.autoThumbnail = EditorGUI.ToggleLeft(new Rect(rect.x, y + thumbnailSize + spacing, leftWidth, lineHeight), thumbnailAutoContext, pose.autoThumbnail);
+            var auto = EditorGUI.ToggleLeft(new Rect(rect.x, y + thumbnailSize + spacing, leftWidth, lineHeight), thumbnailAutoContext, pose.autoThumbnail);
+            if (pose.autoThumbnail != auto)
+            {
+                // 更新処理
+                pose.autoThumbnail = auto;
+                EditorUtility.SetDirty(target);
+            }
             
             // 縦線を引く
             GUI.Box(new Rect(rightX - spacing, y, 1f, thumbnailSize + lineHeight),"");
@@ -378,23 +431,42 @@ namespace com.hhotatea.avatar_pose_library.editor
                 animationClipContext, pose.animationClip, typeof(AnimationClip), false);
             if (pose.animationClip != animationClip)
             {
+                // 更新処理
                 ChangePoseAnimation(pose, animationClip);
+                EditorUtility.SetDirty(target);
             }
             infoY += lineHeight + spacing;
 
             // トラッキングタイプ選択
             var flags = GetAnimationType(pose.tracking);
-            flags = EditorGUI.MaskField(new Rect(rightX, infoY, rightWidth, lineHeight), trackingSettingsContext, flags, trackingOptions);
-            ApplyTrackingFromType(flags,pose.tracking);
+            var newFlags = EditorGUI.MaskField(new Rect(rightX, infoY, rightWidth, lineHeight), trackingSettingsContext, flags, trackingOptions);
+            if (flags != newFlags)
+            {
+                // 更新処理
+                ApplyTrackingFromType(newFlags,pose.tracking);
+                EditorUtility.SetDirty(target);
+            }
             
             // 横線を引く
             infoY += lineHeight + lineHeight/2f + spacing;
             GUI.Box(new Rect(rightX, infoY, rightWidth, 1f),"");
             infoY += lineHeight/2f;
             
-            pose.tracking.loop = EditorGUI.Toggle(new Rect(rightX, infoY, rightWidth, lineHeight), isLoopContext, pose.tracking.loop);
+            var loop = EditorGUI.Toggle(new Rect(rightX, infoY, rightWidth, lineHeight), isLoopContext, pose.tracking.loop);
+            if (loop != pose.tracking.loop)
+            {
+                // 更新処理
+                pose.tracking.loop = loop;
+                EditorUtility.SetDirty(target);
+            }
             infoY += lineHeight;
-            pose.tracking.motionSpeed = EditorGUI.FloatField(new Rect(rightX, infoY, rightWidth, lineHeight), motionSpeedContext, pose.tracking.motionSpeed);
+            var speed = EditorGUI.FloatField(new Rect(rightX, infoY, rightWidth, lineHeight), motionSpeedContext, pose.tracking.motionSpeed);
+            if (speed != pose.tracking.motionSpeed)
+            {
+                // 更新処理
+                pose.tracking.motionSpeed = speed;
+                EditorUtility.SetDirty(target);
+            }
         }
 
         // Pose ドロップ用エリア
@@ -414,6 +486,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     foreach (var dragged in DragAndDrop.objectReferences.OfType<AnimationClip>())
                     {
                         category.poses.Add(CreatePose(dragged));
+                        EditorUtility.SetDirty(target);
                     }
                     GUI.changed = true;
                     evt.Use();
@@ -502,6 +575,19 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             Object.DestroyImmediate(clone);
             return result;
+        }
+        
+        // オブジェクト構造に固有の文字列
+        public static string GetInstanceIdPath(Transform transform)
+        {
+            if (transform.parent == null)
+            {
+                return transform.gameObject.GetInstanceID().ToString();
+            }
+            else
+            {
+                return GetInstanceIdPath(transform.parent) + "/" + transform.gameObject.GetInstanceID();
+            }
         }
     }
 }
