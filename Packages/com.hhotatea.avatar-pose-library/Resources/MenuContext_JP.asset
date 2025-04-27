@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   main:
     title: "\u30A2\u30D0\u30BF\u30FC\u30DD\u30FC\u30BA\u30E9\u30A4\u30D6\u30E9\u30EA\u30FC"
-    thumbnail: {fileID: 2800000, guid: 8967b7286c37ddc468abe07cbd5d1681, type: 3}
+    thumbnail: {fileID: 2800000, guid: bbec61e13dab01742b9513f0a393e7d5, type: 3}
   category:
     title: "\u65B0\u3057\u3044\u30AB\u30C6\u30B4\u30EA\u30FC"
     thumbnail: {fileID: 2800000, guid: 8967b7286c37ddc468abe07cbd5d1681, type: 3}
   pose:
     title: "\u65B0\u3057\u3044\u30DD\u30FC\u30BA"
-    thumbnail: {fileID: 2800000, guid: 8967b7286c37ddc468abe07cbd5d1681, type: 3}
+    thumbnail: {fileID: 2800000, guid: aae77dadba1d9814cbdf7ab852731f6d, type: 3}
   tracking:
     title: "\u30C8\u30E9\u30C3\u30AD\u30F3\u30B0\u8A2D\u5B9A"
     thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
@@ -29,7 +29,7 @@ MonoBehaviour:
     thumbnail: {fileID: 2800000, guid: 59c1fcfb45762f449a016814ce5532f4, type: 3}
   setting:
     title: "\u8A2D\u5B9A"
-    thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
+    thumbnail: {fileID: 2800000, guid: b48174cf50086494f91015e974b4406a, type: 3}
   height:
     title: "\u9AD8\u3055"
     thumbnail: {fileID: 2800000, guid: 2c83accf528124444b9519d50cf55a91, type: 3}
