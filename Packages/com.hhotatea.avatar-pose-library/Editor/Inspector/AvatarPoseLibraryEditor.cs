@@ -18,6 +18,8 @@ namespace com.hhotatea.avatar_pose_library.editor
     [CustomEditor(typeof(AvatarPoseLibrary))]
     public class AvatarPoseLibraryEditor : Editor
     {
+        #region Variant
+        
         // 対象の設定データ
         private AvatarPoseLibrary poseLibrary;
         private AvatarPoseData data => poseLibrary.data;
@@ -39,7 +41,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         private float spacing = 4f;
         private string instanceIdPathBuffer = "";
 
-        private GUIContent libraryLabelContext,
+        private GUIContent 
+            libraryLabelContext,
             categoryListContext,
             categoryIconContext,
             categoryTextContext,
@@ -60,13 +63,21 @@ namespace com.hhotatea.avatar_pose_library.editor
             
         string[] trackingOptions;
         
+        #endregion
+
+        #region Initialize
+        
         // インスペクターが有効化されたときの初期化処理
         private void OnEnable()
         {
             poseLibrary = (AvatarPoseLibrary)target;
+            InitializeVariant();
             InitializeData();
             FindLibraryObject();
-            
+        }
+
+        private Void InitializeVariant()
+        {
             var i = DynamicVariables.Settings.Inspector;
             libraryLabelContext = new GUIContent(i.libraryMenuLabel, i.libraryMenuTooltip);
             categoryListContext = new GUIContent(i.categoriesLabel, i.categoriesTooltip);
@@ -96,46 +107,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             };
         }
         
-        // コンポーネントの初期化処理を行う。
-        void InitializeData()
-        {
-            if (poseLibrary.isInitialized == false)
-            {
-                // 初期化処理
-                poseLibrary.data = new AvatarPoseData
-                {
-                    name = DynamicVariables.Settings.Menu.main.title,
-                    thumbnail = DynamicVariables.Settings.Menu.main.thumbnail,
-                    categories = new List<PoseCategory>(),
-                    guid = ""
-                };
-                poseLibrary.isInitialized = true;
-                categoryReorderableList = null;
-            }
+        #endregion
 
-            if (categoryReorderableList == null)
-            {
-                categoryReorderableList = new ReorderableList(data.categories, typeof(PoseCategory), true, true, true, true)
-                {
-                    drawHeaderCallback = r => EditorGUI.LabelField(r, categoryListContext),
-                    elementHeightCallback = i => GetCategoryElementHeight(i),
-                    drawElementCallback = (r, i, isActive, isFocused) => DrawCategoryElement(r, i),
-                    onAddCallback = l => data.categories.Add(CreateCategory()),
-                    onRemoveCallback = l => data.categories.RemoveAt(l.index),
-                    onChangedCallback = l => EditorUtility.SetDirty(target)
-                };
-            }
-        }
-
-        // インスペクターGUIの描画処理
-        public override void OnInspectorGUI()
+        #region DataUtility
+        
+        void UpdateData()
         {
-            InitializeData();
-            
-            // 変更する変数
-            string name = data.name;
-            int index = libraryTagIndex;
-            
             // 階層構造の変更を検知
             var pathBuff = GetInstanceIdPath(poseLibrary.transform);
             if (instanceIdPathBuffer != pathBuff)
@@ -143,41 +120,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 FindLibraryObject();
                 instanceIdPathBuffer = pathBuff;
             }
-
-            // ここから描画開始
-            float texSize = lineHeight * 8f;
-            EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
-            using (new GUILayout.HorizontalScope())
-            {
-                GUILayout.Label(
-                    new GUIContent(data.thumbnail,DynamicVariables.Settings.Inspector.mainThumbnailTooltip), 
-                    GUILayout.Width(texSize), GUILayout.Height(texSize));
-                // EditorGUILayout.Space();
-                using (new GUILayout.VerticalScope())
-                {
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField(libraryLabelContext, EditorStyles.label);
-                    EditorGUILayout.Space();
-                    using (new GUILayout.HorizontalScope())
-                    {
-                        name = EditorGUILayout.TextField(data.name, GUILayout.MaxWidth(textboxWidth));
-                        index = EditorGUILayout.Popup("", libraryTagIndex, libraryTagList, GUILayout.Width(20));
-                    }
-
-                    EditorGUILayout.Space();
-
-                    var height = EditorGUILayout.Toggle(enableHeightContext,data.enableHeightParam);
-                    var speed = EditorGUILayout.Toggle(enableSpeedContext,data.enableSpeedParam);
-                    var mirror = EditorGUILayout.Toggle(enableMirrorContext,data.enableMirrorParam);
-                    ApplyLibrarySetting(height, speed, mirror);
-                }
-            }
-            EditorGUILayout.Space(15f);
-            categoryReorderableList.DoLayoutList();
-
-            ApplyLibraryName(index, name);
         }
-
+        
+        // コンポーネントの取得
         private AvatarPoseLibrary[] GetAvatarComponents()
         {
             var parent = poseLibrary.transform.GetComponentInParent<VRCAvatarDescriptor>();
@@ -249,6 +194,41 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
+        #endregion
+
+        #region DrawUtility
+        
+        // コンポーネントの初期化処理を行う。
+        void InitializeData()
+        {
+            if (poseLibrary.isInitialized == false)
+            {
+                // 初期化処理
+                poseLibrary.data = new AvatarPoseData
+                {
+                    name = DynamicVariables.Settings.Menu.main.title,
+                    thumbnail = DynamicVariables.Settings.Menu.main.thumbnail,
+                    categories = new List<PoseCategory>(),
+                    guid = ""
+                };
+                poseLibrary.isInitialized = true;
+                categoryReorderableList = null;
+            }
+
+            if (categoryReorderableList == null)
+            {
+                categoryReorderableList = new ReorderableList(data.categories, typeof(PoseCategory), true, true, true, true)
+                {
+                    drawHeaderCallback = r => EditorGUI.LabelField(r, categoryListContext),
+                    elementHeightCallback = i => GetCategoryElementHeight(i),
+                    drawElementCallback = (r, i, isActive, isFocused) => DrawCategoryElement(r, i),
+                    onAddCallback = l => data.categories.Add(CreateCategory()),
+                    onRemoveCallback = l => data.categories.RemoveAt(l.index),
+                    onChangedCallback = l => EditorUtility.SetDirty(target)
+                };
+            }
+        }
+
         // カテゴリエレメントの高さを取得
         private float GetCategoryElementHeight(int index)
         {
@@ -256,6 +236,82 @@ namespace com.hhotatea.avatar_pose_library.editor
             float poseListHeight = list.GetHeight();
             return EditorGUIUtility.singleLineHeight + 8f + Mathf.Max(EditorGUIUtility.singleLineHeight * 5f, EditorGUIUtility.singleLineHeight) + poseListHeight + 60f;
         }
+
+        // Pose リストの初期化
+        private ReorderableList EnsurePoseList(PoseCategory category)
+        {
+            poseReorderableLists.TryGetValue(category,out var list);
+            if (list != null) return poseReorderableLists[category];
+
+            list = new ReorderableList(category.poses, typeof(PoseEntry), true, true, true, true)
+            {
+                drawHeaderCallback = rect => EditorGUI.LabelField(rect, poseListContext),
+                elementHeightCallback = i => GetPoseElementHeight(category.poses[i]),
+                drawElementCallback = (rect, i, isActive, isFocused) => DrawPoseElement(rect, i, category),
+                onAddCallback = l => category.poses.Add(CreatePose(null)),
+                onRemoveCallback = l => category.poses.RemoveAt(l.index),
+                onChangedCallback = l => EditorUtility.SetDirty(target)
+            };
+
+            poseReorderableLists[category] = list;
+            return list;
+        }
+        
+        // Pose 要素の高さ取得
+        private float GetPoseElementHeight(PoseEntry pose)
+        {
+            if (!poseFoldouts.TryGetValue(pose, out var expanded) || !expanded)
+                return EditorGUIUtility.singleLineHeight * 1.5f;
+
+            return EditorGUIUtility.singleLineHeight * 7f;
+        }
+        
+        #endregion
+        
+        // インスペクターGUIの描画処理
+        public override void OnInspectorGUI()
+        {
+            InitializeData();
+            UpdateData();
+            
+            // 変更する変数
+            string name = data.name;
+            int index = libraryTagIndex;
+
+            // ここから描画開始
+            float texSize = lineHeight * 8f;
+            EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.Label(
+                    new GUIContent(data.thumbnail,DynamicVariables.Settings.Inspector.mainThumbnailTooltip), 
+                    GUILayout.Width(texSize), GUILayout.Height(texSize));
+                // EditorGUILayout.Space();
+                using (new GUILayout.VerticalScope())
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField(libraryLabelContext, EditorStyles.label);
+                    EditorGUILayout.Space();
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        name = EditorGUILayout.TextField(data.name, GUILayout.MaxWidth(textboxWidth));
+                        index = EditorGUILayout.Popup("", libraryTagIndex, libraryTagList, GUILayout.Width(20));
+                    }
+
+                    EditorGUILayout.Space();
+
+                    var height = EditorGUILayout.Toggle(enableHeightContext,data.enableHeightParam);
+                    var speed = EditorGUILayout.Toggle(enableSpeedContext,data.enableSpeedParam);
+                    var mirror = EditorGUILayout.Toggle(enableMirrorContext,data.enableMirrorParam);
+                    ApplyLibrarySetting(height, speed, mirror);
+                }
+            }
+            EditorGUILayout.Space(15f);
+            categoryReorderableList.DoLayoutList();
+
+            ApplyLibraryName(index, name);
+        }
+
 
         // カテゴリエレメントの描画処理
         private void DrawCategoryElement(Rect rect, int index)
@@ -306,35 +362,6 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             // ドロップエリアの描画
             DrawPoseDropArea(new Rect(rect.x, y, rect.width, 40f), category);
-        }
-
-        // Pose リストの初期化
-        private ReorderableList EnsurePoseList(PoseCategory category)
-        {
-            poseReorderableLists.TryGetValue(category,out var list);
-            if (list != null) return poseReorderableLists[category];
-
-            list = new ReorderableList(category.poses, typeof(PoseEntry), true, true, true, true)
-            {
-                drawHeaderCallback = rect => EditorGUI.LabelField(rect, poseListContext),
-                elementHeightCallback = i => GetPoseElementHeight(category.poses[i]),
-                drawElementCallback = (rect, i, isActive, isFocused) => DrawPoseElement(rect, i, category),
-                onAddCallback = l => category.poses.Add(CreatePose(null)),
-                onRemoveCallback = l => category.poses.RemoveAt(l.index),
-                onChangedCallback = l => EditorUtility.SetDirty(target)
-            };
-
-            poseReorderableLists[category] = list;
-            return list;
-        }
-
-        // Pose 要素の高さ取得
-        private float GetPoseElementHeight(PoseEntry pose)
-        {
-            if (!poseFoldouts.TryGetValue(pose, out var expanded) || !expanded)
-                return EditorGUIUtility.singleLineHeight * 1.5f;
-
-            return EditorGUIUtility.singleLineHeight * 7f;
         }
 
         // Pose 要素の描画処理
