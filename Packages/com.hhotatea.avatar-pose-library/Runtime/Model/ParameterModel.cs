@@ -27,10 +27,10 @@ namespace com.hhotatea.avatar_pose_library.model
         
         // 固定するパラメーターの選択
         public TrackingSetting tracking;
-        
-        public string parameter { get; set; }//プロパティ
-        
-        public int value { get; set; }//プロパティ
+
+        // システムが使用
+        public string parameter;
+        public int value;
     }
 
     [Serializable]
