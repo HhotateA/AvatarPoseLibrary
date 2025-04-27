@@ -67,32 +67,32 @@ namespace com.hhotatea.avatar_pose_library.editor
             InitializeData();
             FindLibraryObject();
             
-            libraryLabelContext = new GUIContent(DynamicVariables.Settings.Inspector.libraryMenuLabel, DynamicVariables.Settings.Inspector.libraryMenuTooltip);
-            categoryListContext = new GUIContent(DynamicVariables.Settings.Inspector.categoriesLabel, DynamicVariables.Settings.Inspector.categoriesTooltip);
-            categoryIconContext = new GUIContent(DynamicVariables.Settings.Inspector.categoryIconLabel, DynamicVariables.Settings.Inspector.categoryIconTooltip);
-            categoryTextContext = new GUIContent(DynamicVariables.Settings.Inspector.categoryTextLabel, DynamicVariables.Settings.Inspector.categoryTextTooltip);
-            openAllContext = new GUIContent(DynamicVariables.Settings.Inspector.openAllLabel, DynamicVariables.Settings.Inspector.openAllTooltip);
-            closeAllContext = new GUIContent(DynamicVariables.Settings.Inspector.closeAllLabel, DynamicVariables.Settings.Inspector.closeAllTooltip);
-            poseListContext = new GUIContent(DynamicVariables.Settings.Inspector.poseListLabel, DynamicVariables.Settings.Inspector.poseListTooltip);
-            openButtonContext = new GUIContent(DynamicVariables.Settings.Inspector.openLabel, DynamicVariables.Settings.Inspector.openTooltip);
-            closeButtonContext = new GUIContent(DynamicVariables.Settings.Inspector.closeLabel, DynamicVariables.Settings.Inspector.closeTooltip);
-            thumbnailAutoContext = new GUIContent(DynamicVariables.Settings.Inspector.thumbnailAutoLabel, DynamicVariables.Settings.Inspector.thumbnailAutoTooltip);
-            animationClipContext = new GUIContent(DynamicVariables.Settings.Inspector.animationClipLabel, DynamicVariables.Settings.Inspector.animationClipTooltip);
-            trackingSettingsContext = new GUIContent(DynamicVariables.Settings.Inspector.trackingSettingsLabel, DynamicVariables.Settings.Inspector.trackingSettingsTooltip);
-            isLoopContext = new GUIContent(DynamicVariables.Settings.Inspector.isLoopLabel, DynamicVariables.Settings.Inspector.isLoopTooltip);
-            motionSpeedContext = new GUIContent(DynamicVariables.Settings.Inspector.motionSpeedLabel, DynamicVariables.Settings.Inspector.motionSpeedTooltip);
-            dropboxContext = new GUIContent(DynamicVariables.Settings.Inspector.dropboxLabel, DynamicVariables.Settings.Inspector.dropboxTooltip);
-            enableHeightContext = new GUIContent(DynamicVariables.Settings.Inspector.enableHeightLabel, DynamicVariables.Settings.Inspector.enableHeightTooltip);
-            enableSpeedContext = new GUIContent(DynamicVariables.Settings.Inspector.enableSpeedLabel, DynamicVariables.Settings.Inspector.enableSpeedTooltip);
-            enableMirrorContext = new GUIContent(DynamicVariables.Settings.Inspector.enableMirrorLabel, DynamicVariables.Settings.Inspector.enableMirrorTooltip);
-            
+            var i = DynamicVariables.Settings.Inspector;
+            libraryLabelContext = new GUIContent(i.libraryMenuLabel, i.libraryMenuTooltip);
+            categoryListContext = new GUIContent(i.categoriesLabel, i.categoriesTooltip);
+            categoryIconContext = new GUIContent(i.categoryIconLabel, i.categoryIconTooltip);
+            categoryTextContext = new GUIContent(i.categoryTextLabel, i.categoryTextTooltip);
+            openAllContext = new GUIContent(i.openAllLabel, i.openAllTooltip);
+            closeAllContext = new GUIContent(i.closeAllLabel, i.closeAllTooltip);
+            poseListContext = new GUIContent(i.poseListLabel, i.poseListTooltip);
+            openButtonContext = new GUIContent(i.openLabel, i.openTooltip);
+            closeButtonContext = new GUIContent(i.closeLabel, i.closeTooltip);
+            thumbnailAutoContext = new GUIContent(i.thumbnailAutoLabel, i.thumbnailAutoTooltip);
+            animationClipContext = new GUIContent(i.animationClipLabel, i.animationClipTooltip);
+            trackingSettingsContext = new GUIContent(i.trackingSettingsLabel, i.trackingSettingsTooltip);
+            isLoopContext = new GUIContent(i.isLoopLabel, i.isLoopTooltip);
+            motionSpeedContext = new GUIContent(i.motionSpeedLabel, i.motionSpeedTooltip);
+            dropboxContext = new GUIContent(i.dropboxLabel, i.dropboxTooltip);
+            enableHeightContext = new GUIContent(i.enableHeightLabel, i.enableHeightTooltip);
+            enableSpeedContext = new GUIContent(i.enableSpeedLabel, i.enableSpeedTooltip);
+            enableMirrorContext = new GUIContent(i.enableMirrorLabel, i.enableMirrorTooltip);
             trackingOptions = new string[]
             {
-                DynamicVariables.Settings.Inspector.headTrackingOption, 
-                DynamicVariables.Settings.Inspector.armTrackingOption,
-                DynamicVariables.Settings.Inspector.fingerTrackingOption,
-                DynamicVariables.Settings.Inspector.footTrackingOption,
-                DynamicVariables.Settings.Inspector.locomotionTrackingOption,
+                i.headTrackingOption, 
+                i.armTrackingOption,
+                i.fingerTrackingOption,
+                i.footTrackingOption,
+                i.locomotionTrackingOption,
             };
         }
         
@@ -181,9 +181,9 @@ namespace com.hhotatea.avatar_pose_library.editor
         private AvatarPoseLibrary[] GetAvatarComponents()
         {
             var parent = poseLibrary.transform.GetComponentInParent<VRCAvatarDescriptor>();
-            if (parent == null)
+            if (!parent)
             {
-                Debug.LogWarning("コンポーネントがアバター含まれていません。");
+                Debug.LogWarning("コンポーネントがアバター直下に含まれていません。");
                 return new AvatarPoseLibrary[1] {poseLibrary};
             }
             return parent.GetComponentsInChildren<AvatarPoseLibrary>();
