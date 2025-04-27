@@ -15,11 +15,11 @@ MonoBehaviour:
   menuContext: {fileID: 11400000, guid: bb5aa47944eb7bc4d96b742e26164cfb, type: 2}
   inspectorContext: {fileID: 11400000, guid: 9115fecda4a9e894ea0d03a34da878e4, type: 2}
   thumbnailLayer: 4
-  texSize: 128
+  texSize: 64
   motionLong: 15
   motionDuration: 0.5
   motionNoiseScale: 0.6
-  minMaxHeight: 1
+  minMaxHeight: 1.5
   lookAtFace: 0.8
   fieldOfView: 30
   cameraDistance: 0.8
