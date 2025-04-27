@@ -108,13 +108,13 @@ namespace com.hhotatea.avatar_pose_library.editor
         #endregion
 
         #region =====================  ViewModel  =====================
-        /// <summary>
-        /// Guarantee that the target component is initialised with default data.
-        /// </summary>
+        /// <summary>Guarantee that the target component is initialised with default data.</summary>
         private void EnsureInitialData()
         {
             if (_library.isInitialized) return;
 
+            // 変更前に Record
+            MarkDirty(_library, "Init PoseLibrary");
             _library.data = new AvatarPoseData
             {
                 name       = DynamicVariables.Settings.Menu.main.title,
@@ -123,12 +123,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 guid       = string.Empty
             };
             _library.isInitialized = true;
-            MarkDirty(target, "Init PoseLibrary");
         }
 
-        /// <summary>
-        /// Create or refresh reorderable lists after data changes.
-        /// </summary>
+        /// <summary>Create or refresh reorderable lists after data changes.</summary>
         private void EnsureGuiLists()
         {
             _categoryList ??= new ReorderableList(Data.categories, typeof(PoseCategory), true, true, true, true)
@@ -138,21 +135,19 @@ namespace com.hhotatea.avatar_pose_library.editor
                 drawElementCallback  = DrawCategory,
                 onAddCallback        = l =>
                 {
-                    Data.categories.Add(CreateCategory());
                     MarkDirty(target, "Add Category");
+                    Data.categories.Add(CreateCategory());
                 },
                 onRemoveCallback     = l =>
                 {
-                    Data.categories.RemoveAt(l.index);
                     MarkDirty(target, "Remove Category");
+                    Data.categories.RemoveAt(l.index);
                 },
                 onChangedCallback    = l => MarkDirty(target, "Reorder Categories")
             };
         }
 
-        /// <summary>
-        /// Update caches when hierarchy changes.
-        /// </summary>
+        /// <summary>Update caches when hierarchy changes.</summary>
         private void DetectHierarchyChange()
         {
             string path = GetInstancePath(_library.transform);
@@ -223,17 +218,20 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void ApplyGlobalToggles()
         {
-            bool height  = EditorGUILayout.Toggle(_enableHeightLabel, Data.enableHeightParam);
-            bool speed   = EditorGUILayout.Toggle(_enableSpeedLabel, Data.enableSpeedParam);
-            bool mirror  = EditorGUILayout.Toggle(_enableMirrorLabel, Data.enableMirrorParam);
-            if (height == Data.enableHeightParam && speed == Data.enableSpeedParam && mirror == Data.enableMirrorParam) return;
+            bool height = EditorGUILayout.Toggle(_enableHeightLabel, Data.enableHeightParam);
+            bool speed  = EditorGUILayout.Toggle(_enableSpeedLabel,  Data.enableSpeedParam);
+            bool mirror = EditorGUILayout.Toggle(_enableMirrorLabel, Data.enableMirrorParam);
+
+            if (height == Data.enableHeightParam &&
+                speed  == Data.enableSpeedParam  &&
+                mirror == Data.enableMirrorParam) return;
 
             foreach (var lib in GetLibraryComponents().Where(lib => lib.data.name == Data.name))
             {
+                MarkDirty(lib, "Toggle Global Flags");
                 lib.data.enableHeightParam = height;
                 lib.data.enableSpeedParam  = speed;
                 lib.data.enableMirrorParam = mirror;
-                MarkDirty(lib, "Toggle Global Flags");
             }
         }
         #endregion
@@ -257,8 +255,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             var newThumb  = (Texture2D)EditorGUI.ObjectField(thumbRect, _categoryIconLabel, category.thumbnail, typeof(Texture2D), false);
             if (category.thumbnail != newThumb)
             {
-                category.thumbnail = newThumb;
                 MarkDirty(target, "Edit Category Thumbnail");
+                category.thumbnail = newThumb;
             }
             GUI.Button(thumbRect, GUIContent.none, GUIStyle.none);
 
@@ -268,8 +266,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                                                            Mathf.Min(TextBoxWidth, nameArea - thumbSz - 15f), _lineHeight), category.name);
             if (category.name != catName)
             {
-                category.name = catName;
                 MarkDirty(target, "Rename Category");
+                category.name = catName;
             }
 
             // Fold buttons
@@ -303,15 +301,16 @@ namespace com.hhotatea.avatar_pose_library.editor
                 drawElementCallback  = (r, i, a, f) => DrawPose(r, i, category),
                 onAddCallback        = l =>
                 {
-                    category.poses.Add(CreatePose(null));
                     MarkDirty(target, "Add Pose");
+                    category.poses.Add(CreatePose(null));
                 },
                 onRemoveCallback     = l =>
                 {
-                    category.poses.RemoveAt(l.index);
                     MarkDirty(target, "Remove Pose");
+                    category.poses.RemoveAt(l.index);
                 },
-                onChangedCallback    = l => MarkDirty(target, "Reorder Poses")
+                onChangedCallback    = l => MarkDirty(target, "Reorder Poses"),
+                onReorderCallback     = l => MarkDirty(target, "Reorder Poses")
             };
             return _poseLists[category] = list;
         }
@@ -332,13 +331,19 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (_poseFoldouts[pose])
             {
                 string newName = GUI.TextField(new Rect(rect.x + 10, y, Mathf.Min(TextBoxWidth, rect.width - 60), _lineHeight), pose.name);
-                if (newName != pose.name) { pose.name = newName; MarkDirty(target, "Rename Pose"); }
-                if (GUI.Button(new Rect(rect.x + rect.width - btnW, y, btnW, 20), _closeLabel)) _poseFoldouts[pose] = false;
+                if (newName != pose.name)
+                {
+                    MarkDirty(target, "Rename Pose");
+                    pose.name = newName;
+                }
+                if (GUI.Button(new Rect(rect.x + rect.width - btnW, y, btnW, 20), _closeLabel))
+                    _poseFoldouts[pose] = false;
             }
             else
             {
                 GUI.Label(new Rect(rect.x + 10, y, rect.width - 60, _lineHeight), pose.name);
-                if (GUI.Button(new Rect(rect.x + rect.width - btnW, y, btnW, 20), _openLabel)) _poseFoldouts[pose] = true;
+                if (GUI.Button(new Rect(rect.x + rect.width - btnW, y, btnW, 20), _openLabel))
+                    _poseFoldouts[pose] = true;
                 return;
             }
             y += _lineHeight + Spacing + 4;
@@ -367,11 +372,20 @@ namespace com.hhotatea.avatar_pose_library.editor
             else
             {
                 var newTex = (Texture2D)EditorGUI.ObjectField(thumbRect, pose.thumbnail, typeof(Texture2D), false);
-                if (newTex != pose.thumbnail) { pose.thumbnail = newTex; MarkDirty(target, "Edit Pose Thumbnail"); }
+                if (newTex != pose.thumbnail)
+                {
+                    MarkDirty(target, "Edit Pose Thumbnail");
+                    pose.thumbnail = newTex;
+                }
                 GUI.Button(thumbRect, GUIContent.none, GUIStyle.none);
             }
+
             bool autoTn = EditorGUI.ToggleLeft(new Rect(rect.x, y + thumbnailSize + Spacing, leftWidth, _lineHeight), _thumbnailAutoLabel, pose.autoThumbnail);
-            if (autoTn != pose.autoThumbnail) { pose.autoThumbnail = autoTn; MarkDirty(target, "Toggle AutoThumbnail"); }
+            if (autoTn != pose.autoThumbnail)
+            {
+                MarkDirty(target, "Toggle AutoThumbnail");
+                pose.autoThumbnail = autoTn;
+            }
 
             // separator
             GUI.Box(new Rect(rightX - Spacing, y, 1, thumbnailSize + _lineHeight), GUIContent.none);
@@ -381,21 +395,37 @@ namespace com.hhotatea.avatar_pose_library.editor
             float fldW  = rightWidth - Spacing;
 
             var clip = (AnimationClip)EditorGUI.ObjectField(new Rect(rightX, infoY, fldW, _lineHeight), _animationClipLabel, pose.animationClip, typeof(AnimationClip), false);
-            if (clip != pose.animationClip) { ApplyClipChange(pose, clip); }
+            if (clip != pose.animationClip)
+            {
+                ApplyClipChange(pose, clip);
+            }
             infoY += _lineHeight + Spacing;
 
             int flagsOld = FlagsFromTracking(pose.tracking);
             int flagsNew = EditorGUI.MaskField(new Rect(rightX, infoY, rightWidth, _lineHeight), _trackingLabel, flagsOld, _trackingOptions);
-            if (flagsNew != flagsOld) { FlagsToTracking(flagsNew, pose.tracking); MarkDirty(target, "Edit Tracking Mask"); }
+            if (flagsNew != flagsOld)
+            {
+                MarkDirty(target, "Edit Tracking Mask");
+                FlagsToTracking(flagsNew, pose.tracking);
+            }
             infoY += _lineHeight + _lineHeight / 2 + Spacing;
             GUI.Box(new Rect(rightX, infoY, rightWidth, 1), GUIContent.none);
             infoY += _lineHeight / 2;
 
             bool loop = EditorGUI.Toggle(new Rect(rightX, infoY, rightWidth, _lineHeight), _isLoopLabel, pose.tracking.loop);
-            if (loop != pose.tracking.loop) { pose.tracking.loop = loop; MarkDirty(target, "Toggle Loop"); }
+            if (loop != pose.tracking.loop)
+            {
+                MarkDirty(target, "Toggle Loop");
+                pose.tracking.loop = loop;
+            }
             infoY += _lineHeight;
+
             float speed = EditorGUI.FloatField(new Rect(rightX, infoY, rightWidth, _lineHeight), _motionSpeedLabel, pose.tracking.motionSpeed);
-            if (!Mathf.Approximately(speed, pose.tracking.motionSpeed)) { pose.tracking.motionSpeed = speed; MarkDirty(target, "Change Motion Speed"); }
+            if (!Mathf.Approximately(speed, pose.tracking.motionSpeed))
+            {
+                MarkDirty(target, "Change Motion Speed");
+                pose.tracking.motionSpeed = speed;
+            }
         }
         #endregion
 
@@ -410,11 +440,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (evt.type != EventType.DragPerform) return;
 
             DragAndDrop.AcceptDrag();
+
+            MarkDirty(target, "Add Pose by Drag&Drop");
             foreach (var clip in DragAndDrop.objectReferences.OfType<AnimationClip>())
             {
                 category.poses.Add(CreatePose(clip));
             }
-            MarkDirty(target, "Add Pose by Drag&Drop");
             evt.Use();
         }
         #endregion
@@ -431,10 +462,10 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var pose = new PoseEntry
             {
-                name        = DynamicVariables.Settings.Menu.pose.title,
-                thumbnail   = DynamicVariables.Settings.Menu.pose.thumbnail,
+                name          = DynamicVariables.Settings.Menu.pose.title,
+                thumbnail     = DynamicVariables.Settings.Menu.pose.thumbnail,
                 autoThumbnail = true,
-                tracking    = new TrackingSetting()
+                tracking      = new TrackingSetting()
             };
             ApplyClipChange(pose, clip);
             return pose;
@@ -442,23 +473,24 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void ApplyClipChange(PoseEntry pose, AnimationClip clip)
         {
+            MarkDirty(target, "Change Animation Clip");
             pose.animationClip = clip;
-            if (!clip) { MarkDirty(target, "Clear Animation Clip"); return; }
+            if (!clip) return;
 
             pose.name                 = clip.name;
             bool moving               = MotionBuilder.IsMoveAnimation(clip);
             pose.tracking.motionSpeed = moving ? 1f : 0f;
             pose.tracking.loop        = moving ? MotionBuilder.IsLoopAnimation(clip) : true;
-            MarkDirty(target, "Change Animation Clip");
         }
 
         private void ApplyLibraryRename(int newIndex, string newName)
         {
             if (newIndex != _libraryTagIndex) newName = _libraryTagList[newIndex];
             if (Data.name == newName) return;
+
+            MarkDirty(target, "Rename PoseLibrary");
             Data.name = newName;
             SyncLibraryTags();
-            MarkDirty(target, "Rename PoseLibrary");
         }
 
         private Texture2D GenerateThumbnail(GameObject obj, AnimationClip clip)
@@ -495,14 +527,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             t.foot       = (f & 1 << 3) != 0;
             t.locomotion = (f & 1 << 4) != 0;
         }
-        
-        /// <summary>
-        /// Undo 登録＋Dirty マークをまとめたユーティリティ。
-        /// </summary>
+
+        /// <summary>Undo 登録＋Dirty マークをまとめたユーティリティ。</summary>
         private static void MarkDirty(Object obj, string undoLabel = "Modify AvatarPoseLibrary")
         {
-            Undo.RecordObject(obj, undoLabel);
-            EditorUtility.SetDirty(obj);
+            Undo.RecordObject(obj, undoLabel);   // ① 変更前に Snapshot
+            EditorUtility.SetDirty(obj);         // （RecordObject だけでも Dirty になるが保険）
         }
 
         private static string GetInstancePath(Transform t) =>
