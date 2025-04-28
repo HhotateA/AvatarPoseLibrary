@@ -389,11 +389,18 @@ namespace com.hhotatea.avatar_pose_library.editor
         private float GetPoseHeight(int catIdx, int poseIdx)
         {
             // 既知のバグ。Undoで要素を消したときに、ここでエラー発生
+            if (Data.categories.Count-1 < catIdx) return _lineHeight;
+            if (Data.categories[catIdx].poses.Count-1 < poseIdx) return _lineHeight;
+            
             return Data.categories[catIdx].poses[poseIdx].value == 1 ? _lineHeight*7f : _lineHeight*1.5f;
         }
 
         private void DrawPose(Rect rect, int catIdx, int poseIdx, SerializedProperty poseProp)
         {
+            // 既知のバグ。Undoで要素を消したときに、ここでエラー発生
+            if (Data.categories.Count-1 < catIdx) return;
+            if (Data.categories[catIdx].poses.Count-1 < poseIdx) return;
+            
             float y = rect.y + 2f;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_closeLabel).x, GUI.skin.button.CalcSize(_openLabel).x) + 2;
             if (Data.categories[catIdx].poses[poseIdx].value == 1)
