@@ -107,8 +107,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 foreach (var pose in cat.poses)
                 {
-                    // if(pose.parameter == "Foldout Cash") continue;
-                    pose.parameter = "↓ 一時データとして、メニューの開閉状態を保存しています。";
+                    // 一時データとして、メニューの開閉状態を保存
                     pose.value = 0;
                 }
             }
@@ -117,10 +116,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             Apply("Init PoseLibrary", () =>
             {
                 var d = serializedObject.FindProperty("data");
-                d.FindPropertyRelative("name").stringValue             = DynamicVariables.Settings.Menu.main.title;
+                d.FindPropertyRelative("name").stringValue               = DynamicVariables.Settings.Menu.main.title;
                 d.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.main.thumbnail;
                 d.FindPropertyRelative("categories").arraySize           = 0;
-                d.FindPropertyRelative("guid").stringValue              = string.Empty;
                 _library.isInitialized = true;
             });
         }

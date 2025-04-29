@@ -13,7 +13,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public AvatarPoseData data;
 
         // Editorで初期化処理を行いたいので、フラグを持っておく。
-        public bool isInitialized = true;
+        public bool isInitialized;
 
         private void Reset()
         {
