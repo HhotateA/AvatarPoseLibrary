@@ -14,6 +14,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         public static AnimatorController BuildPoseAnimator(AvatarPoseData poseLibrary)
         {
             var result = new AnimatorController();
+            result.AddLayer(new AnimatorControllerLayer());
             
             var heightParam = new AnimatorControllerParameter
             {
@@ -71,7 +72,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             // 空のステート（default）
             var defaultState = layer.stateMachine.AddState("Default");
-            defaultState.motion = new AnimationClip();
+            defaultState.motion = MotionBuilder.NoneAnimation();
                 
             // ポーズのレイヤー追加
             foreach (var category in poseLibrary.categories)
@@ -92,7 +93,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             AnimatorControllerLayer layer = new AnimatorControllerLayer
             {
                 name = param,
-                defaultWeight = 1f,
+                defaultWeight = 0f,
                 stateMachine = new AnimatorStateMachine(),
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
@@ -189,7 +190,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             AnimatorControllerLayer layer = new AnimatorControllerLayer
             {
                 name = param,
-                defaultWeight = 1f,
+                defaultWeight = 0f,
                 stateMachine = new AnimatorStateMachine(),
                 blendingMode = AnimatorLayerBlendingMode.Override
             };

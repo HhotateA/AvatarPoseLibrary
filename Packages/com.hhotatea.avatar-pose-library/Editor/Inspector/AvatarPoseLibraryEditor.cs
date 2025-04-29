@@ -107,8 +107,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 foreach (var pose in cat.poses)
                 {
-                    // if(pose.parameter == "Foldout Cash") continue;
-                    pose.parameter = "↓ 一時データとして、メニューの開閉状態を保存しています。";
+                    // 一時データとして、メニューの開閉状態を保存
                     pose.value = 0;
                 }
             }
@@ -117,10 +116,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             Apply("Init PoseLibrary", () =>
             {
                 var d = serializedObject.FindProperty("data");
-                d.FindPropertyRelative("name").stringValue             = DynamicVariables.Settings.Menu.main.title;
+                d.FindPropertyRelative("name").stringValue               = DynamicVariables.Settings.Menu.main.title;
                 d.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.main.thumbnail;
                 d.FindPropertyRelative("categories").arraySize           = 0;
-                d.FindPropertyRelative("guid").stringValue              = string.Empty;
                 _library.isInitialized = true;
             });
         }
@@ -133,7 +131,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             int    newIdx  = _libraryTagIndex;
 
             float texSize = _lineHeight * 8f;
-            EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
+            // EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
 
             using (new GUILayout.HorizontalScope())
             {
@@ -241,9 +239,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                     int i = catProp.arraySize;
                     catProp.InsertArrayElementAtIndex(i);
                     var c = catProp.GetArrayElementAtIndex(i);
-                    c.FindPropertyRelative("name").stringValue             = DynamicVariables.Settings.Menu.category.title;
+                    c.FindPropertyRelative("name").stringValue               = DynamicVariables.Settings.Menu.category.title;
                     c.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.category.thumbnail;
-                    c.FindPropertyRelative("poses").arraySize              = 0;
+                    c.FindPropertyRelative("poses").arraySize                = 0;
                     // 同期して空行を追加
                     _poseLists.Insert(i, null);
                     _thumbnails.Insert(i, new List<Texture2D>());
@@ -377,7 +375,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (newThumb != icon.objectReferenceValue) Apply("Edit Category Thumbnail", () => icon.objectReferenceValue = newThumb);
             GUI.Button(thumbRect, GUIContent.none, GUIStyle.none);
 
-            GUI.Label(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight, 100, _lineHeight), _categoryTextLabel);
+            GUI.Label(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight, 200, _lineHeight), _categoryTextLabel);
             string catName = EditorGUI.TextField(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight*3,
                                                            Mathf.Min(TextBoxWidth, nameArea-thumbSz-15f), _lineHeight),
                                                            name.stringValue);
