@@ -107,8 +107,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 foreach (var pose in cat.poses)
                 {
-                    if(pose.parameter == "Foldout Cash") continue;
-                    pose.parameter = "Foldout Cash";
+                    // if(pose.parameter == "Foldout Cash") continue;
+                    pose.parameter = "↓ 一時データとして、メニューの開閉状態を保存しています。";
                     pose.value = 0;
                 }
             }
@@ -161,7 +161,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 Apply("Rename PoseLibrary", () =>
                 {
-                    FindData("name").stringValue = (newIdx != _libraryTagIndex) ? _libraryTagList[newIdx] : newName;
+                    SyncGlobalToggles((newIdx != _libraryTagIndex) ? _libraryTagList[newIdx] : newName);
                 });
                 SyncLibraryTags();
             }
@@ -186,6 +186,21 @@ namespace com.hhotatea.avatar_pose_library.editor
                     so.ApplyModifiedProperties();
                 }
             });
+        }
+
+        private void SyncGlobalToggles(string tag)
+        {
+            FindData("name").stringValue = tag;
+            
+            // フラグの整合性を取る。
+            var comp = GetLibraryComponents().FirstOrDefault(
+                e => e.data.name == tag && e.data != Data);
+            if (comp)
+            {
+                FindData("enableHeightParam").boolValue = comp.data.enableHeightParam;
+                FindData("enableSpeedParam").boolValue  = comp.data.enableSpeedParam;
+                FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
+            }
         }
 
         
