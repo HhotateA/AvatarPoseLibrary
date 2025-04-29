@@ -6,6 +6,10 @@
   <title>AvatarPoseLibrary (APL)</title>
   <link rel="icon" href="icon.ico">
   <link rel="stylesheet" href="style.css">
+  <link
+  href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+Antique&display=swap"
+  rel="stylesheet"
+  >
 </head>
 <body>
   <header class="header">
@@ -25,7 +29,6 @@
   <main class="hero">
     <div class="container">
       <img src="banner.png" alt="APL Banner" class="hero-banner">
-      <h1 class="hero-title">アバターポーズライブラリ（APL）</h1>
       <p class="hero-description">
         <strong>AvatarPoseLibrary (APL)</strong> は、Unity 上で VRChat 向けのアバター用ポーズを管理・適用するためのツールです。アバターのポーズを効率的に制御し、VRChat アバターの制作やカスタマイズを支援します。
       </p>
@@ -66,35 +69,30 @@
             <h3>📂 許可なしで再配布OK</h3>
             <p>アニメーションやポーズデータを自由に配布可能。</p>
           </div>
-          <!-- 複製部分 -->
-          <div class="feature-card">
-            <h3>✨ 複数のメニュー統合</h3>
-            <p>アニメーションを一元管理し、効率的な制御を実現します。</p>
-          </div>
-          <div class="feature-card">
-            <h3>📸 サムネイル撮影機能</h3>
-            <p>自動でサムネイルを撮影し、メニュー画像を差し替え可能です。</p>
-          </div>
-          <div class="feature-card">
-            <h3>🎯 トラッキング抑制</h3>
-            <p>指だけを動かす、無効化など柔軟に設定できます。</p>
-          </div>
-          <div class="feature-card">
-            <h3>🔧 コンポーネントで設定完了</h3>
-            <p>コンポーネントベースで、プレハブ化にも対応。</p>
-          </div>
-          <div class="feature-card">
-            <h3>🧠 より人間らしい動きに</h3>
-            <p>静的ポーズでも自然な動作に変換します。</p>
-          </div>
-          <div class="feature-card">
-            <h3>📂 許可なしで再配布OK</h3>
-            <p>アニメーションやポーズデータを自由に配布可能。</p>
-          </div>
         </div>
       </div>
     </div>
   </section>
+
+  <br>
+  
+  <!-- Booth ギャラリー -->
+  <section class="booth-gallery">
+    <div class="container">
+      <div class="carousel booth-carousel">
+        <div class="carousel-track" id="booth-gallery">
+          <!-- JS でアイテムと複製を埋め込み -->
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <br>
+
+  <footer>
+    <p><small>Site create by <a href="https://www.hhotatea.com/">ほたてねこまじん</a></small></p>
+    <p><small>サイトの閲覧情報は、サイト管理者に送信される可能性があります。  — プライバシーポリシー <a href="https://www.hhotatea.com/privacypolicy.html">PrivacyPolicy</a></small></p>
+  </footer>
 
   <script src="main.js"></script>
 </body>
