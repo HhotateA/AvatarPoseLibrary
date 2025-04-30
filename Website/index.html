@@ -3,13 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AvatarPoseLibrary (APL)</title>
+  <title>AvatarPoseLibrary</title>
   <link rel="icon" href="icon.ico">
   <link rel="stylesheet" href="style.css">
   <link
   href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+Antique&display=swap"
   rel="stylesheet"
   >
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-X5GE45XDF8"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-X5GE45XDF8');
+  </script>
 </head>
 <body>
   <header class="header">
@@ -35,7 +44,7 @@
       <div class="hero-buttons">
         <a href="vcc://vpm/addRepo?url=https://HhotateA.github.io/AvatarPoseLibrary/index.json" class="btn">VCCに追加</a>
         <a href="https://github.com/HhotateA/AvatarPoseLibrary/releases/latest/" class="btn unity-download">UnityPackageをダウンロード</a>
-        <a href="https://github.com/HhotateA/AvatarPoseLibrary/wiki" class="btn">チュートリアル</a>
+        <a href="https://github.com/HhotateA/AvatarPoseLibrary/wiki" class="btn">マニュアル</a>
       </div>
     </div>
   </main>
@@ -44,7 +53,6 @@
     <div class="container">
       <div class="carousel">
         <div class="carousel-track">
-          <!-- オリジナル6要素と複製6要素で無限ループ -->
           <div class="feature-card">
             <h3>✨ パラメーター最適化</h3>
             <p>複数のメニューを自動で統合し、アバターのパラメーター数を最小限にします！</p>

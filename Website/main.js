@@ -24,7 +24,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let boothSpeed = 0.5;
   let boothScroll = 0;
 
-  fetch('products.json')
+  fetch('https://script.google.com/macros/s/AKfycbzexlBYViKpPiYe56DxKL9t1dkZ1L3-manto_9RXOueMdH78Kh0cSJQmyqDfSsf_Ek9/exec')
     .then(res => {
       if (!res.ok) throw new Error('products.json の取得に失敗');
       return res.json();
@@ -55,10 +55,11 @@ window.addEventListener('DOMContentLoaded', () => {
         boothTrack.appendChild(a);
       });
 
-      // 自動スクロール（1.5ページ分スクロールしたら0.5ページ分の位置へジャンプ）
-      const pageWidth = boothCarousel.clientWidth;
+      // 15アイテムを1ページ分として幅を定義
+      const pageWidth = boothTrack.scrollWidth / 2;
       function stepBooth() {
         boothScroll += boothSpeed;
+        // 1.5ページ分を超えたら0.5ページ分の位置へジャンプ
         if (boothScroll >= pageWidth * 1.5) {
           boothScroll = pageWidth * 0.5;
         }
