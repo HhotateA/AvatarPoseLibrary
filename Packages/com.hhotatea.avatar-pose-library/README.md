@@ -83,6 +83,7 @@ GitHub の Issues や PR を通じてご参加ください。
 ## 📞 連絡先
 
 質問は、以下の連絡先にお願いします。
-　コンポーネント作成 by.HhotateA_xR
-　アイコン作成 by.lowteq_neko
-　商品ページ作成 by.meron_chanV
+
+- コンポーネント作成 by.HhotateA_xR
+- アイコン作成 by.lowteq_neko
+- 商品ページ作成 by.meron_chanV
