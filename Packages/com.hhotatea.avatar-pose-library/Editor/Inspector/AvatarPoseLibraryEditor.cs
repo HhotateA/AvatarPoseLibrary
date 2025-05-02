@@ -112,15 +112,12 @@ namespace com.hhotatea.avatar_pose_library.editor
                 }
             }
             
+            // データの初期化
             if (_library.isInitialized) return;
-            Apply("Init PoseLibrary", () =>
-            {
-                var d = serializedObject.FindProperty("data");
-                d.FindPropertyRelative("name").stringValue               = DynamicVariables.Settings.Menu.main.title;
-                d.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.main.thumbnail;
-                d.FindPropertyRelative("categories").arraySize           = 0;
-                _library.isInitialized = true;
-            });
+            _library.data = new AvatarPoseData();
+            _library.data.name = DynamicVariables.Settings.Menu.main.title;
+            _library.data.thumbnail = DynamicVariables.Settings.Menu.main.thumbnail;
+            _library.isInitialized = true;
         }
         #endregion
 

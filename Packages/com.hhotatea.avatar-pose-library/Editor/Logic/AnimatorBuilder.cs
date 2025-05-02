@@ -72,6 +72,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             // 空のステート（default）
             var defaultState = layer.stateMachine.AddState("Default");
+            defaultState.writeDefaultValues = false;
             defaultState.motion = MotionBuilder.NoneAnimation();
                 
             // ポーズのレイヤー追加
@@ -101,9 +102,11 @@ namespace com.hhotatea.avatar_pose_library.logic
             var noneClip = MotionBuilder.NoneAnimation();
             // ステートの初期化
             var defaultState = layer.stateMachine.AddState("Default");
+            defaultState.writeDefaultValues = false;
             defaultState.motion = noneClip;
             
             var resetState = layer.stateMachine.AddState("Reset");
+            resetState.writeDefaultValues = false;
             resetState.motion = noneClip;
             
             var paramReset = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
@@ -199,15 +202,19 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             // ステートの初期化
             var offIdleState = layer.stateMachine.AddState("OffIdle");
+            offIdleState.writeDefaultValues = false;
             offIdleState.motion = noneClip;
             
             var offConState = layer.stateMachine.AddState("OffConState");
+            offConState.writeDefaultValues = false;
             offConState.motion = noneClip;
 
             var onIdleState = layer.stateMachine.AddState("OnIdle");
+            onIdleState.writeDefaultValues = false;
             onIdleState.motion = noneClip;
             
             var onConState = layer.stateMachine.AddState("OnConState");
+            onConState.writeDefaultValues = false;
             onConState.motion = noneClip;
             
             // コンポーネント
@@ -364,6 +371,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // 準備ステートの作成
             var reserveState = layer.stateMachine.AddState("Reserve_"+pose.value.ToString());
             reserveState.motion = noneClip;
+            reserveState.writeDefaultValues = false;
             {
                 var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 foreach (var (enabled, prefix) in trackingMap)
@@ -390,6 +398,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.value.ToString());
+            poseState.writeDefaultValues = false;
             if (mirror)
             {
                 poseState.mirrorParameterActive = true;
@@ -437,6 +446,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // トラッキングリセット用のステート
             var resetState = layer.stateMachine.AddState("Reset"+pose.value.ToString());
             resetState.motion = noneClip;
+            resetState.writeDefaultValues = false;
             {
                 var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 foreach (var (enabled, prefix) in trackingMap)
@@ -460,6 +470,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // 変数リセット用のステート
             var preResetState = layer.stateMachine.AddState("PreReset"+pose.value.ToString());
             preResetState.motion = noneClip;
+            preResetState.writeDefaultValues = false;
             var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             {
                 resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
