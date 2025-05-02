@@ -73,7 +73,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // 空のステート（default）
             var defaultState = layer.stateMachine.AddState("Default");
             defaultState.writeDefaultValues = false;
-            defaultState.motion = MotionBuilder.NoneAnimation();
+            defaultState.motion = new AnimationClip();
                 
             // ポーズのレイヤー追加
             foreach (var category in poseLibrary.categories)
