@@ -503,6 +503,11 @@ namespace com.hhotatea.avatar_pose_library.editor
                     p.FindPropertyRelative("autoThumbnail").boolValue=true;
                     var tr=p.FindPropertyRelative("tracking");
                     bool moving=MotionBuilder.IsMoveAnimation(clip);
+                    tr.FindPropertyRelative("head").boolValue = true;
+                    tr.FindPropertyRelative("arm").boolValue = true;
+                    tr.FindPropertyRelative("foot").boolValue = true;
+                    tr.FindPropertyRelative("finger").boolValue = true;
+                    tr.FindPropertyRelative("locomotion").boolValue = true;
                     tr.FindPropertyRelative("motionSpeed").floatValue=moving?1f:0f;
                     tr.FindPropertyRelative("loop").boolValue=!moving || MotionBuilder.IsLoopAnimation(clip);
                     _thumbnails[catIdx].Add(null);
