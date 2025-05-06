@@ -50,6 +50,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableHeightParam = true;
         public bool enableSpeedParam = true;
         public bool enableMirrorParam = true;
+        public bool enableTrackingParam = true;
         
         // システムが使用
         public string guid;
@@ -107,6 +108,7 @@ namespace com.hhotatea.avatar_pose_library.model
                     apd.enableHeightParam = d.enableHeightParam;
                     apd.enableSpeedParam = d.enableSpeedParam;
                     apd.enableMirrorParam = d.enableMirrorParam;
+                    apd.enableTrackingParam = d.enableTrackingParam;
                 }
                 apd.UpdateParameter();
                 result[i] = apd;

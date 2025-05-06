@@ -16,13 +16,31 @@ namespace com.hhotatea.avatar_pose_library.logic
             mResult.Control.icon = poseLibrary.thumbnail;
             mResult.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
 
-            var settings = new GameObject(DynamicVariables.Settings.Menu.setting.title);
-            settings.transform.SetParent(result.transform);
-            var mSettings = settings.AddComponent<ModularAvatarMenuItem>();
-            mSettings.MenuSource = SubmenuSource.Children;
-            mSettings.Control.icon = DynamicVariables.Settings.Menu.setting.thumbnail;
-            mSettings.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-            SettingsMenu(mSettings.transform,poseLibrary);
+            if (poseLibrary.enableHeightParam ||
+                poseLibrary.enableSpeedParam ||
+                poseLibrary.enableMirrorParam ||
+                poseLibrary.enableTrackingParam)
+            {
+                // 設定メニュー
+                var settings = new GameObject(DynamicVariables.Settings.Menu.setting.title);
+                settings.transform.SetParent(result.transform);
+                var mSettings = settings.AddComponent<ModularAvatarMenuItem>();
+                mSettings.MenuSource = SubmenuSource.Children;
+                mSettings.Control.icon = DynamicVariables.Settings.Menu.setting.thumbnail;
+                mSettings.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
+                SettingsMenu(mSettings.transform,poseLibrary);
+            }
+            else
+            {
+                // メニューが存在しない場合
+                CreateToggleMenu(
+                    result.transform,
+                    DynamicVariables.Settings.Menu.reset.title,
+                    DynamicVariables.Settings.Menu.reset.thumbnail,
+                    $"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}"
+                );
+            }
+
 
             // メニューの構造を作る
             foreach (var category in poseLibrary.categories)
@@ -68,7 +86,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 $"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}"
             );
             
-            // --- Radialメニューを追加（例: 身長・速度） ---
+            // --- Radialメニューを追加 ---
             if (poseLibrary.enableHeightParam)
             {
                 CreateRadialMenu(
@@ -98,19 +116,22 @@ namespace com.hhotatea.avatar_pose_library.logic
                     $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}"
                 );
             }
-            
-            var tracking = new GameObject(DynamicVariables.Settings.Menu.tracking.title);
-            tracking.transform.SetParent(parent.transform);
-            var mTracking = tracking.AddComponent<ModularAvatarMenuItem>();
-            mTracking.MenuSource = SubmenuSource.Children;
-            mTracking.Control.icon = DynamicVariables.Settings.Menu.tracking.thumbnail;
-            mTracking.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-            TrackingMenu(mTracking.transform,poseLibrary);
+
+            if (poseLibrary.enableTrackingParam)
+            {
+                var tracking = new GameObject(DynamicVariables.Settings.Menu.tracking.title);
+                tracking.transform.SetParent(parent.transform);
+                var mTracking = tracking.AddComponent<ModularAvatarMenuItem>();
+                mTracking.MenuSource = SubmenuSource.Children;
+                mTracking.Control.icon = DynamicVariables.Settings.Menu.tracking.thumbnail;
+                mTracking.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
+                TrackingMenu(mTracking.transform,poseLibrary);
+            }
         }
 
         static void TrackingMenu(Transform parent, AvatarPoseData poseLibrary)
         {
-            // --- トグルメニューを追加（例: トラッキング制御） ---
+            // --- トグルメニューを追加 ---
             CreateToggleMenu(
                 parent,
                 DynamicVariables.Settings.Menu.head.title,

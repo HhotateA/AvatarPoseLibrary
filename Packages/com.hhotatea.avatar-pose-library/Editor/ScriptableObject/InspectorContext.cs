@@ -47,6 +47,8 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string enableSpeedTooltip = "スピード調整機能を有効にする。";
         public string enableMirrorLabel = "Enable Mirror";
         [Multiline] public string enableMirrorTooltip = "ミラー機能を有効にする。";
+        public string enableTrackingLabel = "Enable Tracking";
+        [Multiline] public string enableTrackingTooltip = "トラッキングメニューを有効にする。";
         
         
         public Texture2D thumbnailBg;
