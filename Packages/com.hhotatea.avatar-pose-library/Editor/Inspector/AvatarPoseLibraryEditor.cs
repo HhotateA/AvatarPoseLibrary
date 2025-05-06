@@ -340,8 +340,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             
             // poseLists 同期
-            while (_poseLists.Count > catCount) _poseLists.RemoveAt(_poseLists.Count-1);
-            while (_poseLists.Count < catCount) _poseLists.Add(null);
+            Resize1D(_poseLists, catCount);
         }
 
         private static void Resize2DList<T>(List<List<T>> list, int size)
