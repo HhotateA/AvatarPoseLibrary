@@ -27,9 +27,12 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                     foreach (var d in data)
                     {
-                        BuildRuntimeAnimator(ctx.AvatarRootObject,d);
-                        BuildRuntimeMenu(ctx.AvatarRootObject,d);
-                        BuildRuntimeParameter(ctx.AvatarRootObject,d);
+                        var go = new GameObject(d.guid);
+                        go.transform.SetParent(ctx.AvatarRootObject.transform);
+                        
+                        BuildRuntimeAnimator(go,d);
+                        BuildRuntimeMenu(go,d);
+                        BuildRuntimeParameter(go,d);
                     }
                 });
         }
@@ -41,11 +44,13 @@ namespace com.hhotatea.avatar_pose_library.editor
         /// <param name="data"></param>
         void BuildRuntimeAnimator(GameObject obj,AvatarPoseData data)
         {
-            var result = AnimatorBuilder.BuildPoseAnimator(data);
-
-            var ma = obj.gameObject.AddComponent<ModularAvatarMergeAnimator>();
-            ma.animator = result;
-            ma.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
+            var ma_base = obj.gameObject.AddComponent<ModularAvatarMergeAnimator>();
+            ma_base.animator = AnimatorBuilder.BuildLocomotionAnimator(data);
+            ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
+            
+            var ma_fx = obj.gameObject.AddComponent<ModularAvatarMergeAnimator>();
+            ma_fx.animator = AnimatorBuilder.BuildFxAnimator(data);
+            ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
         }
 
         /// <summary>

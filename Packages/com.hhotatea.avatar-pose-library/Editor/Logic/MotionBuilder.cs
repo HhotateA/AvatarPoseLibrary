@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using com.hhotatea.avatar_pose_library.editor;
 using UnityEngine;
 using UnityEditor;
@@ -105,6 +107,44 @@ namespace com.hhotatea.avatar_pose_library.logic
                     }
                 }
                 result.SetCurve(binding.path, binding.type, binding.propertyName, newCurve);
+            }
+            
+            return result;
+        }
+        
+        public static AnimationClip[] PartAnimation(AnimationClip anim)
+        {
+            if (!anim)
+            {
+                return new AnimationClip[]{null,null};
+            }
+            
+            // 既存のアニメーションの検証
+            var curves = AnimationUtility.GetCurveBindings(anim);
+
+            var result = new AnimationClip[]
+            {
+                new AnimationClip(),
+                new AnimationClip()
+            };
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(anim);
+            result[0].name = $"{anim.name}_Locomotion";
+            result[1].name = $"{anim.name}_FX";
+            AnimationUtility.SetAnimationClipSettings(result[0], settings);
+            AnimationUtility.SetAnimationClipSettings(result[1], settings);
+            
+            foreach (var binding in curves)
+            {
+                var curve = AnimationUtility.GetEditorCurve(anim, binding);
+                bool isLocomotionAnimation = binding.type == typeof(Transform) || binding.type == typeof(Animator);
+                if (isLocomotionAnimation)
+                {
+                    result[0].SetCurve(binding.path, binding.type, binding.propertyName, curve);
+                }
+                else
+                {
+                    result[1].SetCurve(binding.path, binding.type, binding.propertyName, curve);
+                }
             }
             
             return result;
