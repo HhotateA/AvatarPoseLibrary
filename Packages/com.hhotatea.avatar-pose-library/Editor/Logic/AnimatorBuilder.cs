@@ -451,6 +451,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
+            // Transform以外のAnimationを抽出
             poseState.motion = MotionBuilder.PartAnimation(anim)[1];
             if (MotionBuilder.IsMoveAnimation(anim))
             {
@@ -627,6 +628,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
+            // Transform関係のAnimation抽出
             anim = MotionBuilder.PartAnimation(anim)[0];
             if (MotionBuilder.IsMoveAnimation(anim))
             {
@@ -690,9 +692,9 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 new AnimatorCondition
                 {
-                    mode = AnimatorConditionMode.Equals,
+                    mode = AnimatorConditionMode.NotEqual,
                     parameter = pose.parameter,
-                    threshold = 0
+                    threshold = pose.value
                 }
             };
         }
