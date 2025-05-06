@@ -189,6 +189,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             result[1].name = $"{anim.name}_FX";
             AnimationUtility.SetAnimationClipSettings(result[0], settings);
             AnimationUtility.SetAnimationClipSettings(result[1], settings);
+
+            float animTime = 0f;
             
             foreach (var binding in curves)
             {
@@ -201,6 +203,25 @@ namespace com.hhotatea.avatar_pose_library.logic
                 else
                 {
                     result[1].SetCurve(binding.path, binding.type, binding.propertyName, curve);
+                }
+
+                foreach (var c in curve.keys)
+                {
+                    animTime = Mathf.Max(animTime, c.time);
+                }
+            }
+            
+            // アニメーションの長さを一定にするために、空プロパティを入れておく
+            {
+                var curve = new AnimationCurve();
+                curve.AddKey(0f, 0f);
+                curve.AddKey(animTime, 0f);
+                // あり得ないアニメーションを1フレームだけ入れておく。
+                foreach (var r in result)
+                {
+                    r.SetCurve(
+                        Guid.NewGuid().ToString("N").Substring(0, 8), 
+                        typeof(Transform), "localPosition.x", curve);
                 }
             }
             
