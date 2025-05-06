@@ -21,13 +21,13 @@ namespace com.hhotatea.avatar_pose_library.logic
                 name = $"{ConstVariables.AnimatorPrefix}_{poseLibrary.guid}",
                 defaultWeight = 1f,
                 stateMachine = new AnimatorStateMachine(),
-                blendingMode = AnimatorLayerBlendingMode.Override
+                blendingMode = AnimatorLayerBlendingMode.Override,
             };
             result.AddLayer(layer);
 
             // 空のステート（default）
             var defaultState = layer.stateMachine.AddState("Default");
-            defaultState.writeDefaultValues = false;
+            defaultState.writeDefaultValues = true;
             defaultState.motion = new AnimationClip();
                 
             // ポーズのレイヤー追加
@@ -58,7 +58,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             // 空のステート（default）
             var defaultState = layer.stateMachine.AddState("Default");
-            defaultState.writeDefaultValues = false;
+            defaultState.writeDefaultValues = true;
             defaultState.motion = new AnimationClip();
                 
             // ポーズのレイヤー追加

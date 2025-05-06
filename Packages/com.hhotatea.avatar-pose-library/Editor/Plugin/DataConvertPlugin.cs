@@ -46,10 +46,14 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var ma_base = obj.gameObject.AddComponent<ModularAvatarMergeAnimator>();
             ma_base.animator = AnimatorBuilder.BuildLocomotionAnimator(data);
+            ma_base.pathMode = MergeAnimatorPathMode.Absolute;
+            ma_base.matchAvatarWriteDefaults = true;
             ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
             
             var ma_fx = obj.gameObject.AddComponent<ModularAvatarMergeAnimator>();
             ma_fx.animator = AnimatorBuilder.BuildFxAnimator(data);
+            ma_fx.pathMode = MergeAnimatorPathMode.Absolute;
+            ma_fx.matchAvatarWriteDefaults = true;
             ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
         }
 
