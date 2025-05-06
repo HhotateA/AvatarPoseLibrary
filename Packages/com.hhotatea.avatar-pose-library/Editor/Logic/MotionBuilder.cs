@@ -12,13 +12,70 @@ namespace com.hhotatea.avatar_pose_library.logic
 {
     public static class MotionBuilder
     {
+        /// <summary>
+        /// アニメーションの脚の高さを変える
+        /// </summary>
+        /// <param name="anim"></param>
+        /// <param name="level"></param>
+        /// <returns></returns>
         public static AnimationClip BuildMotionLevel(AnimationClip anim,float level)
         {
             if (!anim) return null;
             
+            var curves = AnimationUtility.GetCurveBindings(anim);
+            foreach (var binding in curves)
+            {
+                var c = AnimationUtility.GetEditorCurve(anim, binding);
+                if (binding.propertyName == "MotionT.y")
+                {
+                    return BuildMotionLevel_Motion(anim, level);
+                }
+            }
+            return BuildMotionLevel_Root(anim, level);
+        }
+
+        /// <summary>
+        /// MotionTを制御されている場合はLevelの修正が効かないので、こちらで上書き
+        /// </summary>
+        /// <param name="anim"></param>
+        /// <param name="level"></param>
+        /// <returns></returns>
+        static AnimationClip BuildMotionLevel_Motion(AnimationClip anim, float level)
+        {
+            var result = new AnimationClip();
+            result.name = $"{anim.name}_levelM{level}";
+            
+            var curves = AnimationUtility.GetCurveBindings(anim);
+            foreach (var binding in curves)
+            {
+                var curve = AnimationUtility.GetEditorCurve(anim, binding);
+                if (binding.propertyName == "MotionT.y")
+                {
+                    if(curve.keys.Length == 0) continue;
+                    var c = new AnimationCurve();
+                    foreach (var key in curve.keys)
+                    {
+                        c.AddKey(key.time, key.value + level);
+                    }
+                    result.SetCurve(binding.path, binding.type, binding.propertyName, c);
+                    continue;
+                }
+                result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
+            }
+            return result;
+        }
+        
+        /// <summary>
+        /// AnimationのLevel設定を変更
+        /// </summary>
+        /// <param name="anim"></param>
+        /// <param name="level"></param>
+        /// <returns></returns>
+        static AnimationClip BuildMotionLevel_Root(AnimationClip anim, float level)
+        {
             var settings = AnimationUtility.GetAnimationClipSettings(anim);
             var result = Object.Instantiate(anim);
-            result.name = $"{anim.name}_level{level}";
+            result.name = $"{anim.name}_levelR{level}";
             //result.wrapMode = anim.wrapMode;
             settings.level += level;
             AnimationUtility.SetAnimationClipSettings(result, settings);
