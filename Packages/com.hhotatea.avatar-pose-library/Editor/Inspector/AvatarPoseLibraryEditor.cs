@@ -255,9 +255,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 onRemoveCallback = l => Apply("Remove Category", () =>
                 {
                     catProp.DeleteArrayElementAtIndex(l.index);
-                    _poseLists.RemoveAt(l.index);
-                    _thumbnails.RemoveAt(l.index);
-                    _lastClips.RemoveAt(l.index);
+                    _poseLists.Clear();
+                    _thumbnails.Clear();
+                    _lastClips.Clear();
                 }),
 
                 onChangedCallback = _ => serializedObject.ApplyModifiedProperties()
@@ -307,8 +307,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                 onRemoveCallback = l => Apply("Remove Pose", () =>
                 {
                     posesProp.DeleteArrayElementAtIndex(l.index);
-                    _thumbnails[catIdx].RemoveAt(l.index);
-                    _lastClips[catIdx].RemoveAt(l.index);
+                    _thumbnails[catIdx].Clear();
+                    _lastClips[catIdx].Clear();
                 }),
 
                 onChangedCallback = _ => serializedObject.ApplyModifiedProperties()
@@ -340,8 +340,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             
             // poseLists 同期
-            while (_poseLists.Count > catCount) _poseLists.RemoveAt(_poseLists.Count-1);
-            while (_poseLists.Count < catCount) _poseLists.Add(null);
+            Resize1D(_poseLists, catCount);
         }
 
         private static void Resize2DList<T>(List<List<T>> list, int size)
