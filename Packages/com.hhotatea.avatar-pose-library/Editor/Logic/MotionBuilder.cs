@@ -44,6 +44,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             var result = new AnimationClip();
             result.name = $"{anim.name}_levelM{level}";
+            result.wrapMode = anim.wrapMode;
             
             var curves = AnimationUtility.GetCurveBindings(anim);
             foreach (var binding in curves)
@@ -62,6 +63,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                 }
                 result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
             }
+            
+            var settings = AnimationUtility.GetAnimationClipSettings(anim);
+            AnimationUtility.SetAnimationClipSettings(result, settings);
+            
             return result;
         }
         
@@ -73,12 +78,14 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <returns></returns>
         static AnimationClip BuildMotionLevel_Root(AnimationClip anim, float level)
         {
-            var settings = AnimationUtility.GetAnimationClipSettings(anim);
             var result = Object.Instantiate(anim);
             result.name = $"{anim.name}_levelR{level}";
-            //result.wrapMode = anim.wrapMode;
+            result.wrapMode = anim.wrapMode;
+            
+            var settings = AnimationUtility.GetAnimationClipSettings(anim);
             settings.level += level;
             AnimationUtility.SetAnimationClipSettings(result, settings);
+            
             return result;
         }
         
@@ -111,8 +118,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             if (!anim) return false;
             
-            var result = Object.Instantiate(anim);
-            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(result);
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(anim);
             return settings.loopTime;
         }
         
