@@ -39,7 +39,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         private GUIContent _libraryLabel, _categoryListLabel, _categoryIconLabel, _categoryTextLabel,
                            _openAllLabel, _closeAllLabel, _poseListLabel, _openLabel, _closeLabel,
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
-                           _motionSpeedLabel, _dropBoxLabel, 
+                           _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
                            _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableTrackingLabel;
 
         private string[] _libraryTagList;
@@ -92,6 +92,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             _enableSpeedLabel   = new(i.enableSpeedLabel, i.enableSpeedTooltip);
             _enableMirrorLabel  = new(i.enableMirrorLabel, i.enableMirrorTooltip);
             _enableTrackingLabel= new(i.enableTrackingLabel, i.enableTrackingTooltip);
+            _poseThumbnailLabel = new("",i.poseThumbnailTooltip);
+            _posePreviewLabel = new("",i.posePreviewTooltip);
 
             _trackingOptions = new[]
             {
@@ -376,7 +378,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             var thumbRect = new Rect(rect.x+Spacing, y, thumbSz, thumbSz);
             var newThumb  = (Texture2D)EditorGUI.ObjectField(thumbRect, _categoryIconLabel, icon.objectReferenceValue, typeof(Texture2D), false);
             if (newThumb != icon.objectReferenceValue) Apply("Edit Category Thumbnail", () => icon.objectReferenceValue = newThumb);
-            GUI.Button(thumbRect, GUIContent.none, GUIStyle.none);
+            GUI.Button(thumbRect, _categoryIconLabel, GUIStyle.none);
 
             GUI.Label(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight, 200, _lineHeight), _categoryTextLabel);
             string catName = EditorGUI.TextField(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight*3,
@@ -458,14 +460,14 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     GUI.DrawTexture(thumbRect, DynamicVariables.Settings.Inspector.thumbnailBg, ScaleMode.StretchToFill,false);
                     GUI.DrawTexture(Rect.MinMaxRect(thumbRect.xMin+1,thumbRect.yMin+1,thumbRect.xMax-1,thumbRect.yMax-1), _thumbnails[catIdx][poseIdx], ScaleMode.StretchToFill,true);
-                    GUI.Button(thumbRect, GUIContent.none, GUIStyle.none);
+                    GUI.Button(thumbRect, _posePreviewLabel, GUIStyle.none);
                 }
             }
             else
             {
                 var newTex=(Texture2D)EditorGUI.ObjectField(thumbRect, thumbProp.objectReferenceValue, typeof(Texture2D), false);
                 if(newTex!=thumbProp.objectReferenceValue) Apply("Edit Pose Thumbnail", ()=> thumbProp.objectReferenceValue=newTex);
-                GUI.Button(thumbRect,GUIContent.none,GUIStyle.none);
+                GUI.Button(thumbRect, _poseThumbnailLabel, GUIStyle.none);
             }
 
             bool auto = EditorGUI.ToggleLeft(new Rect(rect.x, y+thumbnailSize+Spacing, leftWidth, _lineHeight), _thumbnailAutoLabel, autoTnProp.boolValue);
