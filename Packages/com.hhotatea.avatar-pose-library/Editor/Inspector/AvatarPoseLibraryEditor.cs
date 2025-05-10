@@ -39,7 +39,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         private GUIContent _libraryLabel, _categoryListLabel, _categoryIconLabel, _categoryTextLabel,
                            _openAllLabel, _closeAllLabel, _poseListLabel, _openLabel, _closeLabel,
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
-                           _motionSpeedLabel, _dropBoxLabel, 
+                           _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
                            _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableTrackingLabel;
 
         private string[] _libraryTagList;
@@ -92,6 +92,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             _enableSpeedLabel   = new(i.enableSpeedLabel, i.enableSpeedTooltip);
             _enableMirrorLabel  = new(i.enableMirrorLabel, i.enableMirrorTooltip);
             _enableTrackingLabel= new(i.enableTrackingLabel, i.enableTrackingTooltip);
+            _poseThumbnailLabel = new("",i.poseThumbnailTooltip);
+            _posePreviewLabel = new("",i.posePreviewTooltip);
 
             _trackingOptions = new[]
             {
@@ -284,21 +286,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 onAddCallback = l => Apply("Add Pose", () =>
                 {
-                    int i = posesProp.arraySize;
-                    posesProp.InsertArrayElementAtIndex(i);
-                    var p = posesProp.GetArrayElementAtIndex(i);
-                    p.FindPropertyRelative("name").stringValue             = DynamicVariables.Settings.Menu.pose.title;
-                    p.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.pose.thumbnail;
-                    p.FindPropertyRelative("animationClip").objectReferenceValue = null;
-                    p.FindPropertyRelative("autoThumbnail").boolValue       = true;
-                    var tr = p.FindPropertyRelative("tracking");
-                    tr.FindPropertyRelative("head").boolValue       = true;
-                    tr.FindPropertyRelative("arm").boolValue        = true;
-                    tr.FindPropertyRelative("finger").boolValue     = true;
-                    tr.FindPropertyRelative("foot").boolValue       = true;
-                    tr.FindPropertyRelative("locomotion").boolValue = true;
-                    tr.FindPropertyRelative("loop").boolValue       = true;
-                    tr.FindPropertyRelative("motionSpeed").floatValue = 0f;
+                    AddPose(posesProp);
                     // cache 行追加
                     _thumbnails[catIdx].Add(null);
                     _lastClips[catIdx].Add(null);
@@ -376,7 +364,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             var thumbRect = new Rect(rect.x+Spacing, y, thumbSz, thumbSz);
             var newThumb  = (Texture2D)EditorGUI.ObjectField(thumbRect, _categoryIconLabel, icon.objectReferenceValue, typeof(Texture2D), false);
             if (newThumb != icon.objectReferenceValue) Apply("Edit Category Thumbnail", () => icon.objectReferenceValue = newThumb);
-            GUI.Button(thumbRect, GUIContent.none, GUIStyle.none);
+            GUI.Button(thumbRect, _categoryIconLabel, GUIStyle.none);
 
             GUI.Label(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight, 200, _lineHeight), _categoryTextLabel);
             string catName = EditorGUI.TextField(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight*3,
@@ -458,14 +446,14 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     GUI.DrawTexture(thumbRect, DynamicVariables.Settings.Inspector.thumbnailBg, ScaleMode.StretchToFill,false);
                     GUI.DrawTexture(Rect.MinMaxRect(thumbRect.xMin+1,thumbRect.yMin+1,thumbRect.xMax-1,thumbRect.yMax-1), _thumbnails[catIdx][poseIdx], ScaleMode.StretchToFill,true);
-                    GUI.Button(thumbRect, GUIContent.none, GUIStyle.none);
+                    GUI.Button(thumbRect, _posePreviewLabel, GUIStyle.none);
                 }
             }
             else
             {
                 var newTex=(Texture2D)EditorGUI.ObjectField(thumbRect, thumbProp.objectReferenceValue, typeof(Texture2D), false);
                 if(newTex!=thumbProp.objectReferenceValue) Apply("Edit Pose Thumbnail", ()=> thumbProp.objectReferenceValue=newTex);
-                GUI.Button(thumbRect,GUIContent.none,GUIStyle.none);
+                GUI.Button(thumbRect, _poseThumbnailLabel, GUIStyle.none);
             }
 
             bool auto = EditorGUI.ToggleLeft(new Rect(rect.x, y+thumbnailSize+Spacing, leftWidth, _lineHeight), _thumbnailAutoLabel, autoTnProp.boolValue);
@@ -500,22 +488,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 foreach(var clip in DragAndDrop.objectReferences.OfType<AnimationClip>())
                 {
-                    int i=posesProp.arraySize;
-                    posesProp.InsertArrayElementAtIndex(i);
-                    var p=posesProp.GetArrayElementAtIndex(i);
-                    p.FindPropertyRelative("name").stringValue=clip.name;
-                    p.FindPropertyRelative("thumbnail").objectReferenceValue=DynamicVariables.Settings.Menu.pose.thumbnail;
-                    p.FindPropertyRelative("animationClip").objectReferenceValue=clip;
-                    p.FindPropertyRelative("autoThumbnail").boolValue=true;
-                    var tr=p.FindPropertyRelative("tracking");
-                    bool moving=MotionBuilder.IsMoveAnimation(clip);
-                    tr.FindPropertyRelative("head").boolValue = true;
-                    tr.FindPropertyRelative("arm").boolValue = true;
-                    tr.FindPropertyRelative("foot").boolValue = true;
-                    tr.FindPropertyRelative("finger").boolValue = true;
-                    tr.FindPropertyRelative("locomotion").boolValue = true;
-                    tr.FindPropertyRelative("motionSpeed").floatValue=moving?1f:0f;
-                    tr.FindPropertyRelative("loop").boolValue=!moving || MotionBuilder.IsLoopAnimation(clip);
+                    AddPose(posesProp,clip);
                     _thumbnails[catIdx].Add(null);
                     _lastClips[catIdx].Add(null);
                 }
@@ -525,6 +498,53 @@ namespace com.hhotatea.avatar_pose_library.editor
         #endregion
 
         #region ===== helpers =====
+
+        private void AddPose(SerializedProperty posesProp, AnimationClip clip = null)
+        {
+            int i = posesProp.arraySize;
+            posesProp.InsertArrayElementAtIndex(i);
+            var p= posesProp.GetArrayElementAtIndex(i);
+
+            // 初期値の設定
+            p.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.pose.thumbnail;
+            p.FindPropertyRelative("animationClip").objectReferenceValue = clip;
+            p.FindPropertyRelative("name").stringValue = DynamicVariables.Settings.Menu.pose.title;
+
+            p.FindPropertyRelative("autoThumbnail").boolValue=true;
+            
+            var tr=p.FindPropertyRelative("tracking");
+            tr.FindPropertyRelative("motionSpeed").floatValue = 1f;
+            tr.FindPropertyRelative("loop").boolValue = true;
+            tr.FindPropertyRelative("head").boolValue = true;
+            tr.FindPropertyRelative("arm").boolValue = true;
+            tr.FindPropertyRelative("foot").boolValue = true;
+            tr.FindPropertyRelative("finger").boolValue = true;
+            tr.FindPropertyRelative("locomotion").boolValue = true;
+            
+            if (i > 0)
+            {
+                // カテゴリ内の値を参照
+                var pm= posesProp.GetArrayElementAtIndex(i-1);
+                var trm=pm.FindPropertyRelative("tracking");
+                p.FindPropertyRelative("autoThumbnail").boolValue = pm.FindPropertyRelative("autoThumbnail").boolValue;
+                tr.FindPropertyRelative("head").boolValue = trm.FindPropertyRelative("head").boolValue;
+                tr.FindPropertyRelative("arm").boolValue = trm.FindPropertyRelative("arm").boolValue;
+                tr.FindPropertyRelative("foot").boolValue = trm.FindPropertyRelative("foot").boolValue;
+                tr.FindPropertyRelative("finger").boolValue = trm.FindPropertyRelative("finger").boolValue;
+                tr.FindPropertyRelative("locomotion").boolValue = trm.FindPropertyRelative("locomotion").boolValue;
+            }
+
+            if (clip)
+            {
+                p.FindPropertyRelative("name").stringValue = clip.name;
+                
+                // アニメーション種別による初期値
+                bool moving = MotionBuilder.IsMoveAnimation(clip);
+                tr.FindPropertyRelative("motionSpeed").floatValue = moving?1f:0f;
+                tr.FindPropertyRelative("loop").boolValue =! moving || MotionBuilder.IsLoopAnimation(clip);
+            }
+        }
+        
         private void DetectHierarchyChange()
         {
             string path=GetInstancePath(_library.transform);

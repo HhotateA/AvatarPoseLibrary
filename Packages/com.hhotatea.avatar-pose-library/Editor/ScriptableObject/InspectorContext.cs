@@ -37,7 +37,6 @@ namespace com.hhotatea.avatar_pose_library.component
         public string dropboxLabel = "Drop AnimationClips here to add Poses";
         [Multiline] public string dropboxTooltip = "ここにアニメーションを一括ドロップすることでPoseを生成できます。";
         [Multiline] public string mainThumbnailTooltip = "アバターポーズライブラリー by.HhotateA_xR";
-        [Multiline] public string categoryThumbnailTooltip = "メニューに表示されるサムネイル画像のプレビューです。";
         [Multiline] public string poseThumbnailTooltip = "メニューに表示されるサムネイル画像のプレビューです。";
         [Multiline] public string posePreviewTooltip = "メニューに表示されるサムネイル画像のプレビューです。\nプレビューでは服などの表示がずれるケースが有りますが、アップロード時に再撮影されます。";
 
