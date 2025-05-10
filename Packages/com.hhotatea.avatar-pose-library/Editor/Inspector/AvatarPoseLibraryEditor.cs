@@ -67,6 +67,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             EnsureInitialData();
             SyncLibraryTags();
             SyncCacheSize();
+            
+            // 初期化時に、タグを合わせる
+            SyncGlobalToggles(Data.name);
         }
 
         // BuildGuiContent() 省略なし
@@ -157,10 +160,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             if (newName != Data.name || newIdx != _libraryTagIndex)
             {
-                Apply("Rename PoseLibrary", () =>
-                {
-                    SyncGlobalToggles((newIdx != _libraryTagIndex) ? _libraryTagList[newIdx] : newName);
-                });
+                SyncGlobalToggles((newIdx != _libraryTagIndex) ? _libraryTagList[newIdx] : newName);
                 SyncLibraryTags();
             }
         }
@@ -193,17 +193,31 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void SyncGlobalToggles(string tag)
         {
-            FindData("name").stringValue = tag;
+            // 名前の整合性を取る
+            if (Data.name != tag)
+            {
+                Apply("Sync APL Name", () =>
+                {
+                    FindData("name").stringValue = tag;
+                });
+            }
             
             // フラグの整合性を取る。
             var comp = GetLibraryComponents().FirstOrDefault(
                 e => e.data.name == tag && e.data != Data);
-            if (comp)
+            if (!comp) return;
+            if (comp.data.enableHeightParam   != Data.enableHeightParam ||
+                comp.data.enableSpeedParam    != Data.enableSpeedParam ||
+                comp.data.enableMirrorParam   != Data.enableMirrorParam ||
+                comp.data.enableTrackingParam != Data.enableTrackingParam)
             {
-                FindData("enableHeightParam").boolValue = comp.data.enableHeightParam;
-                FindData("enableSpeedParam").boolValue  = comp.data.enableSpeedParam;
-                FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
-                FindData("enableTrackingParam").boolValue = comp.data.enableTrackingParam;
+                Apply("Sync APL Param", () =>
+                {
+                    FindData("enableHeightParam").boolValue = comp.data.enableHeightParam;
+                    FindData("enableSpeedParam").boolValue  = comp.data.enableSpeedParam;
+                    FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
+                    FindData("enableTrackingParam").boolValue = comp.data.enableTrackingParam;
+                });
             }
         }
 
