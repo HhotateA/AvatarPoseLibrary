@@ -286,21 +286,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 onAddCallback = l => Apply("Add Pose", () =>
                 {
-                    int i = posesProp.arraySize;
-                    posesProp.InsertArrayElementAtIndex(i);
-                    var p = posesProp.GetArrayElementAtIndex(i);
-                    p.FindPropertyRelative("name").stringValue             = DynamicVariables.Settings.Menu.pose.title;
-                    p.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.pose.thumbnail;
-                    p.FindPropertyRelative("animationClip").objectReferenceValue = null;
-                    p.FindPropertyRelative("autoThumbnail").boolValue       = true;
-                    var tr = p.FindPropertyRelative("tracking");
-                    tr.FindPropertyRelative("head").boolValue       = true;
-                    tr.FindPropertyRelative("arm").boolValue        = true;
-                    tr.FindPropertyRelative("finger").boolValue     = true;
-                    tr.FindPropertyRelative("foot").boolValue       = true;
-                    tr.FindPropertyRelative("locomotion").boolValue = true;
-                    tr.FindPropertyRelative("loop").boolValue       = true;
-                    tr.FindPropertyRelative("motionSpeed").floatValue = 0f;
+                    AddPose(posesProp);
                     // cache 行追加
                     _thumbnails[catIdx].Add(null);
                     _lastClips[catIdx].Add(null);
@@ -502,22 +488,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 foreach(var clip in DragAndDrop.objectReferences.OfType<AnimationClip>())
                 {
-                    int i=posesProp.arraySize;
-                    posesProp.InsertArrayElementAtIndex(i);
-                    var p=posesProp.GetArrayElementAtIndex(i);
-                    p.FindPropertyRelative("name").stringValue=clip.name;
-                    p.FindPropertyRelative("thumbnail").objectReferenceValue=DynamicVariables.Settings.Menu.pose.thumbnail;
-                    p.FindPropertyRelative("animationClip").objectReferenceValue=clip;
-                    p.FindPropertyRelative("autoThumbnail").boolValue=true;
-                    var tr=p.FindPropertyRelative("tracking");
-                    bool moving=MotionBuilder.IsMoveAnimation(clip);
-                    tr.FindPropertyRelative("head").boolValue = true;
-                    tr.FindPropertyRelative("arm").boolValue = true;
-                    tr.FindPropertyRelative("foot").boolValue = true;
-                    tr.FindPropertyRelative("finger").boolValue = true;
-                    tr.FindPropertyRelative("locomotion").boolValue = true;
-                    tr.FindPropertyRelative("motionSpeed").floatValue=moving?1f:0f;
-                    tr.FindPropertyRelative("loop").boolValue=!moving || MotionBuilder.IsLoopAnimation(clip);
+                    AddPose(posesProp,clip);
                     _thumbnails[catIdx].Add(null);
                     _lastClips[catIdx].Add(null);
                 }
@@ -527,6 +498,53 @@ namespace com.hhotatea.avatar_pose_library.editor
         #endregion
 
         #region ===== helpers =====
+
+        private void AddPose(SerializedProperty posesProp, AnimationClip clip = null)
+        {
+            int i = posesProp.arraySize;
+            posesProp.InsertArrayElementAtIndex(i);
+            var p= posesProp.GetArrayElementAtIndex(i);
+
+            // 初期値の設定
+            p.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.pose.thumbnail;
+            p.FindPropertyRelative("animationClip").objectReferenceValue = clip;
+            p.FindPropertyRelative("name").stringValue = DynamicVariables.Settings.Menu.pose.title;
+
+            p.FindPropertyRelative("autoThumbnail").boolValue=true;
+            
+            var tr=p.FindPropertyRelative("tracking");
+            tr.FindPropertyRelative("motionSpeed").floatValue = 1f;
+            tr.FindPropertyRelative("loop").boolValue = true;
+            tr.FindPropertyRelative("head").boolValue = true;
+            tr.FindPropertyRelative("arm").boolValue = true;
+            tr.FindPropertyRelative("foot").boolValue = true;
+            tr.FindPropertyRelative("finger").boolValue = true;
+            tr.FindPropertyRelative("locomotion").boolValue = true;
+            
+            if (i > 0)
+            {
+                // カテゴリ内の値を参照
+                var pm= posesProp.GetArrayElementAtIndex(i-1);
+                var trm=pm.FindPropertyRelative("tracking");
+                p.FindPropertyRelative("autoThumbnail").boolValue = pm.FindPropertyRelative("autoThumbnail").boolValue;
+                tr.FindPropertyRelative("head").boolValue = trm.FindPropertyRelative("head").boolValue;
+                tr.FindPropertyRelative("arm").boolValue = trm.FindPropertyRelative("arm").boolValue;
+                tr.FindPropertyRelative("foot").boolValue = trm.FindPropertyRelative("foot").boolValue;
+                tr.FindPropertyRelative("finger").boolValue = trm.FindPropertyRelative("finger").boolValue;
+                tr.FindPropertyRelative("locomotion").boolValue = trm.FindPropertyRelative("locomotion").boolValue;
+            }
+
+            if (clip)
+            {
+                p.FindPropertyRelative("name").stringValue = clip.name;
+                
+                // アニメーション種別による初期値
+                bool moving = MotionBuilder.IsMoveAnimation(clip);
+                tr.FindPropertyRelative("motionSpeed").floatValue = moving?1f:0f;
+                tr.FindPropertyRelative("loop").boolValue =! moving || MotionBuilder.IsLoopAnimation(clip);
+            }
+        }
+        
         private void DetectHierarchyChange()
         {
             string path=GetInstancePath(_library.transform);
