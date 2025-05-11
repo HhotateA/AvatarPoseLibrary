@@ -7,6 +7,7 @@
         "VRC.SDKBase",
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
+        "nadena.dev.ndmf.vrchat",
         "nadena.dev.modular-avatar.core"
     ],
     "includePlatforms": [
