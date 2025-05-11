@@ -76,11 +76,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-      
-      # DiscordNotice
-      - name: Notify Discord
-        run: |
-          curl -H "Content-Type: application/json" \
-            -X POST \
-            -d "{\"content\": \"${{ env.version }} のリリースが完了しました。\"}" \
-            ${{ secrets.DISCORD_WEBHOOK_URL }}

@@ -85,3 +85,11 @@ jobs:
             ${{ env.unityPackage }}
             ${{ env.packagePath }}/package.json
           tag_name: ${{ env.version }}
+
+      # DiscordNotice
+      - name: Notify Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\": \"${{ env.version }} のリリースが完了しました。\"}" \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
