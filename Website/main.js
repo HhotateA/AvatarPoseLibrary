@@ -69,7 +69,7 @@ window.addEventListener('DOMContentLoaded', () => {
       requestAnimationFrame(stepBooth);
 
       // マウスホバーで一時停止／再開
-      boothCarousel.addEventListener('mouseenter', () => boothSpeed = 0);
+      boothCarousel.addEventListener('mouseenter', () => boothSpeed = 0.5);
       boothCarousel.addEventListener('mouseleave', () => boothSpeed = 0.5);
     })
     .catch(err => {
