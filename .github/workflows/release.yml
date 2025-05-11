@@ -91,5 +91,5 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
             -X POST \
-            -d "{\"content\": \"${{ env.version }} のリリースが完了しました。\"}" \
+            -d "{\"content\": \"AvatarPoseLibrary v${{ env.version }} のリリースが完了しました。\"}" \
             ${{ secrets.DISCORD_WEBHOOK_URL }}
