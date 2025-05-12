@@ -13,6 +13,8 @@ namespace com.hhotatea.avatar_pose_library.editor
 {
     public class DataConvertPlugin : Plugin<DataConvertPlugin>
     {
+        public override string DisplayName => "AvatarPoseLibrary";
+
         protected override void Configure()
         {
             InPhase(BuildPhase.Generating)
