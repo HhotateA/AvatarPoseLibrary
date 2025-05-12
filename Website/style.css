@@ -158,3 +158,37 @@ footer a {
 footer a:hover {
   color: var(--text-color);
 }
+
+/* form-link */
+.form-link {
+  text-align: right; /* 右寄せ */
+  margin-top: 1em;
+}
+
+.form-link a {
+  position: relative;
+  color: #007BFF;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.form-link a::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #007BFF;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.form-link a:hover {
+  color: #0056b3;
+}
+
+.form-link a:hover::after {
+  transform: scaleX(1); /* アニメーションで下線表示 */
+}
