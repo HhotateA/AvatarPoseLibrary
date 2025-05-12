@@ -63,7 +63,7 @@ namespace com.hhotatea.avatar_pose_library.model
         /// <summary>
         /// パラメーターの最適化
         /// </summary>
-        void UpdateParameter()
+        public void UpdateParameter()
         {
             int paramCount = 999;
             string paramName = "";

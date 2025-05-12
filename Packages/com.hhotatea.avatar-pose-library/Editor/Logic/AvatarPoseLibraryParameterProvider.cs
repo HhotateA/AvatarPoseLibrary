@@ -21,6 +21,8 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
         public IEnumerable<ProvidedParameter> GetSuppliedParameters(BuildContext ctx = null)
         {
+            // パラメーターの最適化
+            _component.data.UpdateParameter();
             // AvatarPoseLibrary のデータからパラメータ用の GameObject を構築
             var parameterGameObj = ParameterBuilder.BuildPoseParameter(_component.data);
             // ModularAvatarParameters コンポーネントを取得
