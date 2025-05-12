@@ -48,6 +48,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     WantSynced = !cfg.localOnly
                 };
             }
+
+            // 使用後は GameObject を破棄
+            Object.DestroyImmediate(parameterGameObj);
         }
     }
 }
