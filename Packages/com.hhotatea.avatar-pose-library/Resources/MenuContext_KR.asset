@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3b7836422066d745a4b37d64dde53ea, type: 3}
+  m_Name: MenuContext_KR
+  m_EditorClassIdentifier: 
+  main:
+    title: AvatarPoseLibrary
+    thumbnail: {fileID: 2800000, guid: 53b2d5f6c8499b548ba31de9419a4a70, type: 3}
+  category:
+    title: New Category
+    thumbnail: {fileID: 2800000, guid: 8967b7286c37ddc468abe07cbd5d1681, type: 3}
+  pose:
+    title: New Pose
+    thumbnail: {fileID: 2800000, guid: aae77dadba1d9814cbdf7ab852731f6d, type: 3}
+  tracking:
+    title: Trackings
+    thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
+  reset:
+    title: Reset
+    thumbnail: {fileID: 2800000, guid: 59c1fcfb45762f449a016814ce5532f4, type: 3}
+  setting:
+    title: Settings
+    thumbnail: {fileID: 2800000, guid: b48174cf50086494f91015e974b4406a, type: 3}
+  height:
+    title: Height
+    thumbnail: {fileID: 2800000, guid: 2c83accf528124444b9519d50cf55a91, type: 3}
+  head:
+    title: Lock Head
+    thumbnail: {fileID: 2800000, guid: 4cdc563ba62fc9b4188df6607f013c1e, type: 3}
+  arm:
+    title: Lock Arm
+    thumbnail: {fileID: 2800000, guid: 8b85610814623144a8fce977626eccbf, type: 3}
+  foot:
+    title: Lock Foot
+    thumbnail: {fileID: 2800000, guid: 21855590a2aeb014d878314f8a82b198, type: 3}
+  finger:
+    title: Lock Finger
+    thumbnail: {fileID: 2800000, guid: 006e9ab6b4aaced41b1e418951fcdb54, type: 3}
+  speed:
+    title: Speed
+    thumbnail: {fileID: 2800000, guid: 614dbb744a5622a4c8dd820707ee4eb0, type: 3}
+  locomotion:
+    title: Lock Move
+    thumbnail: {fileID: 2800000, guid: dd6bb7f632fa6ee43ab5b5495099fc3b, type: 3}
+  mirror:
+    title: Mirror
+    thumbnail: {fileID: 2800000, guid: 93f091fcd0da866409a5af967301e6c8, type: 3}
