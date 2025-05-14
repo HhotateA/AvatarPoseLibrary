@@ -19,7 +19,6 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string AnimatorPrefix = "AnimPoseMotion";
         
         // 1つのIntパラメーターで管理するAnimationの最大数。
-        // 通常256個までのはずだが、挙動のチェックが出来てないので余裕を持たせる。
-        public const int MaxAnimationState = 200;
+        public const int MaxAnimationState = 255;
     }
 }

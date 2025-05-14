@@ -78,9 +78,9 @@ namespace com.hhotatea.avatar_pose_library.model
                         paramCount = 1;
                     }
 
-                    paramCount++;
                     pose.parameter = paramName;
                     pose.value = paramCount;
+                    paramCount++;
                 }
             }
             guid = Guid.NewGuid().ToString("N").Substring(0, 8);

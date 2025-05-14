@@ -11,7 +11,19 @@ namespace com.hhotatea.avatar_pose_library.component
         {
             get
             {
-                if (menuContext != null) return menuContext;
+                foreach (var localContext in localContexts)
+                {
+                    if (Application.systemLanguage == localContext.language)
+                    {
+                        // 言語ファイルが存在するなら使う！
+                        if (localContext.menuContext)
+                            return localContext.menuContext;
+                    }
+                }
+                
+                if (menuContext != null) 
+                    return menuContext;
+                
                 throw new NullReferenceException("MenuContextファイルが見つかりません。再インポートしてください。");
             }
         }
@@ -21,11 +33,26 @@ namespace com.hhotatea.avatar_pose_library.component
         {
             get
             {
-                if (inspectorContext != null) return inspectorContext;
+                foreach (var localContext in localContexts)
+                {
+                    if (Application.systemLanguage == localContext.language)
+                    {
+                        // 言語ファイルが存在するなら使う！
+                        if (localContext.inspectorContext)
+                            return localContext.inspectorContext;
+                    }
+                }
+                
+                if (inspectorContext != null) 
+                    return inspectorContext;
+                
                 throw new NullReferenceException("InspectorContextファイルが見つかりません。再インポートしてください。");
             }
         }
-    
+
+        [SerializeField]
+        LocalFile[] localContexts;
+
         /// <summary>
         /// サムネイル撮影用のレイヤー
         /// </summary>
@@ -53,5 +80,13 @@ namespace com.hhotatea.avatar_pose_library.component
         public float fieldOfView = 30f;
         public float cameraDistance = 1f;
         public Vector3 cameraOffset = Vector3.zero;
+    }
+
+    [Serializable]
+    public class LocalFile
+    {
+        public SystemLanguage language;
+        public MenuContext menuContext;
+        public InspectorContext inspectorContext;
     }
 }

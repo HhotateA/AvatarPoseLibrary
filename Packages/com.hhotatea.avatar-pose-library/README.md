@@ -77,10 +77,16 @@ APL は 2つの方法で導入することができます。
 
 必要な修正や追加を行い、コミットメッセージは明確に書きます。
 
-```git add .```
-```git commit -m "Add: 機能の概要"```
-や、
-```git commit -m "Fix: 機能の概要"```
+```git add .```  
+の後、
+
+```
+git commit -m "Add: 追加したアセットの概要"  
+git commit -m "Feature: 追加した機能の概要"  
+git commit -m "Fix: 修正したバグの概要"  
+```  
+
+のように、カンタンに変更内容を記述してください。
 
 4. プッシュ
 
@@ -110,6 +116,18 @@ APL は 2つの方法で導入することができます。
 
 ---
 
+## 💰 開発支援のお願い
+
+APLは、完全無料・無償利用OKのツールとして公開されています。 商用・非商用問わず再配布も可能で、アニメーション販売やアバター改変で自由にご活用いただけます。
+
+もしAPLを利用したコンテンツ（アバター、衣装、ポーズ集など）で一定以上の収益や反響があった場合は、 開発者の活動継続のために投げ銭・宣伝などでご支援いただけると嬉しいです！
+
+Donation => https://hhotatea.booth.pm/items/6902222
+
+皆さんの支援が、APLのさらなるアップデートや新機能開発につながります。
+
+---
+
 ## 📄 ライセンス
 
 このプロジェクトは **MIT ライセンス** の下で提供されます。
@@ -119,6 +137,8 @@ APL は 2つの方法で導入することができます。
 
 バグ報告・機能提案・プルリクエストは歓迎です！  
 GitHub の Issues や PR を通じてご参加ください。
+
+ライセンスファイルは、 [LICENCE](https://github.com/HhotateA/AvatarPoseLibrary/blob/main/Packages/com.hhotatea.avatar-pose-library/LICENCE) を参照してください。
 
 ---
 
@@ -138,3 +158,7 @@ https://meronfarm.booth.pm/
 
 - ほたてねこまじん @HhotateA_xR  
 https://x.com/HhotateA_xR
+
+---
+
+2025-05-15 v1.0.0
