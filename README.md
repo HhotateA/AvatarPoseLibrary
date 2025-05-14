@@ -158,3 +158,7 @@ https://meronfarm.booth.pm/
 
 - ほたてねこまじん @HhotateA_xR  
 https://x.com/HhotateA_xR
+
+---
+
+2025-05-15 v1.0.0

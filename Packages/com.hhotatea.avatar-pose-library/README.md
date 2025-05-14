@@ -138,6 +138,8 @@ Donation => https://hhotatea.booth.pm/items/6902222
 バグ報告・機能提案・プルリクエストは歓迎です！  
 GitHub の Issues や PR を通じてご参加ください。
 
+ライセンスファイルは、 [LICENCE](https://github.com/HhotateA/AvatarPoseLibrary/blob/main/Packages/com.hhotatea.avatar-pose-library/LICENCE) を参照してください。
+
 ---
 
 ## 👯 共同製作メンバー
@@ -156,3 +158,7 @@ https://meronfarm.booth.pm/
 
 - ほたてねこまじん @HhotateA_xR  
 https://x.com/HhotateA_xR
+
+---
+
+2025-05-15 v1.0.0
