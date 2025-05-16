@@ -21,6 +21,9 @@ MonoBehaviour:
   - language: 23
     menuContext: {fileID: 11400000, guid: f3244ee3166a7da4da95149d9ee33d2d, type: 2}
     inspectorContext: {fileID: 11400000, guid: fa0d715c573875c40a0fce8469baeb09, type: 2}
+  - language: 41
+    menuContext: {fileID: 11400000, guid: c361ad81e0411e145adcce565a33ae44, type: 2}
+    inspectorContext: {fileID: 11400000, guid: 0f195295cf5691f48b89ef4fcc4866e7, type: 2}
   thumbnailLayer: 4
   texSize: 64
   motionLong: 15
