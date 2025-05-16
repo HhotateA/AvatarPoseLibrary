@@ -533,7 +533,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             tr.FindPropertyRelative("arm").boolValue = true;
             tr.FindPropertyRelative("foot").boolValue = true;
             tr.FindPropertyRelative("finger").boolValue = true;
-            tr.FindPropertyRelative("locomotion").boolValue = true;
+            tr.FindPropertyRelative("locomotion").boolValue = false;
             
             if (i > 0)
             {
