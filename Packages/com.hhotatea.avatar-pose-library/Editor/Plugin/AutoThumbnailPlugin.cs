@@ -59,6 +59,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             switch (control.type)
             {
                 case VRCExpressionsMenu.Control.ControlType.SubMenu:
+                    if (control.subMenu.controls == null) return null;
                     foreach (var c in control.subMenu.controls)
                     {
                         var sc = SearchMenuRecursively(c,pose);

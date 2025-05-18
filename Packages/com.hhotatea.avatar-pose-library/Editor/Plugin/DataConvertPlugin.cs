@@ -7,6 +7,7 @@ using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.model;
 using UnityEngine;
+using VRC.SDK3.Avatars.ScriptableObjects;
 
 [assembly: ExportsPlugin(typeof(DataConvertPlugin))]
 namespace com.hhotatea.avatar_pose_library.editor
@@ -23,18 +24,32 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
 
-                    // 全てのコンポーネントを統合する。
-                    var data = AvatarPoseData.Combine(
-                        settings.Select(e => e.data).ToArray());
+                    // ターゲットメニューが指定されているものを個別処理
+                    foreach (var setting in settings.Where(e => e.target != null))
+                    {
+                        var d = setting.data.UpdateParameter();
+                        var go = new GameObject(d.guid);
+                        go.transform.SetParent(ctx.AvatarRootObject.transform);
+    
+                        BuildRuntimeAnimator(go, d);
+                        BuildRuntimeMenu(go, d, setting.target);
+                        BuildRuntimeParameter(go, d);
+                    }
 
-                    foreach (var d in data)
+                    // ターゲット未指定のデータを統合して処理
+                    var combinedData = AvatarPoseData.Combine(
+                        settings.Where(e => e.target == null)
+                            .Select(e => e.data)
+                            .ToArray());
+
+                    foreach (var d in combinedData)
                     {
                         var go = new GameObject(d.guid);
                         go.transform.SetParent(ctx.AvatarRootObject.transform);
-                        
-                        BuildRuntimeAnimator(go,d);
-                        BuildRuntimeMenu(go,d);
-                        BuildRuntimeParameter(go,d);
+    
+                        BuildRuntimeAnimator(go, d);
+                        BuildRuntimeMenu(go, d);
+                        BuildRuntimeParameter(go, d);
                     }
                 });
         }
@@ -46,17 +61,21 @@ namespace com.hhotatea.avatar_pose_library.editor
         /// <param name="data"></param>
         void BuildRuntimeAnimator(GameObject obj,AvatarPoseData data)
         {
-            var ma_base = obj.gameObject.AddComponent<ModularAvatarMergeAnimator>();
+            var result = new GameObject();
+            
+            var ma_base = result.AddComponent<ModularAvatarMergeAnimator>();
             ma_base.animator = AnimatorBuilder.BuildLocomotionAnimator(data);
             ma_base.pathMode = MergeAnimatorPathMode.Absolute;
             ma_base.matchAvatarWriteDefaults = true;
             ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
             
-            var ma_fx = obj.gameObject.AddComponent<ModularAvatarMergeAnimator>();
+            var ma_fx = result.AddComponent<ModularAvatarMergeAnimator>();
             ma_fx.animator = AnimatorBuilder.BuildFxAnimator(data);
             ma_fx.pathMode = MergeAnimatorPathMode.Absolute;
             ma_fx.matchAvatarWriteDefaults = true;
             ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
+            
+            result.transform.SetParent(obj.transform);
         }
 
         /// <summary>
@@ -64,11 +83,13 @@ namespace com.hhotatea.avatar_pose_library.editor
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="data"></param>
-        void BuildRuntimeMenu(GameObject obj,AvatarPoseData data)
+        /// <param name="target"></param>
+        void BuildRuntimeMenu(GameObject obj,AvatarPoseData data,VRCExpressionsMenu target = null)
         {
             var result = MenuBuilder.BuildPoseMenu(data);
 
-            result.AddComponent<ModularAvatarMenuInstaller>();
+            var installer = result.AddComponent<ModularAvatarMenuInstaller>();
+            installer.installTargetMenu = target;
             result.transform.SetParent(obj.transform);
         }
 
