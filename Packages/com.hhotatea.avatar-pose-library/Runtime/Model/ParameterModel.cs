@@ -63,7 +63,7 @@ namespace com.hhotatea.avatar_pose_library.model
         /// <summary>
         /// パラメーターの最適化
         /// </summary>
-        public void UpdateParameter()
+        public AvatarPoseData UpdateParameter()
         {
             int paramCount = 999;
             string paramName = "";
@@ -84,6 +84,7 @@ namespace com.hhotatea.avatar_pose_library.model
                 }
             }
             guid = Guid.NewGuid().ToString("N").Substring(0, 8);
+            return this;
         }
 
         /// <summary>
