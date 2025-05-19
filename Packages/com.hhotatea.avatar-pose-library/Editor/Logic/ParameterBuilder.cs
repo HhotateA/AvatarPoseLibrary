@@ -1,3 +1,4 @@
+using System.Linq;
 using com.hhotatea.avatar_pose_library.model;
 using nadena.dev.modular_avatar.core;
 using UnityEngine;
@@ -16,6 +17,19 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     nameOrPrefix = parameter,
                     syncType = ParameterSyncType.Int,
+                    localOnly = true,
+                    defaultValue = 0,
+                    saved = false,
+                });
+            }
+
+            int poseCount = poseLibrary.categories.Sum(cat => cat.poses.Count) + 1;
+            for (int i = 0; poseCount > (1 << i); i++)
+            {
+                mResult.parameters.Add(new ParameterConfig
+                {
+                    nameOrPrefix = $"AnimPose_{poseLibrary.guid}_{i}",
+                    syncType = ParameterSyncType.Bool,
                     localOnly = false,
                     defaultValue = 0,
                     saved = false,
