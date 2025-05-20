@@ -19,7 +19,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // レイヤー作成
             AnimatorControllerLayer layer = new AnimatorControllerLayer
             {
-                name = $"{ConstVariables.AnimatorPrefix}_{poseLibrary.Guid}",
+                name = $"{ConstVariables.MotionAnimatorPrefix}_{poseLibrary.Guid}",
                 defaultWeight = 1f,
                 stateMachine = new AnimatorStateMachine(),
                 blendingMode = AnimatorLayerBlendingMode.Override,
@@ -55,7 +55,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer
                 {
-                    name = $"{ConstVariables.AnimatorPrefix}Param_{poseLibrary.Guid}",
+                    name = $"{ConstVariables.ParamAnimatorPrefix}_{poseLibrary.Guid}",
                     defaultWeight = 1f,
                     stateMachine = new AnimatorStateMachine(),
                     blendingMode = AnimatorLayerBlendingMode.Override
@@ -85,7 +85,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer
                 {
-                    name = $"{ConstVariables.AnimatorPrefix}Motion_{poseLibrary.Guid}",
+                    name = $"{ConstVariables.FxAnimatorPrefix}_{poseLibrary.Guid}",
                     defaultWeight = 1f,
                     stateMachine = new AnimatorStateMachine(),
                     blendingMode = AnimatorLayerBlendingMode.Override
@@ -169,7 +169,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             result.AddParameter($"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             
-            for (int i = 0; i < 31; i++)
+            for (int i = 0; i < 32; i++)
             {
                 result.AddParameter($"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}", AnimatorControllerParameterType.Bool);
             }
@@ -453,6 +453,15 @@ namespace com.hhotatea.avatar_pose_library.logic
                 (pose.tracking.locomotion, ConstVariables.BaseParamPrefix)
             };
             var noneClip = MotionBuilder.NoneAnimation();
+            
+            /*
+             * 基本的な処理の流れは
+             * Default => Reserve => Pose => (PreReset =>) Reset => Default
+             * のループ。
+             * 
+             * Reserveでパラメーターの同期、Resetでパラメーターの初期化を行う
+             * Loopアニメーションの場合は、再生終了後にPreResetを経由する
+             */
             
             // 準備ステートの作成
             var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());

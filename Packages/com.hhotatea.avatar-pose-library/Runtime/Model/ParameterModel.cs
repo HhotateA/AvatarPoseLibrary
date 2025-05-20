@@ -39,7 +39,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool[] GetAnimatorFlag()
         {
             bool[] bits = new bool[32];
-            for (int i = 0; i < 32; i++)
+            for (int i = 0; i < 31; i++)
             {
                 bits[i] = (Index & (1 << i)) != 0;
             }
