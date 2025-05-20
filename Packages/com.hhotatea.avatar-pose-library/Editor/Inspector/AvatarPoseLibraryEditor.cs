@@ -31,7 +31,6 @@ namespace com.hhotatea.avatar_pose_library.editor
         private ReorderableList _categoryList;
         private readonly List<ReorderableList> _poseLists = new();
 
-        // キャッシュ (foldout なし)
         private readonly List<List<Texture2D>>    _thumbnails = new();
         private readonly List<List<AnimationClip>> _lastClips  = new();
 
@@ -115,7 +114,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 foreach (var pose in cat.poses)
                 {
                     // 一時データとして、メニューの開閉状態を保存
-                    pose.value = 0;
+                    pose.foldout = false;
                 }
             }
             
@@ -391,10 +390,10 @@ namespace com.hhotatea.avatar_pose_library.editor
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_openAllLabel).x, GUI.skin.button.CalcSize(_closeAllLabel).x)+5f;
             if (GUI.Button(new Rect(rect.x+rect.width-btnW*2-10, y, btnW, _lineHeight), _openAllLabel))
                 foreach (var t in Data.categories[index].poses)
-                    t.value = 1;
+                    t.foldout = true;
             if (GUI.Button(new Rect(rect.x+rect.width-btnW-5, y, btnW, _lineHeight), _closeAllLabel))
                 foreach (var t in Data.categories[index].poses)
-                    t.value = 0;
+                    t.foldout = false;
 
 
             y += _lineHeight + Spacing;
@@ -410,7 +409,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (Data.categories.Count-1 < catIdx) return _lineHeight;
             if (Data.categories[catIdx].poses.Count-1 < poseIdx) return _lineHeight;
             
-            return Data.categories[catIdx].poses[poseIdx].value == 1 ? _lineHeight*7f : _lineHeight*1.5f;
+            return Data.categories[catIdx].poses[poseIdx].foldout ? _lineHeight*7f : _lineHeight*1.5f;
         }
 
         private void DrawPose(Rect rect, int catIdx, int poseIdx, SerializedProperty poseProp)
@@ -421,20 +420,20 @@ namespace com.hhotatea.avatar_pose_library.editor
             
             float y = rect.y + 2f;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_closeLabel).x, GUI.skin.button.CalcSize(_openLabel).x) + 2;
-            if (Data.categories[catIdx].poses[poseIdx].value == 1)
+            if (Data.categories[catIdx].poses[poseIdx].foldout)
             {
                 string newName = GUI.TextField(new Rect(rect.x+10, y, Mathf.Min(TextBoxWidth, rect.width-60), _lineHeight),
                                                poseProp.FindPropertyRelative("name").stringValue);
                 if (newName != poseProp.FindPropertyRelative("name").stringValue)
                     Apply("Rename Pose", () => poseProp.FindPropertyRelative("name").stringValue = newName);
                 if (GUI.Button(new Rect(rect.x+rect.width-btnW, y, btnW, 20), _closeLabel)) 
-                    Data.categories[catIdx].poses[poseIdx].value = 0;
+                    Data.categories[catIdx].poses[poseIdx].foldout = false;
             }
             else
             {
                 GUI.Label(new Rect(rect.x+10, y, rect.width-60, _lineHeight), poseProp.FindPropertyRelative("name").stringValue);
                 if (GUI.Button(new Rect(rect.x+rect.width-btnW, y, btnW, 20), _openLabel))
-                    Data.categories[catIdx].poses[poseIdx].value = 1;
+                    Data.categories[catIdx].poses[poseIdx].foldout = true;
                 return;
             }
             y += _lineHeight + Spacing + 4;

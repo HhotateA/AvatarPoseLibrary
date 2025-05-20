@@ -28,7 +28,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     foreach (var setting in settings.Where(e => e.target != null))
                     {
                         var d = setting.data.UpdateParameter();
-                        var go = new GameObject(d.guid);
+                        var go = new GameObject(d.Guid);
                         go.transform.SetParent(ctx.AvatarRootObject.transform);
     
                         BuildRuntimeAnimator(go, d);
@@ -44,7 +44,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                     foreach (var d in combinedData)
                     {
-                        var go = new GameObject(d.guid);
+                        var go = new GameObject(d.Guid);
                         go.transform.SetParent(ctx.AvatarRootObject.transform);
     
                         BuildRuntimeAnimator(go, d);

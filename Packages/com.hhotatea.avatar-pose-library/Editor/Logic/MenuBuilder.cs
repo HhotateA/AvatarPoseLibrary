@@ -37,7 +37,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     result.transform,
                     DynamicVariables.Settings.Menu.reset.title,
                     DynamicVariables.Settings.Menu.reset.thumbnail,
-                    $"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}"
+                    $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}"
                 );
             }
 
@@ -62,9 +62,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                     mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
                     mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
                     {
-                        name = pose.parameter
+                        name = pose.Parameter
                     };
-                    mItem.Control.value = pose.value;
+                    mItem.Control.value = pose.Value;
                 }
             }
 
@@ -83,7 +83,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 parent,
                 DynamicVariables.Settings.Menu.reset.title,
                 DynamicVariables.Settings.Menu.reset.thumbnail,
-                $"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}"
+                $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}"
             );
             
             // --- Radialメニューを追加 ---
@@ -93,7 +93,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.height.title,
                     DynamicVariables.Settings.Menu.height.thumbnail,
-                    $"{ConstVariables.HeightParamPrefix}_{poseLibrary.guid}"
+                    $"{ConstVariables.HeightParamPrefix}_{poseLibrary.Guid}"
                 );
             }
 
@@ -103,7 +103,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.speed.title,
                     DynamicVariables.Settings.Menu.speed.thumbnail,
-                    $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.guid}"
+                    $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.Guid}"
                 );
             }
 
@@ -113,7 +113,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.mirror.title,
                     DynamicVariables.Settings.Menu.mirror.thumbnail,
-                    $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}"
+                    $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.Guid}"
                 );
             }
 
@@ -136,35 +136,35 @@ namespace com.hhotatea.avatar_pose_library.logic
                 parent,
                 DynamicVariables.Settings.Menu.head.title,
                 DynamicVariables.Settings.Menu.head.thumbnail,
-                $"{ConstVariables.HeadParamPrefix}_{poseLibrary.guid}"
+                $"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}"
             );
 
             CreateToggleMenu(
                 parent,
                 DynamicVariables.Settings.Menu.arm.title,
                 DynamicVariables.Settings.Menu.arm.thumbnail,
-                $"{ConstVariables.ArmParamPrefix}_{poseLibrary.guid}"
+                $"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}"
             );
 
             CreateToggleMenu(
                 parent,
                 DynamicVariables.Settings.Menu.finger.title,
                 DynamicVariables.Settings.Menu.finger.thumbnail,
-                $"{ConstVariables.FingerParamPrefix}_{poseLibrary.guid}"
+                $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}"
             );
 
             CreateToggleMenu(
                 parent,
                 DynamicVariables.Settings.Menu.foot.title,
                 DynamicVariables.Settings.Menu.foot.thumbnail,
-                $"{ConstVariables.FootParamPrefix}_{poseLibrary.guid}"
+                $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"
             );
 
             CreateToggleMenu(
                 parent,
                 DynamicVariables.Settings.Menu.locomotion.title,
                 DynamicVariables.Settings.Menu.locomotion.thumbnail,
-                $"{ConstVariables.BaseParamPrefix}_{poseLibrary.guid}"
+                $"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}"
             );
         }
 

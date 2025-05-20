@@ -19,7 +19,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // レイヤー作成
             AnimatorControllerLayer layer = new AnimatorControllerLayer
             {
-                name = $"{ConstVariables.AnimatorPrefix}_{poseLibrary.guid}",
+                name = $"{ConstVariables.AnimatorPrefix}_{poseLibrary.Guid}",
                 defaultWeight = 1f,
                 stateMachine = new AnimatorStateMachine(),
                 blendingMode = AnimatorLayerBlendingMode.Override,
@@ -40,7 +40,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     AddLocomotionLayer(pose,layer,defaultState,
                         poseLibrary.enableHeightParam,poseLibrary.enableSpeedParam,poseLibrary.enableMirrorParam,
-                        poseLibrary.guid, i, poseCount);
+                        poseLibrary.Guid, i, poseCount);
                     i++;
                 }
             }
@@ -55,7 +55,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer
                 {
-                    name = $"{ConstVariables.AnimatorPrefix}Param_{poseLibrary.guid}",
+                    name = $"{ConstVariables.AnimatorPrefix}Param_{poseLibrary.Guid}",
                     defaultWeight = 1f,
                     stateMachine = new AnimatorStateMachine(),
                     blendingMode = AnimatorLayerBlendingMode.Override
@@ -75,12 +75,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                     foreach (var pose in category.poses)
                     {
                         AddParamLayer(layer, pose, defaultState,
-                            poseLibrary.Parameters, poseLibrary.guid, i, poseCount);
+                            poseLibrary.Parameters, poseLibrary.Guid, i, poseCount);
                         i++;
-
-                        /*AddFxLayer(pose,layer,defaultState,poseLibrary.Parameters,
-                            poseLibrary.enableHeightParam,poseLibrary.enableSpeedParam,poseLibrary.enableMirrorParam,
-                            poseLibrary.guid, i, poseCount);*/
                     }
                 }
             }
@@ -89,7 +85,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer
                 {
-                    name = $"{ConstVariables.AnimatorPrefix}Motion_{poseLibrary.guid}",
+                    name = $"{ConstVariables.AnimatorPrefix}Motion_{poseLibrary.Guid}",
                     defaultWeight = 1f,
                     stateMachine = new AnimatorStateMachine(),
                     blendingMode = AnimatorLayerBlendingMode.Override
@@ -110,19 +106,19 @@ namespace com.hhotatea.avatar_pose_library.logic
                     {
                         AddFxLayer(pose,layer,defaultState,
                             poseLibrary.enableHeightParam,poseLibrary.enableSpeedParam,poseLibrary.enableMirrorParam,
-                            poseLibrary.guid, i, poseCount);
+                            poseLibrary.Guid, i, poseCount);
                         i++;
                     }
                 }
             }
 
             // その他の変数レイヤー
-            result.AddLayer(TrackingLayer(TrackingType.Base,$"{ConstVariables.BaseParamPrefix}_{poseLibrary.guid}",poseLibrary));
-            result.AddLayer(TrackingLayer(TrackingType.Head,$"{ConstVariables.HeadParamPrefix}_{poseLibrary.guid}",poseLibrary));
-            result.AddLayer(TrackingLayer(TrackingType.Arm,$"{ConstVariables.ArmParamPrefix}_{poseLibrary.guid}",poseLibrary));
-            result.AddLayer(TrackingLayer(TrackingType.Foot,$"{ConstVariables.FootParamPrefix}_{poseLibrary.guid}",poseLibrary));
-            result.AddLayer(TrackingLayer(TrackingType.Finger,$"{ConstVariables.FingerParamPrefix}_{poseLibrary.guid}",poseLibrary));
-            result.AddLayer(ResetLayer($"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}",poseLibrary));
+            result.AddLayer(TrackingLayer(TrackingType.Base,$"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}",poseLibrary));
+            result.AddLayer(TrackingLayer(TrackingType.Head,$"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}",poseLibrary));
+            result.AddLayer(TrackingLayer(TrackingType.Arm,$"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}",poseLibrary));
+            result.AddLayer(TrackingLayer(TrackingType.Foot,$"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}",poseLibrary));
+            result.AddLayer(TrackingLayer(TrackingType.Finger,$"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}",poseLibrary));
+            result.AddLayer(ResetLayer($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",poseLibrary));
 
             return result;
         }
@@ -137,7 +133,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             var heightParam = new AnimatorControllerParameter
             {
-                name = $"{ConstVariables.HeightParamPrefix}_{poseLibrary.guid}",
+                name = $"{ConstVariables.HeightParamPrefix}_{poseLibrary.Guid}",
                 type = AnimatorControllerParameterType.Float,
                 defaultFloat = 0.5f,
             };
@@ -145,7 +141,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             var speedParam = new AnimatorControllerParameter
             {
-                name = $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.guid}",
+                name = $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.Guid}",
                 type = AnimatorControllerParameterType.Float,
                 defaultFloat = 0.5f,
             };
@@ -153,7 +149,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             var mirrorParam = new AnimatorControllerParameter
             {
-                name = $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}",
+                name = $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.Guid}",
                 type = AnimatorControllerParameterType.Bool,
                 defaultBool = false,
             };
@@ -166,17 +162,16 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
             // Tracking制御ノード
-            result.AddParameter($"{ConstVariables.BaseParamPrefix}_{poseLibrary.guid}", AnimatorControllerParameterType.Bool);
-            result.AddParameter($"{ConstVariables.HeadParamPrefix}_{poseLibrary.guid}", AnimatorControllerParameterType.Bool);
-            result.AddParameter($"{ConstVariables.ArmParamPrefix}_{poseLibrary.guid}", AnimatorControllerParameterType.Bool);
-            result.AddParameter($"{ConstVariables.FootParamPrefix}_{poseLibrary.guid}", AnimatorControllerParameterType.Bool);
-            result.AddParameter($"{ConstVariables.FingerParamPrefix}_{poseLibrary.guid}", AnimatorControllerParameterType.Bool);
-            result.AddParameter($"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter($"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter($"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter($"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter($"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter($"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             
-            int poseCount = poseLibrary.categories.Sum(cat => cat.poses.Count) + 1;
-            for (int i = 0; poseCount > (1 << i); i++)
+            for (int i = 0; i < 31; i++)
             {
-                result.AddParameter($"AnimPose_{poseLibrary.guid}_{i}", AnimatorControllerParameterType.Bool);
+                result.AddParameter($"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}", AnimatorControllerParameterType.Bool);
             }
 
             return result;
@@ -224,7 +219,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                 {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{parameter}_{poseLibrary.guid}",
+                    name = $"{parameter}_{poseLibrary.Guid}",
                     value = 0,
                 });
             }
@@ -235,7 +230,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                 {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{parameter}_{poseLibrary.guid}",
+                    name = $"{parameter}_{poseLibrary.Guid}",
                     value = 0.5f,
                 });
             }
@@ -460,7 +455,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var noneClip = MotionBuilder.NoneAnimation();
             
             // 準備ステートの作成
-            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.value.ToString());
+            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
             reserveState.motion = noneClip;
             reserveState.writeDefaultValues = false;
             {
@@ -482,27 +477,26 @@ namespace com.hhotatea.avatar_pose_library.logic
                     name = $"{ConstVariables.SpeedParamPrefix}_{guid}",
                     value = pose.tracking.motionSpeed == 0f ?  0f : 0.5f,
                 });
-                for (int i = 0; poseCount > (1 << i); i++)
-                {
-                    trackingOnParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                trackingOnParam.parameters.AddRange(
+                    pose.GetAnimatorFlag().Select((flag, index) => new VRC_AvatarParameterDriver.Parameter
                     {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"AnimPose_{guid}_{i}",
-                        value = (poseIndex >> i) & 1,
-                    });
-                }
+                        name = $"{ConstVariables.FlagParamPrefix}_{guid}_{index}",
+                        value = flag ? 1 : 0
+                    })
+                );
                 var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                 additive.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                 additive.goalWeight = 0f;
             }
             
             // メインステートの作成
-            var poseState = layer.stateMachine.AddState("Pose_"+pose.value.ToString());
+            var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
             poseState.motion = MotionBuilder.PartAnimation(pose.animationClip)[2];
 
             // トラッキングリセット用のステート
-            var resetState = layer.stateMachine.AddState("Reset"+pose.value.ToString());
+            var resetState = layer.stateMachine.AddState("Reset"+pose.Value.ToString());
             resetState.motion = noneClip;
             resetState.writeDefaultValues = false;
             {
@@ -518,15 +512,14 @@ namespace com.hhotatea.avatar_pose_library.logic
                         value = 0,
                     });
                 }
-                for (int i = 0; poseCount > (1 << i); i++)
-                {
-                    trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                trackingOffParam.parameters.AddRange(
+                    pose.GetAnimatorFlag().Select((flag, index) => new VRC_AvatarParameterDriver.Parameter
                     {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"AnimPose_{guid}_{i}",
-                        value = 0,
-                    });
-                }
+                        name = $"{ConstVariables.FlagParamPrefix}_{guid}_{index}",
+                        value = 0
+                    })
+                );
             }
             {
                 var additive = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
@@ -535,7 +528,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
             
             // 変数リセット用のステート
-            var preResetState = layer.stateMachine.AddState("PreReset"+pose.value.ToString());
+            var preResetState = layer.stateMachine.AddState("PreReset"+pose.Value.ToString());
             preResetState.motion = noneClip;
             preResetState.writeDefaultValues = false;
             var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
@@ -543,7 +536,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                 {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = pose.parameter,
+                    name = pose.Parameter,
                     value = 0,
                 });
             }
@@ -559,8 +552,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 new AnimatorCondition()
                 {
                     mode = AnimatorConditionMode.Equals,
-                    parameter = pose.parameter,
-                    threshold = pose.value
+                    parameter = pose.Parameter,
+                    threshold = pose.Value
                 }
             };
             
@@ -583,8 +576,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 new AnimatorCondition()
                 {
                     mode = AnimatorConditionMode.NotEqual,
-                    parameter = pose.parameter,
-                    threshold = pose.value
+                    parameter = pose.Parameter,
+                    threshold = pose.Value
                 }
             };
             
@@ -599,8 +592,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 new AnimatorCondition()
                 {
                     mode = AnimatorConditionMode.NotEqual,
-                    parameter = pose.parameter,
-                    threshold = pose.value
+                    parameter = pose.Parameter,
+                    threshold = pose.Value
                 }
             };
     
@@ -615,8 +608,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 new AnimatorCondition()
                 {
                     mode = AnimatorConditionMode.NotEqual,
-                    parameter = pose.parameter,
-                    threshold = pose.value
+                    parameter = pose.Parameter,
+                    threshold = pose.Value
                 }
             };
 
@@ -641,12 +634,12 @@ namespace com.hhotatea.avatar_pose_library.logic
             var noneClip = MotionBuilder.NoneAnimation();
             
             // 準備ステートの作成
-            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.value.ToString());
+            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
             reserveState.motion = noneClip;
             reserveState.writeDefaultValues = false;
 
             // メインステートの作成
-            var poseState = layer.stateMachine.AddState("Pose_"+pose.value.ToString());
+            var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
             if (mirror)
             {
@@ -666,23 +659,23 @@ namespace com.hhotatea.avatar_pose_library.logic
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
             }
             
+            var flags = pose.GetAnimatorFlag();
+            
             // 遷移を作成
             var reTransition = defaultState.AddTransition(poseState);
             reTransition.canTransitionToSelf = false;
             reTransition.hasExitTime = false;
             reTransition.hasFixedDuration = true;
             reTransition.duration = 0.0f;
-            reTransition.conditions = Enumerable.Range(0, 32)
-                .TakeWhile(i => poseCount > (1 << i))
-                .Select(i => new AnimatorCondition
+            reTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
                 {
-                    mode = ((poseIndex >> i) & 1) != 0 ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot,
-                    parameter = $"AnimPose_{guid}_{i}",
+                    mode = flag ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot,
+                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}"
                 })
                 .ToArray();
             
             
-            for (int i = 0; poseCount > (1 << i); i++)
+            for (int i = 0; i < flags.Length; i++)
             {
                 // Preからリセットへの遷移
                 var bypassTransition = poseState.AddTransition(defaultState);
@@ -694,8 +687,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     new AnimatorCondition
                     {
-                        mode = ((poseIndex >> i) & 1) != 0 ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
-                        parameter = $"AnimPose_{guid}_{i}",
+                        mode = flags[i] ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
                     }
                 };
             }
@@ -711,12 +704,12 @@ namespace com.hhotatea.avatar_pose_library.logic
             var noneClip = MotionBuilder.NoneAnimation();
             
             // 準備ステートの作成
-            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.value.ToString());
+            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
             reserveState.motion = noneClip;
             reserveState.writeDefaultValues = false;
             
             // メインステートの作成
-            var poseState = layer.stateMachine.AddState("Pose_"+pose.value.ToString());
+            var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
             if (mirror)
             {
@@ -764,23 +757,22 @@ namespace com.hhotatea.avatar_pose_library.logic
                 poseState.motion = blendTree;
             }
             
+            var flags = pose.GetAnimatorFlag();
+            
             // 遷移を作成
             var reTransition = defaultState.AddTransition(poseState);
             reTransition.canTransitionToSelf = false;
             reTransition.hasExitTime = false;
             reTransition.hasFixedDuration = true;
             reTransition.duration = 0.0f;
-            reTransition.conditions = Enumerable.Range(0, 32)
-                .TakeWhile(i => poseCount > (1 << i))
-                .Select(i => new AnimatorCondition
+            reTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
                 {
-                    mode = ((poseIndex >> i) & 1) != 0 ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot,
-                    parameter = $"AnimPose_{guid}_{i}",
+                    mode = flag ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot,
+                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}"
                 })
                 .ToArray();
             
-            
-            for (int i = 0; poseCount > (1 << i); i++)
+            for (int i = 0; i < flags.Length; i++)
             {
                 // Preからリセットへの遷移
                 var bypassTransition = poseState.AddTransition(defaultState);
@@ -792,8 +784,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     new AnimatorCondition
                     {
-                        mode = ((poseIndex >> i) & 1) != 0 ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
-                        parameter = $"AnimPose_{guid}_{i}",
+                        mode = flags[i] ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
                     }
                 };
             }
