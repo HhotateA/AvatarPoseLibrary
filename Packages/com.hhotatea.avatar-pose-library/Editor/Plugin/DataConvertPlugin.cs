@@ -67,7 +67,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             ma_base.animator = AnimatorBuilder.BuildLocomotionAnimator(data);
             ma_base.pathMode = MergeAnimatorPathMode.Absolute;
             ma_base.matchAvatarWriteDefaults = true;
-            ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
+            ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Action;
             
             var ma_fx = result.AddComponent<ModularAvatarMergeAnimator>();
             ma_fx.animator = AnimatorBuilder.BuildFxAnimator(data);

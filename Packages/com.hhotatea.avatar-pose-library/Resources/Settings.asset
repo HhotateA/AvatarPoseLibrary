@@ -34,3 +34,4 @@ MonoBehaviour:
   fieldOfView: 30
   cameraDistance: 0.8
   cameraOffset: {x: 0, y: 0.1, z: 0}
+  defaultAnimation: {fileID: 7400000, guid: 24648a73074cb054f99273b4c9f44b43, type: 2}

@@ -103,7 +103,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             foreach (var binding in curves)
             {
                 var c = AnimationUtility.GetEditorCurve(anim, binding);
-                if(c.keys.Length == 0) continue;
+                if (c.keys.Length == 0) continue;
                 if (c.keys.Any(
                         k => Math.Abs(k.value - c.keys[0].value) > 0.01f))
                 {
@@ -179,7 +179,11 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             if (!anim)
             {
-                return new AnimationClip[]{null,null,null};
+                return new AnimationClip[]{
+                    DynamicVariables.Settings.defaultAnimation,
+                    DynamicVariables.Settings.defaultAnimation,
+                    DynamicVariables.Settings.defaultAnimation
+                };
             }
             
             // 既存のアニメーションの検証
