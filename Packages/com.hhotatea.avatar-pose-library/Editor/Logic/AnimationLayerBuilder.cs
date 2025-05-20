@@ -151,13 +151,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                     locoOn.disableLocomotion = false;
                     var locoOff = onConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl>();
                     locoOff.disableLocomotion = true;
-                    ApplyTrackingLayer(offConState, onConState,
-                        off => {
-                            off.trackingHip = VRC_AnimatorTrackingControl.TrackingType.Tracking;
-                        },
-                        on => {
-                            on.trackingHip = VRC_AnimatorTrackingControl.TrackingType.Animation;
-                        });
                     break;
 
                 case TrackingType.Head:
@@ -183,10 +176,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                         off => {
                             off.trackingLeftFoot = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                             off.trackingRightFoot = VRC_AnimatorTrackingControl.TrackingType.Tracking;
+                            off.trackingHip = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                         },
                         on => {
                             on.trackingLeftFoot = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingRightFoot = VRC_AnimatorTrackingControl.TrackingType.Animation;
+                            on.trackingHip = VRC_AnimatorTrackingControl.TrackingType.Animation;
                         });
                     break;
 
