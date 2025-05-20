@@ -14,11 +14,15 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string SpeedParamPrefix = "AnimPoseSpeed";
         public const string ResetParamPrefix = "AnimPoseReset";
         public const string MirrorParamPrefix = "AnimPoseMirror";
+        public const string FlagParamPrefix = "AnimPoseFlag";
         // public const string BlockIdleParamPrefix = "AnimPoseBlock"; // 動的アニメーションかどうかのフラグ
         
-        public const string AnimatorPrefix = "AnimPoseMotion";
+        public const string MotionAnimatorPrefix = "AnimPoseMotion";
+        public const string FxAnimatorPrefix = "AnimPoseFx";
+        public const string ParamAnimatorPrefix = "AnimPoseParam";
         
         // 1つのIntパラメーターで管理するAnimationの最大数。
         public const int MaxAnimationState = 255;
+        public const int BoolFlagCount = 31;
     }
 }

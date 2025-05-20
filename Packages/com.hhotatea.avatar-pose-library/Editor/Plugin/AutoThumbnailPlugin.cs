@@ -73,8 +73,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                     break;
                 case VRCExpressionsMenu.Control.ControlType.Toggle:
                     if (control.parameter == null) return null;
-                    if (control.parameter.name == pose.parameter &&
-                        Math.Abs(control.value - pose.value) < 0.01f)
+                    if (control.parameter.name == pose.Parameter &&
+                        Math.Abs(control.value - pose.Value) < 0.01f)
                     {
                         return control;
                     }

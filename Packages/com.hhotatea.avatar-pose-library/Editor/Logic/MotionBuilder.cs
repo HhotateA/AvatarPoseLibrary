@@ -179,7 +179,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             if (!anim)
             {
-                return new AnimationClip[]{null,null};
+                return new AnimationClip[]{null,null,null};
             }
             
             // 既存のアニメーションの検証
@@ -188,13 +188,16 @@ namespace com.hhotatea.avatar_pose_library.logic
             var result = new AnimationClip[]
             {
                 new AnimationClip(),
+                new AnimationClip(),
                 new AnimationClip()
             };
             AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(anim);
             result[0].name = $"{anim.name}_Locomotion";
             result[1].name = $"{anim.name}_FX";
+            result[2].name = $"{anim.name}_None";
             AnimationUtility.SetAnimationClipSettings(result[0], settings);
             AnimationUtility.SetAnimationClipSettings(result[1], settings);
+            AnimationUtility.SetAnimationClipSettings(result[2], settings);
 
             float animTime = 0f;
             

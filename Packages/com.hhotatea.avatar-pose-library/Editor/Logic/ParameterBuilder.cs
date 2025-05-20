@@ -1,3 +1,4 @@
+using System.Linq;
 using com.hhotatea.avatar_pose_library.model;
 using nadena.dev.modular_avatar.core;
 using UnityEngine;
@@ -16,7 +17,19 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     nameOrPrefix = parameter,
                     syncType = ParameterSyncType.Int,
-                    localOnly = false,
+                    localOnly = true,
+                    defaultValue = 0,
+                    saved = false,
+                });
+            }
+
+            for (int i = 0; i < ConstVariables.BoolFlagCount; i++)
+            {
+                mResult.parameters.Add(new ParameterConfig
+                {
+                    nameOrPrefix = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
+                    syncType = ParameterSyncType.Bool,
+                    localOnly = poseLibrary.PoseCount < (1 << i),
                     defaultValue = 0,
                     saved = false,
                 });
@@ -26,7 +39,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 mResult.parameters.Add(new ParameterConfig
                 {
-                    nameOrPrefix = $"{ConstVariables.HeightParamPrefix}_{poseLibrary.guid}",
+                    nameOrPrefix = $"{ConstVariables.HeightParamPrefix}_{poseLibrary.Guid}",
                     syncType = ParameterSyncType.Float,
                     localOnly = false,
                     defaultValue = 0.5f,
@@ -38,7 +51,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 mResult.parameters.Add(new ParameterConfig
                 {
-                    nameOrPrefix = $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.guid}",
+                    nameOrPrefix = $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.Guid}",
                     syncType = ParameterSyncType.Float,
                     localOnly = false,
                     defaultValue = 0.5f,
@@ -48,7 +61,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             mResult.parameters.Add(new ParameterConfig
             {
-                nameOrPrefix = $"{ConstVariables.BaseParamPrefix}_{poseLibrary.guid}",
+                nameOrPrefix = $"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
                 defaultValue = 0,
@@ -57,7 +70,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             mResult.parameters.Add(new ParameterConfig
             {
-                nameOrPrefix = $"{ConstVariables.HeadParamPrefix}_{poseLibrary.guid}",
+                nameOrPrefix = $"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
                 defaultValue = 0,
@@ -66,7 +79,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             mResult.parameters.Add(new ParameterConfig
             {
-                nameOrPrefix = $"{ConstVariables.ArmParamPrefix}_{poseLibrary.guid}",
+                nameOrPrefix = $"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
                 defaultValue = 0,
@@ -75,7 +88,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             mResult.parameters.Add(new ParameterConfig
             {
-                nameOrPrefix = $"{ConstVariables.FootParamPrefix}_{poseLibrary.guid}",
+                nameOrPrefix = $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
                 defaultValue = 0,
@@ -84,7 +97,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             mResult.parameters.Add(new ParameterConfig
             {
-                nameOrPrefix = $"{ConstVariables.FingerParamPrefix}_{poseLibrary.guid}",
+                nameOrPrefix = $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
                 defaultValue = 0,
@@ -93,7 +106,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             mResult.parameters.Add(new ParameterConfig
             {
-                nameOrPrefix = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.guid}",
+                nameOrPrefix = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
                 defaultValue = 0,
@@ -104,7 +117,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 mResult.parameters.Add(new ParameterConfig
                 {
-                    nameOrPrefix = $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.guid}",
+                    nameOrPrefix = $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.Guid}",
                     syncType = ParameterSyncType.Bool,
                     localOnly = false,
                     defaultValue = 0,

@@ -27,10 +27,24 @@ namespace com.hhotatea.avatar_pose_library.model
         
         // 固定するパラメーターの選択
         public TrackingSetting tracking;
+        
+        // UI用のキャッシュ
+        public bool foldout = false;
 
         // システムが使用
-        public string parameter;
-        public int value;
+        public string Parameter { get; set; }
+        public int Value { get; set; }
+        public int Index { get; set; }
+
+        public bool[] GetAnimatorFlag()
+        {
+            bool[] bits = new bool[ConstVariables.BoolFlagCount];
+            for (int i = 0; i < ConstVariables.BoolFlagCount; i++)
+            {
+                bits[i] = (Index & (1 << i)) != 0;
+            }
+            return bits;
+        }
     }
 
     [Serializable]
@@ -53,12 +67,14 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableTrackingParam = true;
         
         // システムが使用
-        public string guid;
+        public string Guid { get; set; }
         public List<string> Parameters => 
             categories.SelectMany(c =>
             {
-                return c.poses.Select(p => p.parameter);
+                return c.poses.Select(p => p.Parameter);
             }).Distinct().ToList();
+
+        public int PoseCount => categories.Sum(cat => cat.poses.Count);
         
         /// <summary>
         /// パラメーターの最適化
@@ -66,24 +82,27 @@ namespace com.hhotatea.avatar_pose_library.model
         public AvatarPoseData UpdateParameter()
         {
             int paramCount = 999;
+            int paramIndex = 1;
             string paramName = "";
             foreach (var category in categories)
             {
                 foreach (var pose in category.poses)
                 {
-                    var guid = Guid.NewGuid().ToString("N").Substring(0, 8);
+                    var guid = System.Guid.NewGuid().ToString("N").Substring(0, 8);
                     if (paramCount > ConstVariables.MaxAnimationState)
                     {
                         paramName = $"AnimPose_{guid}";
                         paramCount = 1;
                     }
 
-                    pose.parameter = paramName;
-                    pose.value = paramCount;
+                    pose.Parameter = paramName;
+                    pose.Value = paramCount;
+                    pose.Index = paramIndex;
                     paramCount++;
+                    paramIndex++;
                 }
             }
-            guid = Guid.NewGuid().ToString("N").Substring(0, 8);
+            Guid = System.Guid.NewGuid().ToString("N").Substring(0, 8);
             return this;
         }
 
