@@ -23,7 +23,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
             }
 
-            for (int i = 0; i < 31; i++)
+            for (int i = 0; i < ConstVariables.BoolFlagCount; i++)
             {
                 mResult.parameters.Add(new ParameterConfig
                 {

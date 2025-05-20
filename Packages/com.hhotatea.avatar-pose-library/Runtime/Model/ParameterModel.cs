@@ -38,8 +38,8 @@ namespace com.hhotatea.avatar_pose_library.model
 
         public bool[] GetAnimatorFlag()
         {
-            bool[] bits = new bool[32];
-            for (int i = 0; i < 31; i++)
+            bool[] bits = new bool[ConstVariables.BoolFlagCount];
+            for (int i = 0; i < ConstVariables.BoolFlagCount; i++)
             {
                 bits[i] = (Index & (1 << i)) != 0;
             }
