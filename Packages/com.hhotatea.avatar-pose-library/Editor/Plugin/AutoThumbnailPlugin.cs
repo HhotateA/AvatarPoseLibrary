@@ -7,6 +7,7 @@ using com.hhotatea.avatar_pose_library.model;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDK3.Avatars.ScriptableObjects;
+using Object = UnityEngine.Object;
 
 [assembly: ExportsPlugin(typeof(AutoThumbnailPlugin))]
 namespace com.hhotatea.avatar_pose_library.editor
@@ -17,6 +18,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             InPhase(BuildPhase.Optimizing)
                 .AfterPlugin("nadena.dev.modular-avatar")
+                .BeforePlugin("com.anatawa12.avatar-optimizer")
                 .Run("AvatarPose: Replace thumbnail...", ctx =>
                 {
                     var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
@@ -38,6 +40,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                                 }
                             }
                         }
+
+                        Object.DestroyImmediate(setting);
                     }
                 });
         }
