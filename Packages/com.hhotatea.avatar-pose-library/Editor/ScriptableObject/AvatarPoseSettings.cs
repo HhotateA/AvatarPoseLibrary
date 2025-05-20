@@ -80,6 +80,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public float fieldOfView = 30f;
         public float cameraDistance = 1f;
         public Vector3 cameraOffset = Vector3.zero;
+        public AnimationClip defaultAnimation;
     }
 
     [Serializable]
