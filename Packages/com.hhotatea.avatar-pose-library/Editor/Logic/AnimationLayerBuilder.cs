@@ -124,7 +124,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
 
-            var noneClip = MotionBuilder.NoneAnimation();
+            var noneClip = MotionBuilder.NoneAnimation(0.3f);
             
             // ステートの初期化
             var offIdleState = layer.stateMachine.AddState("OffIdle");
@@ -526,24 +526,19 @@ namespace com.hhotatea.avatar_pose_library.logic
             mainTransition.hasExitTime = true;
             mainTransition.hasFixedDuration = true;
             mainTransition.duration = 0.0f;
-
-            for (int i = 0; i < flags.Length; i++)
-            {
-                // Preからリセットへの遷移
-                var bypassTransition = poseState.AddTransition(resetState);
-                bypassTransition.canTransitionToSelf = false;
-                bypassTransition.hasExitTime = false;
-                bypassTransition.hasFixedDuration = true;
-                bypassTransition.duration = 0.0f;
-                bypassTransition.conditions = new AnimatorCondition[]
+            
+            // Preからリセットへの遷移
+            var bypassTransition = poseState.AddTransition(resetState);
+            bypassTransition.canTransitionToSelf = false;
+            bypassTransition.hasExitTime = false;
+            bypassTransition.hasFixedDuration = true;
+            bypassTransition.duration = 0.0f;
+            bypassTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
                 {
-                    new AnimatorCondition
-                    {
-                        mode = flags[i] ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                    }
-                };
-            }
+                    mode = AnimatorConditionMode.IfNot,
+                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}"
+                })
+                .ToArray();
             
             var resetTransition = resetState.AddTransition(defaultState);
             resetTransition.canTransitionToSelf = false;
@@ -630,23 +625,18 @@ namespace com.hhotatea.avatar_pose_library.logic
                 })
                 .ToArray();
             
-            for (int i = 0; i < flags.Length; i++)
-            {
-                // Preからリセットへの遷移
-                var bypassTransition = poseState.AddTransition(defaultState);
-                bypassTransition.canTransitionToSelf = false;
-                bypassTransition.hasExitTime = false;
-                bypassTransition.hasFixedDuration = true;
-                bypassTransition.duration = 0.0f;
-                bypassTransition.conditions = new AnimatorCondition[]
+            // Preからリセットへの遷移
+            var bypassTransition = poseState.AddTransition(defaultState);
+            bypassTransition.canTransitionToSelf = false;
+            bypassTransition.hasExitTime = false;
+            bypassTransition.hasFixedDuration = true;
+            bypassTransition.duration = 0.0f;
+            bypassTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
                 {
-                    new AnimatorCondition
-                    {
-                        mode = flags[i] ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                    }
-                };
-            }
+                    mode = AnimatorConditionMode.IfNot,
+                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}"
+                })
+                .ToArray();
         }
 
     }
