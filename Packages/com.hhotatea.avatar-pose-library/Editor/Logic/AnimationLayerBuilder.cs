@@ -468,6 +468,13 @@ namespace com.hhotatea.avatar_pose_library.logic
             string guid)
         {
             var noneClip = MotionBuilder.NoneAnimation();
+            /*
+             * 基本的な処理の流れは
+             * Default => Reserve => Pose => Reset => Default
+             * のループ。
+             * 
+             * ReserveでActionの有効化、ResetでActionの無効化を行う
+             */
             
             // 準備ステートの作成
             var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
@@ -521,7 +528,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 })
                 .ToArray();
             
-            var mainTransition = defaultState.AddTransition(reserveState);
+            var mainTransition = reserveState.AddTransition(poseState);
             mainTransition.canTransitionToSelf = false;
             mainTransition.hasExitTime = true;
             mainTransition.hasFixedDuration = true;
