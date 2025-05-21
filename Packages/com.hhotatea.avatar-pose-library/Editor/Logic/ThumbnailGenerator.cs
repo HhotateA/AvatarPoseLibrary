@@ -114,7 +114,6 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
             
             camera.Render();
-            camera.Render();
 
             RenderTexture currentActiveRT = RenderTexture.active;
             RenderTexture.active = renderTexture;
