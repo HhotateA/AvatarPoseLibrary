@@ -527,18 +527,23 @@ namespace com.hhotatea.avatar_pose_library.logic
             mainTransition.hasFixedDuration = true;
             mainTransition.duration = 0.0f;
             
-            // Preからリセットへの遷移
-            var bypassTransition = poseState.AddTransition(resetState);
-            bypassTransition.canTransitionToSelf = false;
-            bypassTransition.hasExitTime = false;
-            bypassTransition.hasFixedDuration = true;
-            bypassTransition.duration = 0.0f;
-            bypassTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
+            for (int i = 0; i < flags.Length; i++)
+            {
+                // Preからリセットへの遷移
+                var bypassTransition = poseState.AddTransition(resetState);
+                bypassTransition.canTransitionToSelf = false;
+                bypassTransition.hasExitTime = false;
+                bypassTransition.hasFixedDuration = true;
+                bypassTransition.duration = 0.0f;
+                bypassTransition.conditions = new AnimatorCondition[]
                 {
-                    mode = AnimatorConditionMode.IfNot,
-                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}"
-                })
-                .ToArray();
+                    new AnimatorCondition
+                    {
+                        mode = flags[i] ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                    }
+                };
+            }
             
             var resetTransition = resetState.AddTransition(defaultState);
             resetTransition.canTransitionToSelf = false;
@@ -625,18 +630,23 @@ namespace com.hhotatea.avatar_pose_library.logic
                 })
                 .ToArray();
             
-            // Preからリセットへの遷移
-            var bypassTransition = poseState.AddTransition(defaultState);
-            bypassTransition.canTransitionToSelf = false;
-            bypassTransition.hasExitTime = false;
-            bypassTransition.hasFixedDuration = true;
-            bypassTransition.duration = 0.0f;
-            bypassTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
+            for (int i = 0; i < flags.Length; i++)
+            {
+                // Preからリセットへの遷移
+                var bypassTransition = poseState.AddTransition(defaultState);
+                bypassTransition.canTransitionToSelf = false;
+                bypassTransition.hasExitTime = false;
+                bypassTransition.hasFixedDuration = true;
+                bypassTransition.duration = 0.0f;
+                bypassTransition.conditions = new AnimatorCondition[]
                 {
-                    mode = AnimatorConditionMode.IfNot,
-                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}"
-                })
-                .ToArray();
+                    new AnimatorCondition
+                    {
+                        mode = flags[i] ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                    }
+                };
+            }
         }
 
     }
