@@ -263,14 +263,14 @@ namespace com.hhotatea.avatar_pose_library.logic
             return Mathf.PerlinNoise(time, seed * 10f) - 0.5f;
         }
 
-        public static AnimationClip NoneAnimation()
+        public static AnimationClip NoneAnimation(float interval = 1f/60f)
         {
             var result = new AnimationClip();
             result.name = "None";
 
             var curve = new AnimationCurve();
             curve.AddKey(0f, 0f);
-            curve.AddKey(1f/60f, 0f);
+            curve.AddKey(interval, 0f);
             // あり得ないアニメーションを1フレームだけ入れておく。
             result.SetCurve(Guid.NewGuid().ToString("N").Substring(0, 8), 
                 typeof(Transform), "localPosition.x", curve);
