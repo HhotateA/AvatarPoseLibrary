@@ -362,11 +362,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                     })
                 );
             }
-            {
-                var additive = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
-                additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                additive.goalWeight = 0f;
-            }
             
             // 変数リセット用のステート
             var preResetState = layer.stateMachine.AddState("PreReset"+pose.Value.ToString());
@@ -478,6 +473,9 @@ namespace com.hhotatea.avatar_pose_library.logic
             var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
             reserveState.motion = noneClip;
             reserveState.writeDefaultValues = false;
+            var additiveOn = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+            additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+            additiveOn.goalWeight = 1f;
 
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
@@ -487,6 +485,14 @@ namespace com.hhotatea.avatar_pose_library.logic
                 poseState.mirrorParameterActive = true;
                 poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
             }
+            
+            // 初期化ステートの作成
+            var resetState = layer.stateMachine.AddState("Reset_"+pose.Value.ToString());
+            resetState.motion = noneClip;
+            resetState.writeDefaultValues = false;
+            var additiveOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+            additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+            additiveOff.goalWeight = 0f;
 
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
@@ -503,7 +509,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var flags = pose.GetAnimatorFlag();
             
             // 遷移を作成
-            var reTransition = defaultState.AddTransition(poseState);
+            var reTransition = defaultState.AddTransition(reserveState);
             reTransition.canTransitionToSelf = false;
             reTransition.hasExitTime = false;
             reTransition.hasFixedDuration = true;
@@ -515,11 +521,16 @@ namespace com.hhotatea.avatar_pose_library.logic
                 })
                 .ToArray();
             
-            
+            var mainTransition = defaultState.AddTransition(reserveState);
+            mainTransition.canTransitionToSelf = false;
+            mainTransition.hasExitTime = true;
+            mainTransition.hasFixedDuration = true;
+            mainTransition.duration = 0.0f;
+
             for (int i = 0; i < flags.Length; i++)
             {
                 // Preからリセットへの遷移
-                var bypassTransition = poseState.AddTransition(defaultState);
+                var bypassTransition = poseState.AddTransition(resetState);
                 bypassTransition.canTransitionToSelf = false;
                 bypassTransition.hasExitTime = false;
                 bypassTransition.hasFixedDuration = true;
@@ -533,6 +544,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                     }
                 };
             }
+            
+            var resetTransition = resetState.AddTransition(defaultState);
+            resetTransition.canTransitionToSelf = false;
+            resetTransition.hasExitTime = true;
+            resetTransition.hasFixedDuration = true;
+            resetTransition.duration = 0.0f;
         }
 
         public static void AddLocomotionLayer(
