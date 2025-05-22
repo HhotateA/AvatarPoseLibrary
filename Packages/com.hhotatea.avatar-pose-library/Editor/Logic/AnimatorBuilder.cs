@@ -70,7 +70,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     foreach (var pose in category.poses)
                     {
-                        AnimationLayerBuilder.AddParamLayer(layer, pose, defaultState, poseLibrary.Guid);
+                        AnimationLayerBuilder.AddParamLayer(layer, pose, poseLibrary.Parameters, defaultState, poseLibrary.Guid);
                     }
                 }
             }

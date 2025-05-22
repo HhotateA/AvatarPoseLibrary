@@ -273,6 +273,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static void AddParamLayer(
             AnimatorControllerLayer layer, PoseEntry pose, 
+            List<string> parameters,
             AnimatorState defaultState,string guid)
         {
             /*
@@ -432,6 +433,27 @@ namespace com.hhotatea.avatar_pose_library.logic
                     threshold = pose.Value
                 }
             };
+    
+            // パラメーターリストを作成
+            parameters.Remove(pose.Parameter);
+            foreach (var p in parameters)
+            {
+                // プレリセットへの遷移
+                var preResetTransition = poseState.AddTransition(preResetState);
+                preResetTransition.canTransitionToSelf = false;
+                preResetTransition.hasExitTime = false;
+                preResetTransition.hasFixedDuration = true;
+                preResetTransition.duration = 0.0f;
+                preResetTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition
+                    {
+                        mode = AnimatorConditionMode.NotEqual,
+                        parameter = p,
+                        threshold = 0
+                    }
+                };
+            }
     
             // デフォルトへの遷移
             var defaultTransition = resetState.AddTransition(defaultState);
