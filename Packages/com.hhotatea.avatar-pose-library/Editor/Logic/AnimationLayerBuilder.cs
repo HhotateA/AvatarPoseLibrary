@@ -12,7 +12,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 {
     public static class AnimationLayerBuilder
     {
-
         public static AnimatorControllerLayer ResetLayer(string param,AvatarPoseData poseLibrary)
         {
             // レイヤー作成
@@ -358,7 +357,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
-            poseState.motion = MotionBuilder.PartAnimation(pose.animationClip)[2];
+            poseState.motion = MotionBuilder.PartAnimation(pose.animationClip,MotionBuilder.AnimationPart.None);
 
             // トラッキングリセット用のステート
             var resetState = layer.stateMachine.AddState("Reset"+pose.Value.ToString());
@@ -555,7 +554,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
             // Transform以外のAnimationを抽出
-            poseState.motion = MotionBuilder.PartAnimation(anim)[1];
+            poseState.motion = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Fx);
             if (MotionBuilder.IsMoveAnimation(anim))
             {
                 // スピードを制御可能にする
@@ -638,7 +637,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
             // Transform関係のAnimation抽出
-            anim = MotionBuilder.PartAnimation(anim)[0];
+            anim = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Locomotion);
             if (MotionBuilder.IsMoveAnimation(anim))
             {
                 var blendTree = new BlendTree();

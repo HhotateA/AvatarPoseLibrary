@@ -63,15 +63,17 @@ namespace com.hhotatea.avatar_pose_library.editor
         void BuildRuntimeAnimator(GameObject obj,AvatarPoseData data)
         {
             var result = new GameObject();
+
+            var locomotion = AnimatorBuilder.BuildLocomotionAnimator(data);
             
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_base.animator = AnimatorBuilder.BuildLocomotionAnimator(data);
+            ma_base.animator = locomotion;
             ma_base.pathMode = MergeAnimatorPathMode.Absolute;
             ma_base.matchAvatarWriteDefaults = true;
             ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
             
             var ma_action = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_action.animator = AnimatorBuilder.BuildActionAnimator(data);
+            ma_action.animator = locomotion;
             ma_action.pathMode = MergeAnimatorPathMode.Absolute;
             ma_action.matchAvatarWriteDefaults = true;
             ma_action.layerType = VRCAvatarDescriptor.AnimLayerType.Action;
@@ -81,6 +83,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             ma_fx.pathMode = MergeAnimatorPathMode.Absolute;
             ma_fx.matchAvatarWriteDefaults = true;
             ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
+            
+            var ma_tracking = result.AddComponent<ModularAvatarMergeAnimator>();
+            ma_tracking.animator = AnimatorBuilder.BuildTrackingAnimator(data);
+            ma_tracking.pathMode = MergeAnimatorPathMode.Absolute;
+            ma_tracking.matchAvatarWriteDefaults = true;
+            ma_tracking.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
             
             result.transform.SetParent(obj.transform);
         }

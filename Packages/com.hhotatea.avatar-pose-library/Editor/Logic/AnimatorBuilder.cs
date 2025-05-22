@@ -13,9 +13,9 @@ namespace com.hhotatea.avatar_pose_library.logic
 {
     public static class AnimatorBuilder
     {
-        public static AnimatorController BuildLocomotionAnimator(AvatarPoseData poseLibrary)
+        public static AnimatorController BuildTrackingAnimator(AvatarPoseData poseLibrary)
         {
-            var result = BuildActionAnimator(poseLibrary);
+            var result = BaseAnimator(poseLibrary);
 
             // フルトラ以外の場合は、アクションレイヤーを無効化する。
             result.AddLayer(AnimationLayerBuilder.TrackingLayer(TrackingType.Action,$"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}"));
@@ -23,7 +23,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             return result;
         }
         
-        public static AnimatorController BuildActionAnimator(AvatarPoseData poseLibrary)
+        public static AnimatorController BuildLocomotionAnimator(AvatarPoseData poseLibrary)
         {
             var result = BaseAnimator(poseLibrary);
             
