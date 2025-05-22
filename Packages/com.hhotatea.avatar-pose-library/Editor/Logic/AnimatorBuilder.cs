@@ -15,6 +15,16 @@ namespace com.hhotatea.avatar_pose_library.logic
     {
         public static AnimatorController BuildLocomotionAnimator(AvatarPoseData poseLibrary)
         {
+            var result = BuildActionAnimator(poseLibrary);
+
+            // フルトラ以外の場合は、アクションレイヤーを無効化する。
+            result.AddLayer(AnimationLayerBuilder.TrackingLayer(TrackingType.Action,$"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}"));
+
+            return result;
+        }
+        
+        public static AnimatorController BuildActionAnimator(AvatarPoseData poseLibrary)
+        {
             var result = BaseAnimator(poseLibrary);
             
             // レイヤー作成
@@ -160,6 +170,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             result.AddParameter($"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter($"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             
             for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
             {

@@ -21,7 +21,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 name = param,
                 defaultWeight = 0f,
                 stateMachine = new AnimatorStateMachine(),
-                blendingMode = AnimatorLayerBlendingMode.Override
+                blendingMode = AnimatorLayerBlendingMode.Override,
             };
 
             var noneClip = MotionBuilder.NoneAnimation();
@@ -50,7 +50,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                          ConstVariables.FootParamPrefix,
                          ConstVariables.FingerParamPrefix,
                          ConstVariables.BaseParamPrefix,
-                         ConstVariables.MirrorParamPrefix})
+                         ConstVariables.MirrorParamPrefix,
+                         ConstVariables.ActionParamPrefix
+                     })
             {
                 paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                 {
@@ -109,7 +111,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             Head,
             Arm,
             Foot,
-            Finger
+            Finger,
+            Action
         }
 
         public static AnimatorControllerLayer TrackingLayer(
@@ -201,6 +204,20 @@ namespace com.hhotatea.avatar_pose_library.logic
                             on.trackingLeftFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingRightFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                         });
+                    break;
+
+                case TrackingType.Action:
+                    var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
+                    additiveOff.goalWeight = 1f;
+                    var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
+                    additiveOn.goalWeight = 0f;
+                    
+                    var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                    actionOff.goalWeight = 0f;
+
                     break;
             }
             
@@ -327,6 +344,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                         value = flag
                     })
                 );
+                trackingOnParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{ConstVariables.ActionParamPrefix}_{guid}",
+                    value = 1f,
+                });
                 var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                 additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 additive.goalWeight = 1f;
@@ -362,6 +385,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                         value = 0
                     })
                 );
+                trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{ConstVariables.ActionParamPrefix}_{guid}",
+                    value = 0f,
+                });
             }
             
             // 変数リセット用のステート
