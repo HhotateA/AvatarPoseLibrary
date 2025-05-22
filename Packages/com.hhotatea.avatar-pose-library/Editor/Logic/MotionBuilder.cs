@@ -163,8 +163,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                     float t = DynamicVariables.Settings.motionDuration;
                     while (t < DynamicVariables.Settings.motionLong)
                     {
-                        newCurve.AddKey(t, oldCurve[0].value + 
-                                           FBMNoise(t * 0.1f,seed,5)
+                        newCurve.AddKey(t, oldCurve[0].value +
+                                           (Mathf.PerlinNoise(t * 0.1f, seed * 10f) - 0.5f)
                                            * noiseScale);
                         t += DynamicVariables.Settings.motionDuration;
                     }
@@ -174,34 +174,28 @@ namespace com.hhotatea.avatar_pose_library.logic
             
             return result;
         }
-        
-        public static AnimationClip[] PartAnimation(AnimationClip anim)
+
+
+        public enum AnimationPart
+        {
+            Locomotion,
+            Fx,
+            None
+        }
+        public static AnimationClip PartAnimation(AnimationClip anim, AnimationPart part)
         {
             if (!anim)
             {
-                return new AnimationClip[]{
-                    DynamicVariables.Settings.defaultAnimation,
-                    DynamicVariables.Settings.defaultAnimation,
-                    DynamicVariables.Settings.defaultAnimation
-                };
+                return DynamicVariables.Settings.defaultAnimation;
             }
             
             // 既存のアニメーションの検証
             var curves = AnimationUtility.GetCurveBindings(anim);
 
-            var result = new AnimationClip[]
-            {
-                new AnimationClip(),
-                new AnimationClip(),
-                new AnimationClip()
-            };
+            var result = new AnimationClip();
             AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(anim);
-            result[0].name = $"{anim.name}_Locomotion";
-            result[1].name = $"{anim.name}_FX";
-            result[2].name = $"{anim.name}_None";
-            AnimationUtility.SetAnimationClipSettings(result[0], settings);
-            AnimationUtility.SetAnimationClipSettings(result[1], settings);
-            AnimationUtility.SetAnimationClipSettings(result[2], settings);
+            result.name = $"{anim.name}_{part.ToString()}";
+            AnimationUtility.SetAnimationClipSettings(result, settings);
 
             float animTime = 0f;
             
@@ -209,13 +203,13 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 var curve = AnimationUtility.GetEditorCurve(anim, binding);
                 bool isLocomotionAnimation = binding.type == typeof(Transform) || binding.type == typeof(Animator);
-                if (isLocomotionAnimation)
+                if (isLocomotionAnimation && part == AnimationPart.Locomotion)
                 {
-                    result[0].SetCurve(binding.path, binding.type, binding.propertyName, curve);
+                    result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
                 }
-                else
+                else if(!isLocomotionAnimation && part == AnimationPart.Fx)
                 {
-                    result[1].SetCurve(binding.path, binding.type, binding.propertyName, curve);
+                    result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
                 }
 
                 foreach (var c in curve.keys)
@@ -230,37 +224,11 @@ namespace com.hhotatea.avatar_pose_library.logic
                 curve.AddKey(0f, 0f);
                 curve.AddKey(animTime, 0f);
                 // あり得ないアニメーションを1フレームだけ入れておく。
-                foreach (var r in result)
-                {
-                    r.SetCurve(
-                        Guid.NewGuid().ToString("N").Substring(0, 8), 
-                        typeof(Transform), "localPosition.x", curve);
-                }
+                result.SetCurve("FakeAnimationKey", 
+                    typeof(Transform), "localPosition.x", curve);
             }
             
             return result;
-        }
-
-        private static float FBMNoise(float time,float seed,int loop)
-        {
-            float sum = 0f;
-            float count = 0f;
-            int i = 1;
-            int j = loop;
-            while (j > 0)
-            {
-                sum += PerlinNoise(time * i*i, seed) * j*j;
-                count += j*j;
-                i++;
-                j--;
-            }
-
-            return sum / count;
-        }
-        
-        private static float PerlinNoise(float time,float seed)
-        {
-            return Mathf.PerlinNoise(time, seed * 10f) - 0.5f;
         }
 
         public static AnimationClip NoneAnimation(float interval = 1f/60f)
@@ -272,7 +240,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             curve.AddKey(0f, 0f);
             curve.AddKey(interval, 0f);
             // あり得ないアニメーションを1フレームだけ入れておく。
-            result.SetCurve(Guid.NewGuid().ToString("N").Substring(0, 8), 
+            result.SetCurve("FakeAnimationKey", 
                 typeof(Transform), "localPosition.x", curve);
             
             return result;

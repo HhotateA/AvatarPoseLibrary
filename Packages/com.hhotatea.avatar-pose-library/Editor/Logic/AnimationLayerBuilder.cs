@@ -12,7 +12,6 @@ namespace com.hhotatea.avatar_pose_library.logic
 {
     public static class AnimationLayerBuilder
     {
-
         public static AnimatorControllerLayer ResetLayer(string param,AvatarPoseData poseLibrary)
         {
             // レイヤー作成
@@ -21,7 +20,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 name = param,
                 defaultWeight = 0f,
                 stateMachine = new AnimatorStateMachine(),
-                blendingMode = AnimatorLayerBlendingMode.Override
+                blendingMode = AnimatorLayerBlendingMode.Override,
             };
 
             var noneClip = MotionBuilder.NoneAnimation();
@@ -50,7 +49,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                          ConstVariables.FootParamPrefix,
                          ConstVariables.FingerParamPrefix,
                          ConstVariables.BaseParamPrefix,
-                         ConstVariables.MirrorParamPrefix})
+                         ConstVariables.MirrorParamPrefix,
+                         ConstVariables.ActionParamPrefix
+                     })
             {
                 paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                 {
@@ -109,7 +110,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             Head,
             Arm,
             Foot,
-            Finger
+            Finger,
+            Action
         }
 
         public static AnimatorControllerLayer TrackingLayer(
@@ -201,6 +203,20 @@ namespace com.hhotatea.avatar_pose_library.logic
                             on.trackingLeftFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingRightFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                         });
+                    break;
+
+                case TrackingType.Action:
+                    var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
+                    additiveOff.goalWeight = 1f;
+                    var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
+                    additiveOn.goalWeight = 0f;
+                    
+                    var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                    actionOff.goalWeight = 0f;
+
                     break;
             }
             
@@ -327,6 +343,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                         value = flag
                     })
                 );
+                trackingOnParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{ConstVariables.ActionParamPrefix}_{guid}",
+                    value = 1f,
+                });
                 var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                 additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 additive.goalWeight = 1f;
@@ -335,7 +357,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
-            poseState.motion = MotionBuilder.PartAnimation(pose.animationClip)[2];
+            poseState.motion = MotionBuilder.PartAnimation(pose.animationClip,MotionBuilder.AnimationPart.None);
 
             // トラッキングリセット用のステート
             var resetState = layer.stateMachine.AddState("Reset"+pose.Value.ToString());
@@ -362,6 +384,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                         value = 0
                     })
                 );
+                trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{ConstVariables.ActionParamPrefix}_{guid}",
+                    value = 0f,
+                });
             }
             
             // 変数リセット用のステート
@@ -526,7 +554,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
             // Transform以外のAnimationを抽出
-            poseState.motion = MotionBuilder.PartAnimation(anim)[1];
+            poseState.motion = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Fx);
             if (MotionBuilder.IsMoveAnimation(anim))
             {
                 // スピードを制御可能にする
@@ -609,7 +637,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
             // Transform関係のAnimation抽出
-            anim = MotionBuilder.PartAnimation(anim)[0];
+            anim = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Locomotion);
             if (MotionBuilder.IsMoveAnimation(anim))
             {
                 var blendTree = new BlendTree();

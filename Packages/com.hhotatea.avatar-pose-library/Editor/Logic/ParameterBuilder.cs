@@ -106,6 +106,15 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             mResult.parameters.Add(new ParameterConfig
             {
+                nameOrPrefix = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
+                syncType = ParameterSyncType.Bool,
+                localOnly = true,
+                defaultValue = 0,
+                saved = false,
+            });
+
+            mResult.parameters.Add(new ParameterConfig
+            {
                 nameOrPrefix = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
