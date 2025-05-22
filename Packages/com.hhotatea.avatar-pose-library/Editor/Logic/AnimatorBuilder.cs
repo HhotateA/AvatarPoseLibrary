@@ -161,9 +161,9 @@ namespace com.hhotatea.avatar_pose_library.logic
             result.AddParameter($"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             
-            for (int i = 0; i < ConstVariables.BoolFlagCount; i++)
+            for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
             {
-                result.AddParameter($"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}", AnimatorControllerParameterType.Bool);
+                result.AddParameter($"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}", AnimatorControllerParameterType.Int);
             }
 
             return result;

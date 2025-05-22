@@ -324,7 +324,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
                         name = $"{ConstVariables.FlagParamPrefix}_{guid}_{index}",
-                        value = flag ? 1 : 0
+                        value = flag
                     })
                 );
                 var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
@@ -433,7 +433,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     threshold = pose.Value
                 }
             };
-    
+            
             // パラメーターリストを作成
             parameters.Remove(pose.Parameter);
             foreach (var p in parameters)
@@ -545,8 +545,9 @@ namespace com.hhotatea.avatar_pose_library.logic
             reTransition.duration = 0.0f;
             reTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
                 {
-                    mode = flag ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot,
-                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}"
+                    mode = AnimatorConditionMode.Equals,
+                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                    threshold = flag,
                 })
                 .ToArray();
             
@@ -568,8 +569,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     new AnimatorCondition
                     {
-                        mode = flags[i] ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
+                        mode = AnimatorConditionMode.NotEqual,
                         parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                        threshold = flags[i],
                     }
                 };
             }
@@ -654,8 +656,9 @@ namespace com.hhotatea.avatar_pose_library.logic
             reTransition.duration = 0.0f;
             reTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
                 {
-                    mode = flag ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot,
-                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}"
+                    mode = AnimatorConditionMode.Equals,
+                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                    threshold = flag
                 })
                 .ToArray();
             
@@ -671,8 +674,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     new AnimatorCondition
                     {
-                        mode = flags[i] ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
+                        mode = AnimatorConditionMode.NotEqual,
                         parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                        threshold = flags[i],
                     }
                 };
             }

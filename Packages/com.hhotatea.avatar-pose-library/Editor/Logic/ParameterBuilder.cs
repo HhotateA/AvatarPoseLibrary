@@ -23,13 +23,13 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
             }
 
-            for (int i = 0; i < ConstVariables.BoolFlagCount; i++)
+            for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
             {
                 mResult.parameters.Add(new ParameterConfig
                 {
                     nameOrPrefix = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
-                    syncType = ParameterSyncType.Bool,
-                    localOnly = poseLibrary.PoseCount < (1 << i),
+                    syncType = ParameterSyncType.Int,
+                    localOnly = poseLibrary.PoseCount < (1 << i*8),
                     defaultValue = 0,
                     saved = false,
                 });

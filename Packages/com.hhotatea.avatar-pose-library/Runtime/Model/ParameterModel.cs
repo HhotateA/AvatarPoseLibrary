@@ -36,14 +36,15 @@ namespace com.hhotatea.avatar_pose_library.model
         public int Value { get; set; }
         public int Index { get; set; }
 
-        public bool[] GetAnimatorFlag()
+        public int[] GetAnimatorFlag()
         {
-            bool[] bits = new bool[ConstVariables.BoolFlagCount];
-            for (int i = 0; i < ConstVariables.BoolFlagCount; i++)
+            return new[]
             {
-                bits[i] = (Index & (1 << i)) != 0;
-            }
-            return bits;
+                Index        & 0xFF,   // 0‒7 ビット目
+                (Index >>  8) & 0xFF,  // 8‒15 ビット目
+                /*(Index >> 16) & 0xFF,  // 16‒23 ビット目
+                (Index >> 24) & 0xFF   // 24‒31 ビット目*/
+            };
         }
     }
 
