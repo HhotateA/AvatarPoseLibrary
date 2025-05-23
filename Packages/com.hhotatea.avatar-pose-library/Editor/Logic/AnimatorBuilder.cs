@@ -40,7 +40,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // 空のステート（default）
             var defaultState = layer.stateMachine.AddState("Default");
             defaultState.writeDefaultValues = false;
-            defaultState.motion = new AnimationClip();
+            defaultState.motion = MotionBuilder.NoneAnimation;
 
             // ポーズのレイヤー追加
             foreach (var category in poseLibrary.categories)
@@ -73,14 +73,71 @@ namespace com.hhotatea.avatar_pose_library.logic
                 // 空のステート（default）
                 var defaultState = layer.stateMachine.AddState("Default");
                 defaultState.writeDefaultValues = false;
-                defaultState.motion = new AnimationClip();
+                defaultState.motion = MotionBuilder.NoneAnimation;
+                
+                // トラッキングリセット用のステート
+                var resetState = layer.stateMachine.AddState("Reset");
+                resetState.motion = MotionBuilder.FrameAnimation;
+                resetState.writeDefaultValues = false;
+                {
+                    var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                    for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
+                    {
+                        trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
+                        {
+                            type = VRC_AvatarParameterDriver.ChangeType.Set,
+                            name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
+                            value = 0
+                        });
+                    }
+                    trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
+                        value = 0f,
+                    });
+                }
+                // デフォルトへの遷移
+                var defaultTransition = resetState.AddTransition(defaultState);
+                defaultTransition.canTransitionToSelf = false;
+                defaultTransition.hasExitTime = true;
+                defaultTransition.hasFixedDuration = true;
+                defaultTransition.duration = 0.0f;
+
+                Dictionary<string, AnimatorState> preResets = new();
+                foreach (var param in poseLibrary.Parameters)
+                {
+                    // 変数リセット用のステート
+                    var preResetState = layer.stateMachine.AddState("PreReset"+param);
+                    preResetState.motion = MotionBuilder.FrameAnimation;
+                    preResetState.writeDefaultValues = false;
+                    var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                    {
+                        resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                        {
+                            type = VRC_AvatarParameterDriver.ChangeType.Set,
+                            name = param,
+                            value = 0,
+                        });
+                    }
+                    // Preからリセットへの遷移
+                    var bypassTransition = preResetState.AddTransition(resetState);
+                    bypassTransition.canTransitionToSelf = false;
+                    bypassTransition.hasExitTime = true;
+                    bypassTransition.hasFixedDuration = true;
+                    bypassTransition.duration = 0.0f;
+                    // Dictionaryに登録
+                    preResets.Add(param,preResetState);
+                }
 
                 // ポーズのレイヤー追加
                 foreach (var category in poseLibrary.categories)
                 {
                     foreach (var pose in category.poses)
                     {
-                        AnimationLayerBuilder.AddParamLayer(layer, pose, poseLibrary.Parameters, defaultState, poseLibrary.Guid);
+                        AnimationLayerBuilder.AddParamLayer(
+                            layer, pose, poseLibrary.Parameters, poseLibrary.Guid,
+                            defaultState, resetState, preResets[pose.Parameter]);
                     }
                 }
             }
@@ -99,15 +156,30 @@ namespace com.hhotatea.avatar_pose_library.logic
                 // 空のステート（default）
                 var defaultState = layer.stateMachine.AddState("Default");
                 defaultState.writeDefaultValues = true;
-                defaultState.motion = new AnimationClip();
+                defaultState.motion = MotionBuilder.NoneAnimation;
+            
+                // 初期化ステートの作成
+                var resetState = layer.stateMachine.AddState("Reset");
+                resetState.motion = MotionBuilder.FrameAnimation;
+                resetState.writeDefaultValues = false;
+                var additiveOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                additiveOff.goalWeight = 0f;
+            
+                // デフォルトへの遷移
+                var resetTransition = resetState.AddTransition(defaultState);
+                resetTransition.canTransitionToSelf = false;
+                resetTransition.hasExitTime = true;
+                resetTransition.hasFixedDuration = true;
+                resetTransition.duration = 0.0f;
 
                 // ポーズのレイヤー追加
                 foreach (var category in poseLibrary.categories)
                 {
                     foreach (var pose in category.poses)
                     {
-                        AnimationLayerBuilder.AddFxLayer(pose,layer,defaultState,
-                            poseLibrary.enableHeightParam,poseLibrary.enableSpeedParam,poseLibrary.enableMirrorParam,
+                        AnimationLayerBuilder.AddFxLayer(pose,layer,
+                            defaultState, resetState,
                             poseLibrary.Guid);
                     }
                 }

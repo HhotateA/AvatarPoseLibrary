@@ -231,10 +231,40 @@ namespace com.hhotatea.avatar_pose_library.logic
             return result;
         }
 
-        public static AnimationClip NoneAnimation(float interval = 1f/60f)
+        static AnimationClip _frameAnimation;
+
+        public static AnimationClip FrameAnimation
+        {
+            get
+            {
+                if (_frameAnimation == null)
+                {
+                    _frameAnimation = CreateFrameAnimation(1f / 60f);
+                }
+
+                return _frameAnimation;
+            }
+        }
+
+        static AnimationClip _noneAnimation;
+
+        public static AnimationClip NoneAnimation
+        {
+            get
+            {
+                if (_noneAnimation == null)
+                {
+                    _noneAnimation = new AnimationClip();
+                }
+
+                return _noneAnimation;
+            }
+        }
+
+        public static AnimationClip CreateFrameAnimation(float interval)
         {
             var result = new AnimationClip();
-            result.name = "None";
+            result.name = ($"None_{interval:C}Sec");
 
             var curve = new AnimationCurve();
             curve.AddKey(0f, 0f);

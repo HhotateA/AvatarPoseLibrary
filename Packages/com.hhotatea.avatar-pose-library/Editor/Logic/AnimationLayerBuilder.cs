@@ -23,15 +23,14 @@ namespace com.hhotatea.avatar_pose_library.logic
                 blendingMode = AnimatorLayerBlendingMode.Override,
             };
 
-            var noneClip = MotionBuilder.NoneAnimation();
             // ステートの初期化
             var defaultState = layer.stateMachine.AddState("Default");
             defaultState.writeDefaultValues = false;
-            defaultState.motion = noneClip;
+            defaultState.motion = MotionBuilder.FrameAnimation;
             
             var resetState = layer.stateMachine.AddState("Reset");
             resetState.writeDefaultValues = false;
-            resetState.motion = noneClip;
+            resetState.motion = MotionBuilder.FrameAnimation;
             
             var paramReset = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             foreach (var parameter in poseLibrary.Parameters)
@@ -126,7 +125,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
 
-            var noneClip = MotionBuilder.NoneAnimation(0.3f);
+            var noneClip = MotionBuilder.CreateFrameAnimation(0.3f);
             
             // ステートの初期化
             var offIdleState = layer.stateMachine.AddState("OffIdle");
@@ -289,8 +288,8 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static void AddParamLayer(
             AnimatorControllerLayer layer, PoseEntry pose, 
-            List<string> parameters,
-            AnimatorState defaultState,string guid)
+            List<string> parameters, string guid,
+            AnimatorState defaultState, AnimatorState resetState, AnimatorState preResetState)
         {
             /*
              * 基本的な処理の流れは
@@ -310,23 +309,20 @@ namespace com.hhotatea.avatar_pose_library.logic
                 (pose.tracking.finger, ConstVariables.FingerParamPrefix),
                 (pose.tracking.locomotion, ConstVariables.BaseParamPrefix)
             };
-            var noneClip = MotionBuilder.NoneAnimation();
             
             // 準備ステートの作成
             var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
-            reserveState.motion = noneClip;
+            reserveState.motion = MotionBuilder.FrameAnimation;
             reserveState.writeDefaultValues = false;
             {
                 var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 foreach (var (enabled, prefix) in trackingMap)
                 {
-                    if (!enabled) continue;
-
                     trackingOnParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                     {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
                         name = $"{prefix}_{guid}",
-                        value = 1,
+                        value = enabled ? 1f : 0f,
                     });
                 }
                 trackingOnParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
@@ -359,53 +355,6 @@ namespace com.hhotatea.avatar_pose_library.logic
             poseState.writeDefaultValues = false;
             poseState.motion = MotionBuilder.PartAnimation(pose.animationClip,MotionBuilder.AnimationPart.None);
 
-            // トラッキングリセット用のステート
-            var resetState = layer.stateMachine.AddState("Reset"+pose.Value.ToString());
-            resetState.motion = noneClip;
-            resetState.writeDefaultValues = false;
-            {
-                var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-                foreach (var (enabled, prefix) in trackingMap)
-                {
-                    if (!enabled) continue;
-
-                    trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                    {
-                        type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{prefix}_{guid}",
-                        value = 0,
-                    });
-                }
-                trackingOffParam.parameters.AddRange(
-                    pose.GetAnimatorFlag().Select((flag, index) => new VRC_AvatarParameterDriver.Parameter
-                    {
-                        type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.FlagParamPrefix}_{guid}_{index}",
-                        value = 0
-                    })
-                );
-                trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
-                    type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{ConstVariables.ActionParamPrefix}_{guid}",
-                    value = 0f,
-                });
-            }
-            
-            // 変数リセット用のステート
-            var preResetState = layer.stateMachine.AddState("PreReset"+pose.Value.ToString());
-            preResetState.motion = noneClip;
-            preResetState.writeDefaultValues = false;
-            var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            {
-                resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
-                    type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = pose.Parameter,
-                    value = 0,
-                });
-            }
-            
             // 遷移を作成
             var reTransition = defaultState.AddTransition(reserveState);
             reTransition.canTransitionToSelf = false;
@@ -429,22 +378,6 @@ namespace com.hhotatea.avatar_pose_library.logic
             mainTransition.exitTime = 0f;
             mainTransition.hasFixedDuration = true;
             mainTransition.duration = 0.0f;
-            
-            // Preからリセットへの遷移
-            var bypassTransition = preResetState.AddTransition(resetState);
-            bypassTransition.canTransitionToSelf = false;
-            bypassTransition.hasExitTime = false;
-            bypassTransition.hasFixedDuration = true;
-            bypassTransition.duration = 0.0f;
-            bypassTransition.conditions = new AnimatorCondition[]
-            {
-                new AnimatorCondition()
-                {
-                    mode = AnimatorConditionMode.NotEqual,
-                    parameter = pose.Parameter,
-                    threshold = pose.Value
-                }
-            };
             
             // リセットへの遷移
             var resetTransition = poseState.AddTransition(resetState);
@@ -482,22 +415,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                     }
                 };
             }
-    
-            // デフォルトへの遷移
-            var defaultTransition = resetState.AddTransition(defaultState);
-            defaultTransition.canTransitionToSelf = false;
-            defaultTransition.hasExitTime = false;
-            defaultTransition.hasFixedDuration = true;
-            defaultTransition.duration = 0.0f;
-            defaultTransition.conditions = new AnimatorCondition[]
-            {
-                new AnimatorCondition()
-                {
-                    mode = AnimatorConditionMode.NotEqual,
-                    parameter = pose.Parameter,
-                    threshold = pose.Value
-                }
-            };
 
             if (!pose.tracking.loop)
             {
@@ -513,11 +430,9 @@ namespace com.hhotatea.avatar_pose_library.logic
         public static void AddFxLayer(
             PoseEntry pose,
             AnimatorControllerLayer layer,
-            AnimatorState defaultState,
-            bool height, bool speed, bool mirror,
+            AnimatorState defaultState, AnimatorState resetState,
             string guid)
         {
-            var noneClip = MotionBuilder.NoneAnimation();
             /*
              * 基本的な処理の流れは
              * Default => Reserve => Pose => Reset => Default
@@ -525,31 +440,15 @@ namespace com.hhotatea.avatar_pose_library.logic
              * 
              * ReserveでActionの有効化、ResetでActionの無効化を行う
              */
-            
-            // 準備ステートの作成
-            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
-            reserveState.motion = noneClip;
-            reserveState.writeDefaultValues = false;
-            var additiveOn = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
-            additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-            additiveOn.goalWeight = 1f;
 
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
-            if (mirror)
-            {
-                poseState.mirrorParameterActive = true;
-                poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-            }
-            
-            // 初期化ステートの作成
-            var resetState = layer.stateMachine.AddState("Reset_"+pose.Value.ToString());
-            resetState.motion = noneClip;
-            resetState.writeDefaultValues = false;
-            var additiveOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
-            additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-            additiveOff.goalWeight = 0f;
+            poseState.mirrorParameterActive = true;
+            poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
+            var additiveOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+            additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+            additiveOn.goalWeight = 1f;
 
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
@@ -566,7 +465,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var flags = pose.GetAnimatorFlag();
             
             // 遷移を作成
-            var reTransition = defaultState.AddTransition(reserveState);
+            var reTransition = defaultState.AddTransition(poseState);
             reTransition.canTransitionToSelf = false;
             reTransition.hasExitTime = false;
             reTransition.hasFixedDuration = true;
@@ -578,13 +477,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     threshold = flag,
                 })
                 .ToArray();
-            
-            var mainTransition = reserveState.AddTransition(poseState);
-            mainTransition.canTransitionToSelf = false;
-            mainTransition.hasExitTime = true;
-            mainTransition.hasFixedDuration = true;
-            mainTransition.duration = 0.0f;
-            
+
             for (int i = 0; i < flags.Length; i++)
             {
                 // Preからリセットへの遷移
@@ -603,12 +496,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                     }
                 };
             }
-            
-            var resetTransition = resetState.AddTransition(defaultState);
-            resetTransition.canTransitionToSelf = false;
-            resetTransition.hasExitTime = true;
-            resetTransition.hasFixedDuration = true;
-            resetTransition.duration = 0.0f;
         }
 
         public static void AddLocomotionLayer(
@@ -618,21 +505,11 @@ namespace com.hhotatea.avatar_pose_library.logic
             bool height, bool speed, bool mirror,
             string guid)
         {
-            var noneClip = MotionBuilder.NoneAnimation();
-            
-            // 準備ステートの作成
-            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
-            reserveState.motion = noneClip;
-            reserveState.writeDefaultValues = false;
-            
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
-            if (mirror)
-            {
-                poseState.mirrorParameterActive = true;
-                poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-            }
+            poseState.mirrorParameterActive = true;
+            poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
 
             // blendTree
             var anim = MotionBuilder.SetAnimationLoop(pose.animationClip,pose.tracking.loop);
