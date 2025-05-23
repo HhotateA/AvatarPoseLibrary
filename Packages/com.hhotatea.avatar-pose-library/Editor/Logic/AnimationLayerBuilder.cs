@@ -418,7 +418,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             resetTransition.canTransitionToSelf = false;
             resetTransition.hasExitTime = false;
             resetTransition.hasFixedDuration = true;
-            resetTransition.duration = 0.0f;
+            resetTransition.duration = 0.1f;
             resetTransition.conditions = new AnimatorCondition[]
             {
                 new AnimatorCondition
@@ -526,7 +526,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 resetTransition.canTransitionToSelf = false;
                 resetTransition.hasExitTime = false;
                 resetTransition.hasFixedDuration = true;
-                resetTransition.duration = 0.0f;
+                resetTransition.duration = 0.1f;
                 resetTransition.conditions = new AnimatorCondition[]
                 {
                     new AnimatorCondition
@@ -605,7 +605,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 resetTransition.canTransitionToSelf = false;
                 resetTransition.hasExitTime = false;
                 resetTransition.hasFixedDuration = true;
-                resetTransition.duration = 0.0f;
+                resetTransition.duration = 0.1f;
                 resetTransition.conditions = new AnimatorCondition[]
                 {
                     new AnimatorCondition
@@ -698,7 +698,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 resetTransition.canTransitionToSelf = false;
                 resetTransition.hasExitTime = false;
                 resetTransition.hasFixedDuration = true;
-                resetTransition.duration = 0.0f;
+                resetTransition.duration = 0.1f;
                 resetTransition.conditions = new AnimatorCondition[]
                 {
                     new AnimatorCondition
@@ -766,7 +766,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 resetTransition.canTransitionToSelf = false;
                 resetTransition.hasExitTime = false;
                 resetTransition.hasFixedDuration = true;
-                resetTransition.duration = 0.0f;
+                resetTransition.duration = 0.1f;
                 resetTransition.conditions = new AnimatorCondition[]
                 {
                     new AnimatorCondition
