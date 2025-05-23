@@ -99,7 +99,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 nameOrPrefix = $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
-                localOnly = true,
+                localOnly = !poseLibrary.enableDeepSync,
                 defaultValue = 0,
                 saved = false,
             });
@@ -108,7 +108,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 nameOrPrefix = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
-                localOnly = true,
+                localOnly = !poseLibrary.enableDeepSync,
                 defaultValue = 0,
                 saved = false,
             });
