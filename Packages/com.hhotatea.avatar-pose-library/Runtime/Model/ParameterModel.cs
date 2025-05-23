@@ -66,6 +66,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableSpeedParam = true;
         public bool enableMirrorParam = true;
         public bool enableTrackingParam = true;
+        public bool enableDeepSync = true;
         
         // システムが使用
         public string Guid { get; set; }
