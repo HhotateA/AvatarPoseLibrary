@@ -67,13 +67,9 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var result = new GameObject();
 
-            Debug.Log("a"+DateTime.Now.ToString());
             var locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data);
-            Debug.Log("b"+DateTime.Now.ToString());
             var paramLayer = AnimatorBuilder.BuildFxAnimator(data);
-            Debug.Log("c"+DateTime.Now.ToString());
             var trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data);
-            Debug.Log("d"+DateTime.Now.ToString());
             
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator>();
             ma_base.animator = locomotionLayer;
