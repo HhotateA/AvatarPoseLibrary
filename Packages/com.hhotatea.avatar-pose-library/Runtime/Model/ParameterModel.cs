@@ -131,6 +131,7 @@ namespace com.hhotatea.avatar_pose_library.model
                     apd.enableSpeedParam = d.enableSpeedParam;
                     apd.enableMirrorParam = d.enableMirrorParam;
                     apd.enableTrackingParam = d.enableTrackingParam;
+                    apd.enableDeepSync = d.enableDeepSync;
                 }
                 apd.UpdateParameter();
                 result[i] = apd;
