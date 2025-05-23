@@ -23,6 +23,8 @@ namespace com.hhotatea.avatar_pose_library.model
         public string name;
         public bool autoThumbnail;
         public Texture2D thumbnail;
+        public AnimationClip beforeAnimationClip;
+        public AnimationClip afterAnimationClip;
         public AnimationClip animationClip;
         
         // 固定するパラメーターの選択
