@@ -77,6 +77,24 @@ namespace com.hhotatea.avatar_pose_library.logic
                 value = 0,
             });
             
+            for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
+            {
+                paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
+                    value = 0,
+                });
+            }
+            
+            var additive = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+            additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+            additive.goalWeight = 0f;
+            
+            var gesture = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+            gesture.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
+            gesture.goalWeight = 1f;
+            
             // 遷移の設定
             var resetTransition = defaultState.AddTransition(resetState);
             resetTransition.canTransitionToSelf = false;
@@ -380,18 +398,33 @@ namespace com.hhotatea.avatar_pose_library.logic
             mainTransition.duration = 0.0f;
             
             // リセットへの遷移
-            var resetTransition = poseState.AddTransition(resetState);
-            resetTransition.canTransitionToSelf = false;
-            resetTransition.hasExitTime = false;
-            resetTransition.hasFixedDuration = true;
-            resetTransition.duration = 0.0f;
-            resetTransition.conditions = new AnimatorCondition[]
+            var leftTransition = poseState.AddTransition(resetState);
+            leftTransition.canTransitionToSelf = false;
+            leftTransition.hasExitTime = false;
+            leftTransition.hasFixedDuration = true;
+            leftTransition.duration = 0.0f;
+            leftTransition.conditions = new AnimatorCondition[]
             {
                 new AnimatorCondition()
                 {
                     mode = AnimatorConditionMode.NotEqual,
                     parameter = pose.Parameter,
                     threshold = pose.Value
+                }
+            };
+            
+            // リセット用遷移
+            var resetTransition = reserveState.AddTransition(defaultState);
+            resetTransition.canTransitionToSelf = false;
+            resetTransition.hasExitTime = false;
+            resetTransition.hasFixedDuration = true;
+            resetTransition.duration = 0.0f;
+            resetTransition.conditions = new AnimatorCondition[]
+            {
+                new AnimatorCondition
+                {
+                    mode = AnimatorConditionMode.If,
+                    parameter = $"{ConstVariables.ResetParamPrefix}_{guid}",
                 }
             };
             
@@ -466,13 +499,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                 beforeState.mirrorParameterActive = true;
                 beforeState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
                 beforeState.motion = MakeFxAnim(pose.beforeAnimationClip,pose.tracking.loop);
-                if (isMove)
-                {
-                    // スピードを制御可能にする
-                    poseState.speed = pose.tracking.motionSpeed * 2f;
-                    poseState.speedParameterActive = true;
-                    poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                }
                 
                 // 遷移を作成
                 var joinTransition = defaultState.AddTransition(beforeState);
@@ -494,6 +520,21 @@ namespace com.hhotatea.avatar_pose_library.logic
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
+                
+                // リセット用遷移
+                var resetTransition = beforeState.AddTransition(defaultState);
+                resetTransition.canTransitionToSelf = false;
+                resetTransition.hasExitTime = false;
+                resetTransition.hasFixedDuration = true;
+                resetTransition.duration = 0.0f;
+                resetTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition
+                    {
+                        mode = AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.ResetParamPrefix}_{guid}",
+                    }
+                };
 
                 // レイヤーの設定
                 var additiveOn = beforeState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
@@ -531,13 +572,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                 afterState.mirrorParameterActive = true;
                 afterState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
                 afterState.motion = MakeFxAnim(pose.afterAnimationClip,pose.tracking.loop);
-                if (isMove)
-                {
-                    // スピードを制御可能にする
-                    poseState.speed = pose.tracking.motionSpeed * 2f;
-                    poseState.speedParameterActive = true;
-                    poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                }
                 
                 // 遷移を作成
                 for (int i = 0; i < flags.Length; i++)
@@ -565,6 +599,21 @@ namespace com.hhotatea.avatar_pose_library.logic
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
+                
+                // リセット用遷移
+                var resetTransition = afterState.AddTransition(defaultState);
+                resetTransition.canTransitionToSelf = false;
+                resetTransition.hasExitTime = false;
+                resetTransition.hasFixedDuration = true;
+                resetTransition.duration = 0.0f;
+                resetTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition
+                    {
+                        mode = AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.ResetParamPrefix}_{guid}",
+                    }
+                };
             }
             else
             {
@@ -622,13 +671,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                 beforeState.mirrorParameterActive = true;
                 beforeState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
                 beforeState.motion = MakeLocomotionAnim(pose.beforeAnimationClip,pose.tracking.loop,height,speed,guid);
-                if (isMove)
-                {
-                    // スピードを制御可能にする
-                    beforeState.speed = pose.tracking.motionSpeed * 2f;
-                    beforeState.speedParameterActive = true;
-                    beforeState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                }
                 
                 // 遷移を作成
                 var joinTransition = defaultState.AddTransition(beforeState);
@@ -650,6 +692,21 @@ namespace com.hhotatea.avatar_pose_library.logic
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
+                
+                // リセット用遷移
+                var resetTransition = beforeState.AddTransition(defaultState);
+                resetTransition.canTransitionToSelf = false;
+                resetTransition.hasExitTime = false;
+                resetTransition.hasFixedDuration = true;
+                resetTransition.duration = 0.0f;
+                resetTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition
+                    {
+                        mode = AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.ResetParamPrefix}_{guid}",
+                    }
+                };
             }
             else
             {
@@ -677,13 +734,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                 afterState.mirrorParameterActive = true;
                 afterState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
                 afterState.motion = MakeLocomotionAnim(pose.afterAnimationClip,pose.tracking.loop,height,speed,guid);
-                if (isMove)
-                {
-                    // スピードを制御可能にする
-                    afterState.speed = pose.tracking.motionSpeed * 2f;
-                    afterState.speedParameterActive = true;
-                    afterState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                }
                 
                 // 遷移を作成
                 for (int i = 0; i < flags.Length; i++)
@@ -710,6 +760,21 @@ namespace com.hhotatea.avatar_pose_library.logic
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
+                
+                // リセット用遷移
+                var resetTransition = afterState.AddTransition(defaultState);
+                resetTransition.canTransitionToSelf = false;
+                resetTransition.hasExitTime = false;
+                resetTransition.hasFixedDuration = true;
+                resetTransition.duration = 0.0f;
+                resetTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition
+                    {
+                        mode = AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.ResetParamPrefix}_{guid}",
+                    }
+                };
             }
             else
             {
