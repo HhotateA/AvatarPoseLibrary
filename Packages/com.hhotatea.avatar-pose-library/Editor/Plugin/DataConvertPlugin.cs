@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using com.hhotatea.avatar_pose_library.logic;
 using nadena.dev.modular_avatar.core;
 using nadena.dev.ndmf;
@@ -6,6 +8,7 @@ using VRC.SDK3.Avatars.Components;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.model;
+using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
@@ -64,28 +67,34 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var result = new GameObject();
 
-            var locomotion = AnimatorBuilder.BuildLocomotionAnimator(data);
+            Debug.Log("a"+DateTime.Now.ToString());
+            var locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data);
+            Debug.Log("b"+DateTime.Now.ToString());
+            var paramLayer = AnimatorBuilder.BuildFxAnimator(data);
+            Debug.Log("c"+DateTime.Now.ToString());
+            var trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data);
+            Debug.Log("d"+DateTime.Now.ToString());
             
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_base.animator = locomotion;
+            ma_base.animator = locomotionLayer;
             ma_base.pathMode = MergeAnimatorPathMode.Absolute;
             ma_base.matchAvatarWriteDefaults = true;
             ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
             
             var ma_action = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_action.animator = locomotion;
+            ma_action.animator = locomotionLayer;
             ma_action.pathMode = MergeAnimatorPathMode.Absolute;
             ma_action.matchAvatarWriteDefaults = true;
             ma_action.layerType = VRCAvatarDescriptor.AnimLayerType.Action;
             
             var ma_fx = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_fx.animator = AnimatorBuilder.BuildFxAnimator(data);
+            ma_fx.animator = paramLayer;
             ma_fx.pathMode = MergeAnimatorPathMode.Absolute;
             ma_fx.matchAvatarWriteDefaults = true;
             ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
             
             var ma_tracking = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_tracking.animator = AnimatorBuilder.BuildTrackingAnimator(data);
+            ma_tracking.animator = trackingLayer;
             ma_tracking.pathMode = MergeAnimatorPathMode.Absolute;
             ma_tracking.matchAvatarWriteDefaults = true;
             ma_tracking.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
