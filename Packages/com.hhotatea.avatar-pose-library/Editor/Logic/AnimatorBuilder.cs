@@ -108,9 +108,25 @@ namespace com.hhotatea.avatar_pose_library.logic
                     trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                     {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
+                        name = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
                         value = 0f,
                     });
+                    foreach (var param in new string[]
+                             {
+                                 ConstVariables.HeadParamPrefix,
+                                 ConstVariables.ArmParamPrefix,
+                                 ConstVariables.FootParamPrefix,
+                                 ConstVariables.FingerParamPrefix,
+                                 ConstVariables.BaseParamPrefix
+                             })
+                    {
+                        trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                        {
+                            type = VRC_AvatarParameterDriver.ChangeType.Set,
+                            name = $"{param}_{poseLibrary.Guid}",
+                            value = 0f,
+                        });
+                    }
                 }
                 // デフォルトへの遷移
                 var defaultTransition = resetState.AddTransition(defaultState);

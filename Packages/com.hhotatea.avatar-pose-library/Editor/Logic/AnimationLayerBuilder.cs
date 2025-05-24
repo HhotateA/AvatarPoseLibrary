@@ -317,6 +317,7 @@ namespace com.hhotatea.avatar_pose_library.logic
              * Reserveでパラメーターの同期、Resetでパラメーターの初期化を行う
              * Loopアニメーションの場合は、再生終了後にPreResetを経由する
              */
+            bool isMove = MotionBuilder.IsMoveAnimation(pose.animationClip);
             
             // トラッキング設定用のオブジェクト
             var trackingMap = new (bool enabled, string prefix)[]
@@ -372,6 +373,13 @@ namespace com.hhotatea.avatar_pose_library.logic
             var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
             poseState.motion = MotionBuilder.PartAnimation(pose.animationClip,MotionBuilder.AnimationPart.None);
+            if (isMove)
+            {
+                // スピードを制御可能にする
+                poseState.speed = pose.tracking.motionSpeed * 2f;
+                poseState.speedParameterActive = true;
+                poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
+            }
             
             // 遷移を作成
             var joinTransition = defaultState.AddTransition(reserveState);
@@ -768,15 +776,12 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         static Motion MakeLocomotionAnim(AnimationClip anim,bool loop,bool height,bool speed,string guid)
         {
-            // blendTree
-            // Transform関係のAnimation抽出
-            anim = MotionBuilder.SetAnimationLoop(anim,loop);
-            anim = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Locomotion);
-            
             var blendTree = new BlendTree();
             
             if (MotionBuilder.IsMoveAnimation(anim))
             {
+                anim = MotionBuilder.SetAnimationLoop(anim,loop);
+                anim = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Locomotion);
                 // アニメーションの生成
                 AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel(anim, +DynamicVariables.Settings.minMaxHeight) : anim;
                 AnimationClip motionClip1 = height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim;
@@ -786,6 +791,9 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
             else
             {
+                anim = MotionBuilder.SetAnimationLoop(anim,loop);
+                anim = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Locomotion);
+                // アニメーションの生成
                 var motionClip0 = speed ? MotionBuilder.IdleAnimation(anim,0f) : anim;
                 var motionClip1 = speed ? MotionBuilder.IdleAnimation(anim,DynamicVariables.Settings.motionNoiseScale) : anim;
                 var motionClip00 = height ? MotionBuilder.BuildMotionLevel(motionClip0,+DynamicVariables.Settings.minMaxHeight) : motionClip0;
