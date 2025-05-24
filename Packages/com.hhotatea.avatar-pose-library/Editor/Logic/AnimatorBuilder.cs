@@ -70,6 +70,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             return result;
         }
+        
         public static AnimatorController BuildFxAnimator(AvatarPoseData poseLibrary)
         {
             var result = BaseAnimator(poseLibrary);
@@ -111,22 +112,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                         name = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
                         value = 0f,
                     });
-                    foreach (var param in new string[]
-                             {
-                                 ConstVariables.HeadParamPrefix,
-                                 ConstVariables.ArmParamPrefix,
-                                 ConstVariables.FootParamPrefix,
-                                 ConstVariables.FingerParamPrefix,
-                                 ConstVariables.BaseParamPrefix
-                             })
-                    {
-                        trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                        {
-                            type = VRC_AvatarParameterDriver.ChangeType.Set,
-                            name = $"{param}_{poseLibrary.Guid}",
-                            value = 0f,
-                        });
-                    }
                 }
                 // デフォルトへの遷移
                 var defaultTransition = resetState.AddTransition(defaultState);
@@ -208,6 +193,29 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var resetState = layer.stateMachine.AddState("Reset");
                 resetState.motion = MotionBuilder.FrameAnimation;
                 resetState.writeDefaultValues = false;
+                var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                foreach (var prefix in new []
+                         {
+                             ConstVariables.HeadParamPrefix,
+                             ConstVariables.ArmParamPrefix,
+                             ConstVariables.FootParamPrefix,
+                             ConstVariables.FingerParamPrefix,
+                             ConstVariables.BaseParamPrefix
+                         })
+                {
+                    trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = $"{prefix}_{poseLibrary.Guid}",
+                        value = 0f,
+                    });
+                }
+                trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
+                    value = 0f,
+                });
                 var additiveOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                 additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 additiveOff.goalWeight = 0f;

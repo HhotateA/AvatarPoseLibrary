@@ -1,7 +1,7 @@
 {
   "name": "com.hhotatea.avatar-pose-library",
   "displayName": "AvatarPoseLibrary",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "VRChat\u306e\u30a8\u30e2\u30fc\u30c8\u30a2\u30cb\u30e1\u30fc\u30b7\u30e7\u30f3\u3092\u81ea\u52d5\u8a2d\u5b9a\u3059\u308b\u30c4\u30fc\u30eb\u7fa4\u3002",
   "gitDependencies": {},
   "vpmDependencies": {
