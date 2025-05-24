@@ -11,6 +11,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string ArmParamPrefix = "AnimPoseArm";
         public const string FootParamPrefix = "AnimPoseFoot";
         public const string FingerParamPrefix = "AnimPoseFinger";
+        public const string FaceParamPrefix = "AnimPoseFace";
         public const string ActionParamPrefix = "AnimPoseAction";
         public const string SpeedParamPrefix = "AnimPoseSpeed";
         public const string ResetParamPrefix = "AnimPoseReset";

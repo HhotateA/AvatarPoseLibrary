@@ -18,6 +18,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public MenuItem arm;
         public MenuItem foot;
         public MenuItem finger;
+        public MenuItem face;
         public MenuItem speed;
         public MenuItem locomotion;
         public MenuItem mirror;

@@ -73,6 +73,12 @@ namespace com.hhotatea.avatar_pose_library.logic
             paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
             {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
+                name = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
+                value = 1,
+            });
+            paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+            {
+                type = VRC_AvatarParameterDriver.ChangeType.Set,
                 name = param,
                 value = 0,
             });
@@ -128,6 +134,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             Arm,
             Foot,
             Finger,
+            Face,
             Action
         }
 
@@ -220,6 +227,17 @@ namespace com.hhotatea.avatar_pose_library.logic
                             on.trackingLeftFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingRightFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                         });
+                    break;
+
+                case TrackingType.Face:
+                    var fxOff = offConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
+                    fxOff.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
+                    fxOff.layer = 1;
+                    fxOff.goalWeight = 0f;
+                    var fxOn = onConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
+                    fxOn.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
+                    fxOn.layer = 1;
+                    fxOn.goalWeight = 1f;
                     break;
 
                 case TrackingType.Action:
