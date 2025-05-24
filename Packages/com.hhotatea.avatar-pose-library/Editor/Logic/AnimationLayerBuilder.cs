@@ -434,6 +434,86 @@ namespace com.hhotatea.avatar_pose_library.logic
                 mainTransition.duration = 0.0f;
             }
 
+            if(pose.afterAnimationClip)
+            {
+                // 後アニメーションの作成
+                var afterState = layer.stateMachine.AddState("After_" + pose.Value.ToString());
+                afterState.writeDefaultValues = false;
+                afterState.mirrorParameterActive = true;
+                afterState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
+                afterState.motion = MotionBuilder.PartAnimation(pose.beforeAnimationClip, MotionBuilder.AnimationPart.None);
+                
+                // リセットへの遷移
+                var leftTransition = poseState.AddTransition(afterState);
+                leftTransition.canTransitionToSelf = false;
+                leftTransition.hasExitTime = false;
+                leftTransition.hasFixedDuration = true;
+                leftTransition.duration = 0.0f;
+                leftTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.NotEqual,
+                        parameter = pose.Parameter,
+                        threshold = pose.Value
+                    }
+                };
+                
+                // バイパスの作成
+                var bypassTransition = afterState.AddTransition(resetState);
+                bypassTransition.canTransitionToSelf = false;
+                bypassTransition.hasExitTime = true;
+                bypassTransition.hasFixedDuration = true;
+                bypassTransition.duration = 0.1f;
+                
+                // メインステートの作成
+                var afterState2 = layer.stateMachine.AddState("After2_" + pose.Value.ToString());
+                afterState2.writeDefaultValues = false;
+                afterState2.mirrorParameterActive = true;
+                afterState2.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
+                afterState2.motion = MotionBuilder.PartAnimation(pose.beforeAnimationClip, MotionBuilder.AnimationPart.None);
+                var resetParam = afterState2.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                {
+                    resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = pose.Parameter,
+                        value = 0,
+                    });
+                }
+                
+                // パラメーターリストを作成
+                parameters.Remove(pose.Parameter);
+                foreach (var p in parameters)
+                {
+                    // プレリセットへの遷移
+                    var preResetTransition = poseState.AddTransition(afterState2);
+                    preResetTransition.canTransitionToSelf = false;
+                    preResetTransition.hasExitTime = false;
+                    preResetTransition.hasFixedDuration = true;
+                    preResetTransition.duration = 0.0f;
+                    preResetTransition.conditions = new AnimatorCondition[]
+                    {
+                        new AnimatorCondition
+                        {
+                            mode = AnimatorConditionMode.NotEqual,
+                            parameter = p,
+                            threshold = 0
+                        }
+                    };
+                }
+
+                if (!pose.tracking.loop)
+                {
+                    var endTransition = poseState.AddTransition(afterState2);
+                    endTransition.canTransitionToSelf = false;
+                    endTransition.hasExitTime = true;
+                    endTransition.exitTime = 0f;
+                    endTransition.hasFixedDuration = true;
+                    endTransition.duration = 0.0f;
+                }
+            }
+            else
             {
                 // リセットへの遷移
                 var leftTransition = poseState.AddTransition(resetState);
@@ -450,38 +530,37 @@ namespace com.hhotatea.avatar_pose_library.logic
                         threshold = pose.Value
                     }
                 };
-            }
-            
-            
-            // パラメーターリストを作成
-            parameters.Remove(pose.Parameter);
-            foreach (var p in parameters)
-            {
-                // プレリセットへの遷移
-                var preResetTransition = poseState.AddTransition(preResetState);
-                preResetTransition.canTransitionToSelf = false;
-                preResetTransition.hasExitTime = false;
-                preResetTransition.hasFixedDuration = true;
-                preResetTransition.duration = 0.0f;
-                preResetTransition.conditions = new AnimatorCondition[]
+                
+                // パラメーターリストを作成
+                parameters.Remove(pose.Parameter);
+                foreach (var p in parameters)
                 {
-                    new AnimatorCondition
+                    // プレリセットへの遷移
+                    var preResetTransition = poseState.AddTransition(preResetState);
+                    preResetTransition.canTransitionToSelf = false;
+                    preResetTransition.hasExitTime = false;
+                    preResetTransition.hasFixedDuration = true;
+                    preResetTransition.duration = 0.0f;
+                    preResetTransition.conditions = new AnimatorCondition[]
                     {
-                        mode = AnimatorConditionMode.NotEqual,
-                        parameter = p,
-                        threshold = 0
-                    }
-                };
-            }
+                        new AnimatorCondition
+                        {
+                            mode = AnimatorConditionMode.NotEqual,
+                            parameter = p,
+                            threshold = 0
+                        }
+                    };
+                }
 
-            if (!pose.tracking.loop)
-            {
-                var endTransition = poseState.AddTransition(preResetState);
-                endTransition.canTransitionToSelf = false;
-                endTransition.hasExitTime = true;
-                endTransition.exitTime = 0f;
-                endTransition.hasFixedDuration = true;
-                endTransition.duration = 0.0f;
+                if (!pose.tracking.loop)
+                {
+                    var endTransition = poseState.AddTransition(preResetState);
+                    endTransition.canTransitionToSelf = false;
+                    endTransition.hasExitTime = true;
+                    endTransition.exitTime = 0f;
+                    endTransition.hasFixedDuration = true;
+                    endTransition.duration = 0.0f;
+                }
             }
         }
         
