@@ -41,6 +41,21 @@ namespace com.hhotatea.avatar_pose_library.logic
             var defaultState = layer.stateMachine.AddState("Default");
             defaultState.writeDefaultValues = false;
             defaultState.motion = MotionBuilder.NoneAnimation;
+            
+            // リセットへの遷移
+            var resetTransition = layer.stateMachine.AddAnyStateTransition(defaultState);
+            resetTransition.canTransitionToSelf = false;
+            resetTransition.hasExitTime = false;
+            resetTransition.hasFixedDuration = true;
+            resetTransition.duration = 0.1f;
+            resetTransition.conditions = new AnimatorCondition[]
+            {
+                new AnimatorCondition()
+                {
+                    mode = AnimatorConditionMode.If,
+                    parameter = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
+                }
+            };
 
             // ポーズのレイヤー追加
             foreach (var category in poseLibrary.categories)
@@ -93,9 +108,25 @@ namespace com.hhotatea.avatar_pose_library.logic
                     trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                     {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
+                        name = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
                         value = 0f,
                     });
+                    foreach (var param in new string[]
+                             {
+                                 ConstVariables.HeadParamPrefix,
+                                 ConstVariables.ArmParamPrefix,
+                                 ConstVariables.FootParamPrefix,
+                                 ConstVariables.FingerParamPrefix,
+                                 ConstVariables.BaseParamPrefix
+                             })
+                    {
+                        trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                        {
+                            type = VRC_AvatarParameterDriver.ChangeType.Set,
+                            name = $"{param}_{poseLibrary.Guid}",
+                            value = 0f,
+                        });
+                    }
                 }
                 // デフォルトへの遷移
                 var defaultTransition = resetState.AddTransition(defaultState);
@@ -129,6 +160,21 @@ namespace com.hhotatea.avatar_pose_library.logic
                     // Dictionaryに登録
                     preResets.Add(param,preResetState);
                 }
+            
+                // リセットへの遷移
+                var resetTransition = layer.stateMachine.AddAnyStateTransition(defaultState);
+                resetTransition.canTransitionToSelf = false;
+                resetTransition.hasExitTime = false;
+                resetTransition.hasFixedDuration = true;
+                resetTransition.duration = 0.1f;
+                resetTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
+                    }
+                };
 
                 // ポーズのレイヤー追加
                 foreach (var category in poseLibrary.categories)
@@ -167,11 +213,26 @@ namespace com.hhotatea.avatar_pose_library.logic
                 additiveOff.goalWeight = 0f;
             
                 // デフォルトへの遷移
-                var resetTransition = resetState.AddTransition(defaultState);
+                var leftTransition = resetState.AddTransition(defaultState);
+                leftTransition.canTransitionToSelf = false;
+                leftTransition.hasExitTime = true;
+                leftTransition.hasFixedDuration = true;
+                leftTransition.duration = 0.0f;
+            
+                // リセットへの遷移
+                var resetTransition = layer.stateMachine.AddAnyStateTransition(defaultState);
                 resetTransition.canTransitionToSelf = false;
-                resetTransition.hasExitTime = true;
+                resetTransition.hasExitTime = false;
                 resetTransition.hasFixedDuration = true;
-                resetTransition.duration = 0.0f;
+                resetTransition.duration = 0.1f;
+                resetTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.If,
+                        parameter = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
+                    }
+                };
 
                 // ポーズのレイヤー追加
                 foreach (var category in poseLibrary.categories)
@@ -199,11 +260,11 @@ namespace com.hhotatea.avatar_pose_library.logic
         static AnimatorController BaseAnimator(AvatarPoseData poseLibrary)
         {
             var result = new AnimatorController();
-            result.AddLayer(new AnimatorControllerLayer
+            /*result.AddLayer(new AnimatorControllerLayer
             {
                 name = "null",
                 stateMachine = new AnimatorStateMachine(),
-            });
+            });*/
             
             var heightParam = new AnimatorControllerParameter
             {

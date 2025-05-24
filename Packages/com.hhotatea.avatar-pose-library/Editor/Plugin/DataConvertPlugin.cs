@@ -72,24 +72,28 @@ namespace com.hhotatea.avatar_pose_library.editor
             var trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data);
             
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator>();
+            ma_base.layerPriority = 1;
             ma_base.animator = locomotionLayer;
             ma_base.pathMode = MergeAnimatorPathMode.Absolute;
             ma_base.matchAvatarWriteDefaults = true;
             ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
             
             var ma_action = result.AddComponent<ModularAvatarMergeAnimator>();
+            ma_action.layerPriority = 1;
             ma_action.animator = locomotionLayer;
             ma_action.pathMode = MergeAnimatorPathMode.Absolute;
             ma_action.matchAvatarWriteDefaults = true;
             ma_action.layerType = VRCAvatarDescriptor.AnimLayerType.Action;
             
             var ma_fx = result.AddComponent<ModularAvatarMergeAnimator>();
+            ma_fx.layerPriority = 1;
             ma_fx.animator = paramLayer;
             ma_fx.pathMode = MergeAnimatorPathMode.Absolute;
             ma_fx.matchAvatarWriteDefaults = true;
             ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
             
             var ma_tracking = result.AddComponent<ModularAvatarMergeAnimator>();
+            ma_tracking.layerPriority = 1;
             ma_tracking.animator = trackingLayer;
             ma_tracking.pathMode = MergeAnimatorPathMode.Absolute;
             ma_tracking.matchAvatarWriteDefaults = true;
