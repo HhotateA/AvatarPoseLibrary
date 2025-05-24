@@ -434,6 +434,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 mainTransition.duration = 0.0f;
             }
 
+            // 脱出経路
             if(pose.afterAnimationClip)
             {
                 // 後アニメーションの作成
@@ -441,7 +442,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 afterState.writeDefaultValues = false;
                 afterState.mirrorParameterActive = true;
                 afterState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-                afterState.motion = MotionBuilder.PartAnimation(pose.beforeAnimationClip, MotionBuilder.AnimationPart.None);
+                afterState.motion = MotionBuilder.PartAnimation(pose.afterAnimationClip, MotionBuilder.AnimationPart.None);
                 
                 // リセットへの遷移
                 var leftTransition = poseState.AddTransition(afterState);
@@ -471,7 +472,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 afterState2.writeDefaultValues = false;
                 afterState2.mirrorParameterActive = true;
                 afterState2.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-                afterState2.motion = MotionBuilder.PartAnimation(pose.beforeAnimationClip, MotionBuilder.AnimationPart.None);
+                afterState2.motion = MotionBuilder.PartAnimation(pose.afterAnimationClip, MotionBuilder.AnimationPart.None);
                 var resetParam = afterState2.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
                 {
                     resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
