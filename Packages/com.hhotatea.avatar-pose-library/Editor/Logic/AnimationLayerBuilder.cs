@@ -73,6 +73,12 @@ namespace com.hhotatea.avatar_pose_library.logic
             paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
             {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
+                name = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
+                value = 1,
+            });
+            paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+            {
+                type = VRC_AvatarParameterDriver.ChangeType.Set,
                 name = param,
                 value = 0,
             });
@@ -128,6 +134,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             Arm,
             Foot,
             Finger,
+            Face,
             Action
         }
 
@@ -220,6 +227,17 @@ namespace com.hhotatea.avatar_pose_library.logic
                             on.trackingLeftFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingRightFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                         });
+                    break;
+
+                case TrackingType.Face:
+                    var fxOff = offConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
+                    fxOff.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
+                    fxOff.layer = 1;
+                    fxOff.goalWeight = 0f;
+                    var fxOn = onConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
+                    fxOn.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
+                    fxOn.layer = 1;
+                    fxOn.goalWeight = 1f;
                     break;
 
                 case TrackingType.Action:
@@ -318,7 +336,8 @@ namespace com.hhotatea.avatar_pose_library.logic
              * Loopアニメーションの場合は、再生終了後にPreResetを経由する
              */
             bool isMove = MotionBuilder.IsMoveAnimation(pose.animationClip);
-            
+            var anim = MotionBuilder.SafeAnimation(pose.animationClip,pose.beforeAnimationClip,pose.afterAnimationClip);
+
             // 準備ステートの作成
             var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
             reserveState.motion = MotionBuilder.FrameAnimation;
@@ -353,7 +372,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
-            poseState.motion = MotionBuilder.PartAnimation(pose.animationClip,MotionBuilder.AnimationPart.None);
+            poseState.motion = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.None);
             if (isMove)
             {
                 // スピードを制御可能にする
@@ -482,6 +501,7 @@ namespace com.hhotatea.avatar_pose_library.logic
              */
             bool isMove = MotionBuilder.IsMoveAnimation(pose.animationClip);
             var flags = pose.GetAnimatorFlag();
+            var anim = MotionBuilder.SafeAnimation(pose.animationClip,pose.beforeAnimationClip,pose.afterAnimationClip);
             
             // トラッキング設定用のオブジェクト
             var trackingMap = new (bool enabled, string prefix)[]
@@ -498,7 +518,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             poseState.writeDefaultValues = false;
             poseState.mirrorParameterActive = true;
             poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-            poseState.motion = MakeFxAnim(pose.animationClip,pose.tracking.loop);
+            poseState.motion = MakeFxAnim(anim,pose.tracking.loop);
             var trackingOnParam = poseState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             foreach (var (enabled, prefix) in trackingMap)
             {
@@ -645,13 +665,14 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             bool isMove = MotionBuilder.IsMoveAnimation(pose.animationClip);
             var flags = pose.GetAnimatorFlag();
+            var anim = MotionBuilder.SafeAnimation(pose.animationClip,pose.beforeAnimationClip,pose.afterAnimationClip);
             
             // メインステートの作成
             var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
             poseState.writeDefaultValues = false;
             poseState.mirrorParameterActive = true;
             poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-            poseState.motion = MakeLocomotionAnim(pose.animationClip,pose.tracking.loop,height,speed,guid);
+            poseState.motion = MakeLocomotionAnim(anim,pose.tracking.loop,height,speed,guid);
             if (isMove)
             {
                 // スピードを制御可能にする

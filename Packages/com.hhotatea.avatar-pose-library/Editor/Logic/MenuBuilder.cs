@@ -160,6 +160,16 @@ namespace com.hhotatea.avatar_pose_library.logic
                 $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"
             );
 
+            if (poseLibrary.enableFxParam)
+            {
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.face.title,
+                    DynamicVariables.Settings.Menu.face.thumbnail,
+                    $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}"
+                );
+            }
+
             CreateToggleMenu(
                 parent,
                 DynamicVariables.Settings.Menu.locomotion.title,

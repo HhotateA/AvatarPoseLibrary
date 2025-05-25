@@ -68,6 +68,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableSpeedParam = true;
         public bool enableMirrorParam = true;
         public bool enableTrackingParam = true;
+        public bool enableFxParam = false;
         public bool enableDeepSync = true;
         
         // システムが使用
@@ -133,6 +134,7 @@ namespace com.hhotatea.avatar_pose_library.model
                     apd.enableSpeedParam = d.enableSpeedParam;
                     apd.enableMirrorParam = d.enableMirrorParam;
                     apd.enableTrackingParam = d.enableTrackingParam;
+                    apd.enableFxParam = d.enableFxParam;
                     apd.enableDeepSync = d.enableDeepSync;
                 }
                 apd.UpdateParameter();

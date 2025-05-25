@@ -186,7 +186,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
                 // 空のステート（default）
                 var defaultState = layer.stateMachine.AddState("Default");
-                defaultState.writeDefaultValues = true;
+                defaultState.writeDefaultValues = false;
                 defaultState.motion = MotionBuilder.NoneAnimation;
             
                 // 初期化ステートの作成
@@ -260,6 +260,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             result.AddLayer(AnimationLayerBuilder.TrackingLayer(TrackingType.Arm,$"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer(AnimationLayerBuilder.TrackingLayer(TrackingType.Foot,$"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer(AnimationLayerBuilder.TrackingLayer(TrackingType.Finger,$"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}"));
+            result.AddLayer(AnimationLayerBuilder.TrackingLayer(TrackingType.Face,$"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer(AnimationLayerBuilder.ResetLayer($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",poseLibrary));
 
             return result;
@@ -310,6 +311,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             result.AddParameter($"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter($"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             
