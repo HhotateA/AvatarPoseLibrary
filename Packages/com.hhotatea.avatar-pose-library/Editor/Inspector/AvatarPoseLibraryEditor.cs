@@ -665,7 +665,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 Apply("Paste pose", () =>
                 {
-                    Data.categories[catIdx].poses.Insert(poseIdx + 1, newPose);
+                    Data.categories[catIdx].poses[poseIdx] = newPose;
                 });
             }
             catch (Exception e)
