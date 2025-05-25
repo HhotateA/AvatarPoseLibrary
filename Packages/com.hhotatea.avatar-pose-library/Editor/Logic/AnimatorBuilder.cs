@@ -186,7 +186,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
                 // 空のステート（default）
                 var defaultState = layer.stateMachine.AddState("Default");
-                defaultState.writeDefaultValues = true;
+                defaultState.writeDefaultValues = false;
                 defaultState.motion = MotionBuilder.NoneAnimation;
             
                 // 初期化ステートの作成

@@ -20,7 +20,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <returns></returns>
         public static AnimationClip BuildMotionLevel(AnimationClip anim,float level)
         {
-            if (!anim) return null;
+            if (anim == null) return null;
             
             var curves = AnimationUtility.GetCurveBindings(anim);
             foreach (var binding in curves)
@@ -96,7 +96,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <returns></returns>
         public static bool IsMoveAnimation(AnimationClip anim)
         {
-            if (!anim) return false;
+            if (anim == null) return false;
             
             // 既存のアニメーションの検証
             var curves = AnimationUtility.GetCurveBindings(anim);
@@ -116,7 +116,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static bool IsLoopAnimation(AnimationClip anim)
         {
-            if (!anim) return false;
+            if (anim == null) return false;
             
             AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(anim);
             return settings.loopTime;
@@ -124,7 +124,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         
         public static AnimationClip SetAnimationLoop(AnimationClip anim, bool loop)
         {
-            if (!anim) return null;
+            if (anim == null) return null;
             
             var result = Object.Instantiate(anim);
             AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(result);
@@ -136,7 +136,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static AnimationClip IdleAnimation(AnimationClip anim,float noiseScale)
         {
-            if (!anim) return null;
+            if (anim == null) return null;
             
             // 既存のアニメーションの検証
             var curves = AnimationUtility.GetCurveBindings(anim);
@@ -175,6 +175,56 @@ namespace com.hhotatea.avatar_pose_library.logic
             return result;
         }
 
+        public static AnimationClip SafeAnimation(AnimationClip anim, AnimationClip before, AnimationClip after)
+        {
+            if (anim != null)
+            {
+                return anim;
+            }
+
+            if (before != null)
+            {
+                return SplitAnimation(before, 1f);
+            }
+
+            if (after != null)
+            {
+                return SplitAnimation(after, 0f);
+            }
+            
+            return DynamicVariables.Settings.defaultAnimation;
+        }
+
+        static AnimationClip SplitAnimation(AnimationClip anim,float time)
+        {
+            if (anim == null)
+            {
+                return DynamicVariables.Settings.defaultAnimation;
+            }
+            
+            // 既存のアニメーションの検証
+            var curves = AnimationUtility.GetCurveBindings(anim);
+
+            var result = new AnimationClip();
+            result.name = $"{anim.name}_{time.ToString()}";
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(anim);
+            AnimationUtility.SetAnimationClipSettings(result, settings);
+            
+            foreach (var binding in curves)
+            {
+                var curve = AnimationUtility.GetEditorCurve(anim, binding);
+                float minValue = curve.keys.OrderByDescending(k => k.time).Last().value;
+                float maxValue = curve.keys.OrderByDescending(k => k.time).First().value;
+                
+                
+                var c = new AnimationCurve();
+                c.AddKey(0f, Mathf.Lerp(minValue,maxValue,time));
+                result.SetCurve(binding.path, binding.type, binding.propertyName, c);
+            }
+
+            return result;
+        }
+
 
         public enum AnimationPart
         {
@@ -184,7 +234,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         }
         public static AnimationClip PartAnimation(AnimationClip anim, AnimationPart part)
         {
-            if (!anim)
+            if (anim == null)
             {
                 return DynamicVariables.Settings.defaultAnimation;
             }
@@ -202,7 +252,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             foreach (var binding in curves)
             {
                 var curve = AnimationUtility.GetEditorCurve(anim, binding);
-                bool isLocomotionAnimation = binding.type == typeof(Transform) || binding.type == typeof(Animator);
+                bool isLocomotionAnimation = binding.type == typeof(Animator);
                 if (isLocomotionAnimation && part == AnimationPart.Locomotion)
                 {
                     result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
