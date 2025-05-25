@@ -48,6 +48,11 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string enableMirrorTooltip = "ミラー機能を有効にする。";
         public string enableTrackingLabel = "Enable Tracking";
         [Multiline] public string enableTrackingTooltip = "トラッキングメニューを有効にする。";
+        public string enableFxLabel = "Enable Fx";
+        [Multiline] public string enableFxTooltip = "表情用のレイヤーを有効にする。";
+        
+        public string copyPoseLabel = "Copy Pose";
+        public string pastePoseLabel = "Paste Pose";
         
         
         public Texture2D thumbnailBg;

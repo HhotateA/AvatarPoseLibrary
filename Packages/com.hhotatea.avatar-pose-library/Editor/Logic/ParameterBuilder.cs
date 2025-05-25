@@ -43,7 +43,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     syncType = ParameterSyncType.Float,
                     localOnly = false,
                     defaultValue = 0.5f,
-                    saved = false,
+                    saved = true,
                 });
             }
 
@@ -110,7 +110,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 syncType = ParameterSyncType.Bool,
                 localOnly = !poseLibrary.enableFxParam,
                 defaultValue = 1,
-                saved = false,
+                saved = true,
             });
 
             mResult.parameters.Add(new ParameterConfig
@@ -139,7 +139,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     syncType = ParameterSyncType.Bool,
                     localOnly = false,
                     defaultValue = 0,
-                    saved = false,
+                    saved = true,
                 });
             }
 

@@ -131,6 +131,16 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         static void TrackingMenu(Transform parent, AvatarPoseData poseLibrary)
         {
+            if (poseLibrary.enableFxParam)
+            {
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.face.title,
+                    DynamicVariables.Settings.Menu.face.thumbnail,
+                    $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}"
+                );
+            }
+            
             // --- トグルメニューを追加 ---
             CreateToggleMenu(
                 parent,
@@ -159,16 +169,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                 DynamicVariables.Settings.Menu.foot.thumbnail,
                 $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"
             );
-
-            if (poseLibrary.enableFxParam)
-            {
-                CreateToggleMenu(
-                    parent,
-                    DynamicVariables.Settings.Menu.face.title,
-                    DynamicVariables.Settings.Menu.face.thumbnail,
-                    $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}"
-                );
-            }
 
             CreateToggleMenu(
                 parent,

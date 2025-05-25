@@ -39,7 +39,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                            _openAllLabel, _closeAllLabel, _poseListLabel, _openLabel, _closeLabel,
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
                            _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
-                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableTrackingLabel;
+                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel,
+                           _copyPoseLabel, _pastePoseLabel;
 
         private string[] _libraryTagList;
         private int _libraryTagIndex;
@@ -74,7 +75,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         // BuildGuiContent() 省略なし
         private void BuildGuiContent()
         {
-            var i = DynamicVariables.Settings.Inspector;
+            var i= DynamicVariables.Settings.Inspector;
             _libraryLabel       = new(i.libraryMenuLabel, i.libraryMenuTooltip);
             _categoryListLabel  = new(i.categoriesLabel, i.categoriesTooltip);
             _categoryIconLabel  = new(i.categoryIconLabel, i.categoryIconTooltip);
@@ -93,9 +94,11 @@ namespace com.hhotatea.avatar_pose_library.editor
             _enableHeightLabel  = new(i.enableHeightLabel, i.enableHeightTooltip);
             _enableSpeedLabel   = new(i.enableSpeedLabel, i.enableSpeedTooltip);
             _enableMirrorLabel  = new(i.enableMirrorLabel, i.enableMirrorTooltip);
-            _enableTrackingLabel= new(i.enableTrackingLabel, i.enableTrackingTooltip);
+            _enableFxLabel      = new(i.enableFxLabel, i.enableFxTooltip);
             _poseThumbnailLabel = new("",i.poseThumbnailTooltip);
-            _posePreviewLabel = new("",i.posePreviewTooltip);
+            _posePreviewLabel   = new("",i.posePreviewTooltip);
+            _copyPoseLabel      = new(i.copyPoseLabel, ""); 
+            _pastePoseLabel     = new(i.pastePoseLabel, ""); 
 
             _trackingOptions = new[]
             {
@@ -169,12 +172,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             bool height   = EditorGUILayout.Toggle(_enableHeightLabel, Data.enableHeightParam);
             bool speed    = EditorGUILayout.Toggle(_enableSpeedLabel,  Data.enableSpeedParam);
             bool mirror   = EditorGUILayout.Toggle(_enableMirrorLabel, Data.enableMirrorParam);
-            bool tracking = EditorGUILayout.Toggle(_enableTrackingLabel, Data.enableTrackingParam);
+            bool fxLayer  = EditorGUILayout.Toggle(_enableFxLabel, Data.enableFxParam);
 
             if (height == Data.enableHeightParam && 
                 speed == Data.enableSpeedParam && 
                 mirror == Data.enableMirrorParam && 
-                tracking == Data.enableTrackingParam) return;
+                fxLayer == Data.enableFxParam) return;
 
             Apply("Toggle Global Flags", () =>
             {
@@ -184,7 +187,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     so.FindProperty("data.enableHeightParam").boolValue = height;
                     so.FindProperty("data.enableSpeedParam").boolValue  = speed;
                     so.FindProperty("data.enableMirrorParam").boolValue = mirror;
-                    so.FindProperty("data.enableTrackingParam").boolValue = tracking;
+                    so.FindProperty("data.enableFxParam").boolValue     = fxLayer;
                     so.ApplyModifiedProperties();
                 }
             });
@@ -208,14 +211,14 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (comp.data.enableHeightParam   != Data.enableHeightParam ||
                 comp.data.enableSpeedParam    != Data.enableSpeedParam ||
                 comp.data.enableMirrorParam   != Data.enableMirrorParam ||
-                comp.data.enableTrackingParam != Data.enableTrackingParam)
+                comp.data.enableFxParam       != Data.enableFxParam)
             {
                 Apply("Sync APL Param", () =>
                 {
                     FindData("enableHeightParam").boolValue = comp.data.enableHeightParam;
                     FindData("enableSpeedParam").boolValue  = comp.data.enableSpeedParam;
                     FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
-                    FindData("enableTrackingParam").boolValue = comp.data.enableTrackingParam;
+                    FindData("enableFxParam").boolValue     = comp.data.enableFxParam;
                 });
             }
         }
@@ -418,6 +421,25 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (Data.categories.Count-1 < catIdx) return;
             if (Data.categories[catIdx].poses.Count-1 < poseIdx) return;
             
+            Rect fullRect = new Rect(rect.x, rect.y, rect.width, _lineHeight);
+
+            // 右クリックメニュー
+            Event evt = Event.current;
+            if (evt.type == EventType.ContextClick && fullRect.Contains(evt.mousePosition))
+            {
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(_copyPoseLabel, false, () => CopyPose(catIdx, poseIdx));
+
+                string json = EditorGUIUtility.systemCopyBuffer;
+                if (IsValidJson(json))
+                    menu.AddItem(_pastePoseLabel, false, () => PastePose(catIdx, poseIdx));
+                else
+                    menu.AddDisabledItem(_pastePoseLabel);
+
+                menu.ShowAsContext();
+                evt.Use();
+            }
+            
             float y = rect.y + 2f;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_closeLabel).x, GUI.skin.button.CalcSize(_openLabel).x) + 2;
             if (Data.categories[catIdx].poses[poseIdx].foldout)
@@ -616,6 +638,47 @@ namespace com.hhotatea.avatar_pose_library.editor
             t.FindPropertyRelative("locomotion").boolValue=(f&(1<<4))!=0;
         }
         private static string GetInstancePath(Transform t)=> t.parent? GetInstancePath(t.parent)+"/"+t.gameObject.GetInstanceID(): t.gameObject.GetInstanceID().ToString();
+        
+        private void CopyPose(int catIdx, int poseIdx)
+        {
+            try
+            {
+                var pose = Data.categories[catIdx].poses[poseIdx];
+                string json = JsonUtility.ToJson(pose);
+                EditorGUIUtility.systemCopyBuffer = json;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Copy pose failed: " + e.Message);
+            }
+        }
+
+        private void PastePose(int catIdx, int poseIdx)
+        {
+            try
+            {
+                string json = EditorGUIUtility.systemCopyBuffer;
+                if (!IsValidJson(json)) return;
+
+                PoseEntry newPose = JsonUtility.FromJson<PoseEntry>(json);
+                if (newPose == null) return;
+
+                Apply("Paste pose", () =>
+                {
+                    Data.categories[catIdx].poses[poseIdx] = newPose;
+                });
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Paste pose failed: " + e.Message);
+            }
+        }
+
+        private bool IsValidJson(string json)
+        {
+            return !string.IsNullOrEmpty(json) && json.Trim().StartsWith("{") && json.Trim().EndsWith("}");
+        }
+        
         #endregion
     }
 }

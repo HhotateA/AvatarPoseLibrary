@@ -322,6 +322,5 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             return result;
         }
-
     }
 }

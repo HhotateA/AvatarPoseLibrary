@@ -69,6 +69,8 @@ MonoBehaviour:
   enableMirrorTooltip: "\u555F\u7528\u93E1\u50CF\u529F\u80FD\u3002"
   enableTrackingLabel: "\u2514 \u555F\u7528\u8FFD\u8E64\u9EDE"
   enableTrackingTooltip: "\u555F\u7528\u8FFD\u8E64\u9EDE\u9078\u55AE\u3002"
+  enableFxLabel: "\u2514 \u555F\u7528\u9762\u90E8\u8868\u60C5"
+  enableFxTooltip: "\u555F\u7528\u9762\u90E8\u52D5\u756B\u3002"
   thumbnailBg: {fileID: 2800000, guid: 9c605c794272c614d8cf187acf554b3a, type: 3}
   headTrackingOption: "\u56FA\u5B9A\u982D"
   armTrackingOption: "\u56FA\u5B9A\u624B\u81C2"
