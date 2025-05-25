@@ -39,7 +39,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                            _openAllLabel, _closeAllLabel, _poseListLabel, _openLabel, _closeLabel,
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
                            _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
-                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableTrackingLabel;
+                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel;
 
         private string[] _libraryTagList;
         private int _libraryTagIndex;
@@ -93,7 +93,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             _enableHeightLabel  = new(i.enableHeightLabel, i.enableHeightTooltip);
             _enableSpeedLabel   = new(i.enableSpeedLabel, i.enableSpeedTooltip);
             _enableMirrorLabel  = new(i.enableMirrorLabel, i.enableMirrorTooltip);
-            _enableTrackingLabel= new(i.enableTrackingLabel, i.enableTrackingTooltip);
+            _enableFxLabel= new(i.enableFxLabel, i.enableFxTooltip);
             _poseThumbnailLabel = new("",i.poseThumbnailTooltip);
             _posePreviewLabel = new("",i.posePreviewTooltip);
 
@@ -169,12 +169,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             bool height   = EditorGUILayout.Toggle(_enableHeightLabel, Data.enableHeightParam);
             bool speed    = EditorGUILayout.Toggle(_enableSpeedLabel,  Data.enableSpeedParam);
             bool mirror   = EditorGUILayout.Toggle(_enableMirrorLabel, Data.enableMirrorParam);
-            bool tracking = EditorGUILayout.Toggle(_enableTrackingLabel, Data.enableTrackingParam);
+            bool fxLayer = EditorGUILayout.Toggle(_enableFxLabel, Data.enableFxParam);
 
             if (height == Data.enableHeightParam && 
                 speed == Data.enableSpeedParam && 
                 mirror == Data.enableMirrorParam && 
-                tracking == Data.enableTrackingParam) return;
+                fxLayer == Data.enableFxParam) return;
 
             Apply("Toggle Global Flags", () =>
             {
@@ -184,7 +184,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     so.FindProperty("data.enableHeightParam").boolValue = height;
                     so.FindProperty("data.enableSpeedParam").boolValue  = speed;
                     so.FindProperty("data.enableMirrorParam").boolValue = mirror;
-                    so.FindProperty("data.enableTrackingParam").boolValue = tracking;
+                    so.FindProperty("data.enableFxParam").boolValue     = fxLayer;
                     so.ApplyModifiedProperties();
                 }
             });
@@ -208,14 +208,14 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (comp.data.enableHeightParam   != Data.enableHeightParam ||
                 comp.data.enableSpeedParam    != Data.enableSpeedParam ||
                 comp.data.enableMirrorParam   != Data.enableMirrorParam ||
-                comp.data.enableTrackingParam != Data.enableTrackingParam)
+                comp.data.enableFxParam       != Data.enableFxParam)
             {
                 Apply("Sync APL Param", () =>
                 {
                     FindData("enableHeightParam").boolValue = comp.data.enableHeightParam;
                     FindData("enableSpeedParam").boolValue  = comp.data.enableSpeedParam;
                     FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
-                    FindData("enableTrackingParam").boolValue = comp.data.enableTrackingParam;
+                    FindData("enableFxParam").boolValue     = comp.data.enableFxParam;
                 });
             }
         }
