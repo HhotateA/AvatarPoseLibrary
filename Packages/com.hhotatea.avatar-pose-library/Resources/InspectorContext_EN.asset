@@ -73,7 +73,7 @@ MonoBehaviour:
   enableMirrorTooltip: Enables mirror function.
   enableTrackingLabel: "\u2514 Enable Tracking"
   enableTrackingTooltip: Enables tracking menu.
-  enableFxLabel: "\u2514  Enable FX"
+  enableFxLabel: "\u2514 Enable FX"
   enableFxTooltip: Enable facial animation.
   thumbnailBg: {fileID: 2800000, guid: 9c605c794272c614d8cf187acf554b3a, type: 3}
   headTrackingOption: Head Lock

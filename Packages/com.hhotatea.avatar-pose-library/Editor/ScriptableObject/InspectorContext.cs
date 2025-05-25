@@ -51,6 +51,9 @@ namespace com.hhotatea.avatar_pose_library.component
         public string enableFxLabel = "Enable Fx";
         [Multiline] public string enableFxTooltip = "表情用のレイヤーを有効にする。";
         
+        public string copyPoseLabel = "Copy Pose";
+        public string pastePoseLabel = "Paste Pose";
+        
         
         public Texture2D thumbnailBg;
         
