@@ -398,10 +398,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                             thumbnail = DynamicVariables.Settings.Menu.category.thumbnail,
                             poses = new List<PoseEntry>()
                         });
-                        // 同期して空行を追加
-                        _poseLists.Insert(catIdx, null);
-                        _thumbnails.Insert(catIdx, new List<Texture2D>());
-                        _lastClips.Insert(catIdx, new List<AnimationClip>());
                     });
                 });
                 
