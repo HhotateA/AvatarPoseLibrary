@@ -129,14 +129,15 @@ namespace com.hhotatea.avatar_pose_library.model
                     if(d.name != apd.name) continue;
                     apd.categories.AddRange(d.categories);
                     apd.thumbnail = d.thumbnail;
-
-                    apd.enableHeightParam = d.enableHeightParam;
-                    apd.enableSpeedParam = d.enableSpeedParam;
-                    apd.enableMirrorParam = d.enableMirrorParam;
-                    apd.enableTrackingParam = d.enableTrackingParam;
-                    apd.enableFxParam = d.enableFxParam;
-                    apd.enableDeepSync = d.enableDeepSync;
                 }
+
+                apd.enableHeightParam = data.Any(e => e.enableHeightParam);
+                apd.enableSpeedParam = data.Any(e => e.enableSpeedParam);
+                apd.enableMirrorParam = data.Any(e => e.enableMirrorParam);
+                apd.enableTrackingParam = data.Any(e => e.enableTrackingParam);
+                apd.enableFxParam = data.Any(e => e.enableFxParam);
+                apd.enableDeepSync = data.Any(e => e.enableDeepSync);
+
                 apd.UpdateParameter();
                 result[i] = apd;
             }
