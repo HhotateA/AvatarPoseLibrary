@@ -57,6 +57,8 @@ MonoBehaviour:
   enableMirrorTooltip: "\u30DF\u30E9\u30FC\u6A5F\u80FD\u3092\u6709\u52B9\u306B\u3059\u308B\u3002"
   enableTrackingLabel: "\u2514 Enable Tracking"
   enableTrackingTooltip: "\u30C8\u30E9\u30C3\u30AD\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\u3092\u6709\u52B9\u306B\u3059\u308B\u3002"
+  enableFxLabel: "\u2514  Enable FX"
+  enableFxTooltip: "\u8868\u60C5\u7528\u30EC\u30A4\u30E4\u30FC\u306E\u8A2D\u5B9A\u3092\u6709\u52B9\u306B\u3059\u308B\u3002"
   thumbnailBg: {fileID: 2800000, guid: 9c605c794272c614d8cf187acf554b3a, type: 3}
   headTrackingOption: Head Lock
   armTrackingOption: Arm Lock
