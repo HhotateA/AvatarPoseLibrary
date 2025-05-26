@@ -412,22 +412,14 @@ namespace com.hhotatea.avatar_pose_library.editor
                 });
                 
                 menu.AddSeparator("");
-
-                menu.AddItem(new GUIContent(DynamicVariables.Settings.Inspector.headTrackingOption+"/"
-                    +DynamicVariables.Settings.Inspector.enableMenuLabel), false, () =>
-                {
-                    Apply("Enable Auto Thumbnail", () =>
-                    {
-                        foreach (var pose in Data.categories[catIdx].poses)
-                        {
-                            pose.autoThumbnail = true;
-                        }
-                    });
-                });
                 
                 // トラッキング設定定義
                 var trackingSettings = new[]
                 {
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.autoThumbnailMenu,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.autoThumbnail = enabled)
+                    },
                     new {
                         Label = DynamicVariables.Settings.Inspector.headTrackingOption,
                         Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.head = enabled)

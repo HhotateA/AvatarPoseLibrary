@@ -76,6 +76,8 @@ namespace com.hhotatea.avatar_pose_library.component
         public string pasteNewPoseLabel = "Paste Pose As New";
         [Multiline] public string pasteNewPoseTooltip = "ここにコピーを作成。";
         
+        public string autoThumbnailMenu = "Auto Thumbnail";
+        
         public string disableMenuLabel = "Disable All Pose";
         [Multiline] public string disableMenuTooltip = "一括で有効化。";
         public string enableMenuLabel = "Enable All Pose";
