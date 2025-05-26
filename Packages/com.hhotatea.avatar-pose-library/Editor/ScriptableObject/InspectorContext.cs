@@ -57,25 +57,29 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string deleteCategoryTooltip = "選択中のカテゴリーを削除。";
         public string copyCategoryLabel = "Copy Category";
         [Multiline] public string copyCategoryTooltip = "選択中のカテゴリーをコピー。";
+        public string cutCategoryLabel = "Cut Category";
+        [Multiline] public string cutCategoryTooltip = "選択中のカテゴリーを切り取り。";
         public string pasteCategoryLabel = "Paste Category";
         [Multiline] public string pasteCategoryTooltip = "選択中のカテゴリーを上書き。";
         public string pasteNewCategoryLabel = "Paste Category As New";
         [Multiline] public string pasteNewCategoryTooltip = "ここにコピーを作成。";
-        public string disableThumbnailLabel = "Disable Auto Thumbnail";
-        [Multiline] public string disableThumbnailTooltip = "サムネイル自動撮影を一括で有効化。";
-        public string enableThumbnailLabel = "Enable Auto Thumbnail";
-        [Multiline] public string enableThumbnailTooltip = "サムネイル自動撮影を一括で無効化。";
         public string createPoseLabel = "Create Pose";
         [Multiline] public string createPoseTooltip = "ポーズを新規作成。";
         public string deletePoseLabel = "Delete Pose";
         [Multiline] public string deletePoseTooltip = "選択中のポーズを削除。";
         public string copyPoseLabel = "Copy Pose";
         [Multiline] public string copyPoseTooltip = "選択中のポーズをコピー。";
+        public string cutPoseLabel = "Cut Pose";
+        [Multiline] public string cutPoseTooltip = "選択中のポーズを切り取り。";
         public string pastePoseLabel = "Paste Pose";
         [Multiline] public string pastePoseTooltip = "選択中のポーズを上書き。";
         public string pasteNewPoseLabel = "Paste Pose As New";
         [Multiline] public string pasteNewPoseTooltip = "ここにコピーを作成。";
         
+        public string disableMenuLabel = "Disable All Pose";
+        [Multiline] public string disableMenuTooltip = "一括で有効化。";
+        public string enableMenuLabel = "Enable All Pose";
+        [Multiline] public string enableMenuTooltip = "一括で無効化。";
         
         public Texture2D thumbnailBg;
         
