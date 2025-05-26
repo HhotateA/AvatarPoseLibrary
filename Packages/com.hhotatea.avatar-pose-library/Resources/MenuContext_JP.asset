@@ -47,7 +47,7 @@ MonoBehaviour:
     thumbnail: {fileID: 2800000, guid: 006e9ab6b4aaced41b1e418951fcdb54, type: 3}
   face:
     title: "\u8868\u60C5\u306E\u6709\u52B9\u5316"
-    thumbnail: {fileID: 0}
+    thumbnail: {fileID: 2800000, guid: a55e88444cd25474085328e4290fcb8f, type: 3}
   speed:
     title: "\u518D\u751F\u901F\u5EA6"
     thumbnail: {fileID: 2800000, guid: 614dbb744a5622a4c8dd820707ee4eb0, type: 3}
