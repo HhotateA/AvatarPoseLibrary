@@ -416,36 +416,60 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     new {
                         Label = DynamicVariables.Settings.Inspector.autoThumbnailMenu,
-                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.autoThumbnail = enabled)
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.autoThumbnail = enabled),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=>p.autoThumbnail == enabled))
                     },
                     new {
                         Label = DynamicVariables.Settings.Inspector.headTrackingOption,
-                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.head = enabled)
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.tracking.head = enabled),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=>p.tracking.head == enabled))
                     },
                     new {
                         Label = DynamicVariables.Settings.Inspector.armTrackingOption,
-                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.arm = enabled)
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.tracking.arm = enabled),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=>p.tracking.arm == enabled))
                     },
                     new {
                         Label = DynamicVariables.Settings.Inspector.fingerTrackingOption,
-                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.finger = enabled)
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.tracking.finger = enabled),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=>p.tracking.finger == enabled))
                     },
                     new {
                         Label = DynamicVariables.Settings.Inspector.footTrackingOption,
-                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.foot = enabled)
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.tracking.foot = enabled),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=>p.tracking.foot == enabled))
                     },
                     new {
                         Label = DynamicVariables.Settings.Inspector.locomotionTrackingOption,
-                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.locomotion = enabled)
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.tracking.locomotion = enabled),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=>p.tracking.locomotion == enabled))
                     },
                     new {
                         Label = DynamicVariables.Settings.Inspector.isLoopLabel,
-                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.loop = enabled)
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.tracking.loop = enabled),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=>p.tracking.loop == enabled))
                     },
                     new {
                         Label = DynamicVariables.Settings.Inspector.motionSpeedLabel,
                         Setter = new Action<PoseEntry, bool>((pose, enabled) =>
-                            pose.tracking.motionSpeed = enabled ? 1f : 0f)
+                            pose.tracking.motionSpeed = enabled ? 1f : 0f),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=> 
+                                Math.Abs(p.tracking.motionSpeed - (enabled ? 1f : 0f)) < 0.001f))
                     },
                 };
 
@@ -454,11 +478,13 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     AddTrackingMenu(menu,Data.categories[catIdx].poses,
                         setting.Label, DynamicVariables.Settings.Inspector.enableMenuLabel,
-                        pose => setting.Setter(pose, true));
+                        pose => setting.Setter(pose, true),
+                        poses => setting.Selector(poses,true));
 
                     AddTrackingMenu(menu,Data.categories[catIdx].poses,
                         setting.Label, DynamicVariables.Settings.Inspector.disableMenuLabel,
-                        pose => setting.Setter(pose, false));
+                        pose => setting.Setter(pose, false),
+                    poses => setting.Selector(poses,false));
                 }
                 
                 menu.AddSeparator("");
@@ -923,16 +949,17 @@ namespace com.hhotatea.avatar_pose_library.editor
             return JsonType.None;
         }
                 
-        void MenuHelper(GenericMenu menu, string parent, string label, Action onSelect)
+        void MenuHelper(GenericMenu menu, string parent, string label, Action onSelect, bool selected)
         {
-            menu.AddItem(new GUIContent($"{parent}/{label}"), false, () =>
+            menu.AddItem(new GUIContent($"{parent}/{label}"), selected, () =>
             {
                 onSelect?.Invoke();
             });
         }
 
         void AddTrackingMenu(GenericMenu menu, List<PoseEntry> poses,
-            string optionName, string label, Action<PoseEntry> trackingSetter)
+            string optionName, string label, 
+            Action<PoseEntry> trackingSetter, Func<List<PoseEntry>,bool> trackingSelected)
         {
             MenuHelper(menu, optionName, label, () =>
             {
@@ -943,7 +970,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                         trackingSetter(pose);
                     }
                 });
-            });
+            }, trackingSelected.Invoke(poses));
         }
         
         #endregion

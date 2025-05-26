@@ -71,34 +71,34 @@ MonoBehaviour:
   enableTrackingTooltip: "\u555F\u7528\u8FFD\u8E64\u9EDE\u9078\u55AE\u3002"
   enableFxLabel: "\u2514 \u555F\u7528\u9762\u90E8\u8868\u60C5"
   enableFxTooltip: "\u555F\u7528\u9762\u90E8\u52D5\u756B\u3002"
-  createCategoryLabel: Create Category
+  createCategoryLabel: Create
   createCategoryTooltip: "\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u65B0\u898F\u4F5C\u6210\u3002"
-  deleteCategoryLabel: Delete Category
+  deleteCategoryLabel: Delete
   deleteCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u524A\u9664\u3002"
-  copyCategoryLabel: Copy Category
+  copyCategoryLabel: Copy
   copyCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u30B3\u30D4\u30FC\u3002"
-  cutCategoryLabel: Cut Category
+  cutCategoryLabel: Cut
   cutCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u5207\u308A\u53D6\u308A\u3002"
-  pasteCategoryLabel: Paste Category
+  pasteCategoryLabel: Paste
   pasteCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u4E0A\u66F8\u304D\u3002"
-  pasteNewCategoryLabel: Paste Category As New
+  pasteNewCategoryLabel: Paste As New
   pasteNewCategoryTooltip: "\u3053\u3053\u306B\u30B3\u30D4\u30FC\u3092\u4F5C\u6210\u3002"
-  createPoseLabel: Create Pose
+  createPoseLabel: Create
   createPoseTooltip: "\u30DD\u30FC\u30BA\u3092\u65B0\u898F\u4F5C\u6210\u3002"
-  deletePoseLabel: Delete Pose
+  deletePoseLabel: Delete
   deletePoseTooltip: "\u9078\u629E\u4E2D\u306E\u30DD\u30FC\u30BA\u3092\u524A\u9664\u3002"
-  copyPoseLabel: Copy Pose
+  copyPoseLabel: Copy
   copyPoseTooltip: "\u9078\u629E\u4E2D\u306E\u30DD\u30FC\u30BA\u3092\u30B3\u30D4\u30FC\u3002"
-  cutPoseLabel: Cut Pose
+  cutPoseLabel: Cut
   cutPoseTooltip: "\u9078\u629E\u4E2D\u306E\u30DD\u30FC\u30BA\u3092\u5207\u308A\u53D6\u308A\u3002"
-  pastePoseLabel: Paste Pose
+  pastePoseLabel: Paste
   pastePoseTooltip: "\u9078\u629E\u4E2D\u306E\u30DD\u30FC\u30BA\u3092\u4E0A\u66F8\u304D\u3002"
-  pasteNewPoseLabel: Paste Pose As New
+  pasteNewPoseLabel: Paste As New
   pasteNewPoseTooltip: "\u3053\u3053\u306B\u30B3\u30D4\u30FC\u3092\u4F5C\u6210\u3002"
   autoThumbnailMenu: Auto Thumbnail
-  disableMenuLabel: Disable All Pose
+  disableMenuLabel: Disable All Poses
   disableMenuTooltip: "\u4E00\u62EC\u3067\u6709\u52B9\u5316\u3002"
-  enableMenuLabel: Enable All Pose
+  enableMenuLabel: Enable All Poses
   enableMenuTooltip: "\u4E00\u62EC\u3067\u7121\u52B9\u5316\u3002"
   thumbnailBg: {fileID: 2800000, guid: 9c605c794272c614d8cf187acf554b3a, type: 3}
   headTrackingOption: "\u56FA\u5B9A\u982D"
