@@ -386,30 +386,28 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (evt.type == EventType.ContextClick && rect.Contains(evt.mousePosition))
             {
                 GenericMenu menu = new GenericMenu();
-                
-                menu.AddItem(_createCategoryMenu, false, () =>
+
+                menu.AddItem(_copyCategoryMenu, false, () => CopyCategory(catIdx));
+                menu.AddItem(_cutCategoryMenu, false, () =>
                 {
-                    Apply("Add Category", () =>
-                    {
-                        Data.categories.Insert(catIdx+1,new PoseCategory
-                        {
-                            name = DynamicVariables.Settings.Menu.category.title,
-                            thumbnail = DynamicVariables.Settings.Menu.category.thumbnail,
-                            poses = new List<PoseEntry>()
-                        });
-                    });
-                });
-                
-                menu.AddItem(_deleteCategoryMenu, false, () =>
-                {
-                    Apply("Remove Category", () =>
+                    if (CopyCategory(catIdx))
                     {
                         Data.categories.RemoveAt(catIdx);
                         _poseLists.Clear();
                         _thumbnails.Clear();
                         _lastClips.Clear();
-                    });
+                    }
                 });
+                if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Category)
+                {
+                    menu.AddItem(_pasteCategoryMenu, false, () => PasteCategory(catIdx, false));
+                    menu.AddItem(_pasteNewCategoryMenu, false, () => PasteCategory(catIdx, true));
+                }
+                else
+                {
+                    menu.AddDisabledItem(_pasteCategoryMenu);
+                    menu.AddDisabledItem(_pasteNewCategoryMenu);
+                }
                 
                 menu.AddSeparator("");
                 
@@ -464,28 +462,30 @@ namespace com.hhotatea.avatar_pose_library.editor
                 }
                 
                 menu.AddSeparator("");
-
-                menu.AddItem(_copyCategoryMenu, false, () => CopyCategory(catIdx));
-                menu.AddItem(_cutCategoryMenu, false, () =>
+                
+                menu.AddItem(_createCategoryMenu, false, () =>
                 {
-                    if (CopyCategory(catIdx))
+                    Apply("Add Category", () =>
+                    {
+                        Data.categories.Insert(catIdx+1,new PoseCategory
+                        {
+                            name = DynamicVariables.Settings.Menu.category.title,
+                            thumbnail = DynamicVariables.Settings.Menu.category.thumbnail,
+                            poses = new List<PoseEntry>()
+                        });
+                    });
+                });
+                
+                menu.AddItem(_deleteCategoryMenu, false, () =>
+                {
+                    Apply("Remove Category", () =>
                     {
                         Data.categories.RemoveAt(catIdx);
                         _poseLists.Clear();
                         _thumbnails.Clear();
                         _lastClips.Clear();
-                    }
+                    });
                 });
-                if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Category)
-                {
-                    menu.AddItem(_pasteCategoryMenu, false, () => PasteCategory(catIdx, false));
-                    menu.AddItem(_pasteNewCategoryMenu, false, () => PasteCategory(catIdx, true));
-                }
-                else
-                {
-                    menu.AddDisabledItem(_pasteCategoryMenu);
-                    menu.AddDisabledItem(_pasteNewCategoryMenu);
-                }
 
                 menu.ShowAsContext();
                 evt.Use();
@@ -550,6 +550,29 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (evt.type == EventType.ContextClick && rect.Contains(evt.mousePosition))
             {
                 GenericMenu menu = new GenericMenu();
+
+                menu.AddItem(_copyPoseMenu, false, () => CopyPose(catIdx, poseIdx));
+                menu.AddItem(_cutPoseMenu, false, () =>
+                {
+                    if (CopyPose(catIdx, poseIdx))
+                    {
+                        Data.categories[catIdx].poses.RemoveAt(poseIdx);
+                        _thumbnails[catIdx].Clear();
+                        _lastClips[catIdx].Clear();
+                    }
+                });
+                if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Pose)
+                {
+                    menu.AddItem(_pastePoseMenu, false, () => PastePose(catIdx, poseIdx, false));
+                    menu.AddItem(_pasteNewPoseMenu, false, () => PastePose(catIdx, poseIdx, true));
+                }
+                else
+                {
+                    menu.AddDisabledItem(_pastePoseMenu);
+                    menu.AddDisabledItem(_pasteNewPoseMenu);
+                }
+                
+                menu.AddSeparator("");
                 
                 menu.AddItem(_createPoseMenu, false, () =>
                 {
@@ -575,30 +598,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                         _lastClips[catIdx].Clear();
                     });
                 });
-                
-                
-                menu.AddSeparator("");
-
-                menu.AddItem(_copyPoseMenu, false, () => CopyPose(catIdx, poseIdx));
-                menu.AddItem(_cutPoseMenu, false, () =>
-                {
-                    if (CopyPose(catIdx, poseIdx))
-                    {
-                        Data.categories[catIdx].poses.RemoveAt(poseIdx);
-                        _thumbnails[catIdx].Clear();
-                        _lastClips[catIdx].Clear();
-                    }
-                });
-                if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Pose)
-                {
-                    menu.AddItem(_pastePoseMenu, false, () => PastePose(catIdx, poseIdx, false));
-                    menu.AddItem(_pasteNewPoseMenu, false, () => PastePose(catIdx, poseIdx, true));
-                }
-                else
-                {
-                    menu.AddDisabledItem(_pastePoseMenu);
-                    menu.AddDisabledItem(_pasteNewPoseMenu);
-                }
 
                 menu.ShowAsContext();
                 evt.Use();
