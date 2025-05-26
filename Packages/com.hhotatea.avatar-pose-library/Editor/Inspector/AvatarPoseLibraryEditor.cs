@@ -40,7 +40,10 @@ namespace com.hhotatea.avatar_pose_library.editor
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
                            _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
                            _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel,
-                           _copyPoseLabel, _pastePoseLabel;
+                           _createCategoryMenu, _cutCategoryMenu, _deleteCategoryMenu, 
+                           _createPoseMenu, _cutPoseMenu, _deletePoseMenu, 
+                           _copyCategoryMenu, _pasteCategoryMenu, _pasteNewCategoryMenu,
+                           _copyPoseMenu, _pastePoseMenu, _pasteNewPoseMenu;
 
         private string[] _libraryTagList;
         private int _libraryTagIndex;
@@ -97,8 +100,18 @@ namespace com.hhotatea.avatar_pose_library.editor
             _enableFxLabel      = new(i.enableFxLabel, i.enableFxTooltip);
             _poseThumbnailLabel = new("",i.poseThumbnailTooltip);
             _posePreviewLabel   = new("",i.posePreviewTooltip);
-            _copyPoseLabel      = new(i.copyPoseLabel, ""); 
-            _pastePoseLabel     = new(i.pastePoseLabel, ""); 
+            _createCategoryMenu = new(i.createCategoryLabel, i.createCategoryTooltip);
+            _deleteCategoryMenu = new(i.deleteCategoryLabel, i.deleteCategoryTooltip);
+            _copyCategoryMenu   = new(i.copyCategoryLabel, i.copyCategoryTooltip); 
+            _cutCategoryMenu    = new(i.cutCategoryLabel, i.cutCategoryTooltip); 
+            _pasteCategoryMenu  = new(i.pasteCategoryLabel, i.pasteCategoryTooltip); 
+            _pasteNewCategoryMenu = new(i.pasteNewCategoryLabel, i.pasteNewCategoryTooltip);
+            _createPoseMenu     = new(i.createPoseLabel, i.createPoseTooltip);
+            _deletePoseMenu     = new(i.deletePoseLabel, i.deletePoseTooltip);
+            _copyPoseMenu       = new(i.copyPoseLabel, i.copyPoseTooltip); 
+            _cutPoseMenu        = new(i.cutPoseLabel, i.cutPoseTooltip); 
+            _pastePoseMenu      = new(i.pastePoseLabel, i.pastePoseTooltip); 
+            _pasteNewPoseMenu   = new(i.pasteNewPoseLabel, i.pasteNewPoseTooltip);
 
             _trackingOptions = new[]
             {
@@ -366,6 +379,119 @@ namespace com.hhotatea.avatar_pose_library.editor
             return _lineHeight + 8f + Mathf.Max(_lineHeight*5, _lineHeight) + list.GetHeight() + 60f;
         }
 
+        void CategorySubmenu(Rect rect, int catIdx)
+        {
+            // 右クリックメニュー
+            Event evt = Event.current;
+            if (evt.type == EventType.ContextClick && rect.Contains(evt.mousePosition))
+            {
+                GenericMenu menu = new GenericMenu();
+                
+                menu.AddItem(_createCategoryMenu, false, () =>
+                {
+                    Apply("Add Category", () =>
+                    {
+                        Data.categories.Insert(catIdx+1,new PoseCategory
+                        {
+                            name = DynamicVariables.Settings.Menu.category.title,
+                            thumbnail = DynamicVariables.Settings.Menu.category.thumbnail,
+                            poses = new List<PoseEntry>()
+                        });
+                    });
+                });
+                
+                menu.AddItem(_deleteCategoryMenu, false, () =>
+                {
+                    Apply("Remove Category", () =>
+                    {
+                        Data.categories.RemoveAt(catIdx);
+                        _poseLists.Clear();
+                        _thumbnails.Clear();
+                        _lastClips.Clear();
+                    });
+                });
+                
+                menu.AddSeparator("");
+                
+                // トラッキング設定定義
+                var trackingSettings = new[]
+                {
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.autoThumbnailMenu,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.autoThumbnail = enabled)
+                    },
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.headTrackingOption,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.head = enabled)
+                    },
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.armTrackingOption,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.arm = enabled)
+                    },
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.fingerTrackingOption,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.finger = enabled)
+                    },
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.footTrackingOption,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.foot = enabled)
+                    },
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.locomotionTrackingOption,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.locomotion = enabled)
+                    },
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.isLoopLabel,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) => pose.tracking.loop = enabled)
+                    },
+                    new {
+                        Label = DynamicVariables.Settings.Inspector.motionSpeedLabel,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.tracking.motionSpeed = enabled ? 1f : 0f)
+                    },
+                };
+
+                // 共通メニュー生成ループ
+                foreach (var setting in trackingSettings)
+                {
+                    AddTrackingMenu(menu,Data.categories[catIdx].poses,
+                        setting.Label, DynamicVariables.Settings.Inspector.enableMenuLabel,
+                        pose => setting.Setter(pose, true));
+
+                    AddTrackingMenu(menu,Data.categories[catIdx].poses,
+                        setting.Label, DynamicVariables.Settings.Inspector.disableMenuLabel,
+                        pose => setting.Setter(pose, false));
+                }
+                
+                menu.AddSeparator("");
+
+                menu.AddItem(_copyCategoryMenu, false, () => CopyCategory(catIdx));
+                menu.AddItem(_cutCategoryMenu, false, () =>
+                {
+                    if (CopyCategory(catIdx))
+                    {
+                        Data.categories.RemoveAt(catIdx);
+                        _poseLists.Clear();
+                        _thumbnails.Clear();
+                        _lastClips.Clear();
+                    }
+                });
+                if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Category)
+                {
+                    menu.AddItem(_pasteCategoryMenu, false, () => PasteCategory(catIdx, false));
+                    menu.AddItem(_pasteNewCategoryMenu, false, () => PasteCategory(catIdx, true));
+                }
+                else
+                {
+                    menu.AddDisabledItem(_pasteCategoryMenu);
+                    menu.AddDisabledItem(_pasteNewCategoryMenu);
+                }
+
+                menu.ShowAsContext();
+                evt.Use();
+            }
+        }
+
         private void DrawCategory(Rect rect, int index, bool isActive, bool isFocused)
         {
             SerializedProperty cat   = FindData("categories").GetArrayElementAtIndex(index);
@@ -376,6 +502,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             float y       = rect.y + Spacing;
             float thumbSz = _lineHeight*5f;
             float nameArea= rect.width - Spacing;
+
+            CategorySubmenu(new Rect(rect.x,rect.y,rect.width,_lineHeight*3f),index);
 
             var thumbRect = new Rect(rect.x+Spacing, y, thumbSz, thumbSz);
             var newThumb  = (Texture2D)EditorGUI.ObjectField(thumbRect, _categoryIconLabel, icon.objectReferenceValue, typeof(Texture2D), false);
@@ -415,30 +543,76 @@ namespace com.hhotatea.avatar_pose_library.editor
             return Data.categories[catIdx].poses[poseIdx].foldout ? _lineHeight*7f : _lineHeight*1.5f;
         }
 
+        void PoseSubmenu(Rect rect, int catIdx, int poseIdx, SerializedProperty poseProp)
+        {
+            // 右クリックメニュー
+            Event evt = Event.current;
+            if (evt.type == EventType.ContextClick && rect.Contains(evt.mousePosition))
+            {
+                GenericMenu menu = new GenericMenu();
+                
+                menu.AddItem(_createPoseMenu, false, () =>
+                {
+                    Apply("Add Pose", () =>
+                    {
+                        Data.categories[catIdx].poses.Insert(poseIdx+1,new PoseEntry
+                        {
+                            name = DynamicVariables.Settings.Menu.pose.title,
+                            thumbnail = DynamicVariables.Settings.Menu.pose.thumbnail,
+                            autoThumbnail = true,
+                        });
+                        _thumbnails[catIdx].Add(null);
+                        _lastClips[catIdx].Add(null);
+                    });
+                });
+                
+                menu.AddItem(_deletePoseMenu, false, () =>
+                {
+                    Apply("Remove Pose", () =>
+                    {
+                        Data.categories[catIdx].poses.RemoveAt(poseIdx);
+                        _thumbnails[catIdx].Clear();
+                        _lastClips[catIdx].Clear();
+                    });
+                });
+                
+                
+                menu.AddSeparator("");
+
+                menu.AddItem(_copyPoseMenu, false, () => CopyPose(catIdx, poseIdx));
+                menu.AddItem(_cutPoseMenu, false, () =>
+                {
+                    if (CopyPose(catIdx, poseIdx))
+                    {
+                        Data.categories[catIdx].poses.RemoveAt(poseIdx);
+                        _thumbnails[catIdx].Clear();
+                        _lastClips[catIdx].Clear();
+                    }
+                });
+                if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Pose)
+                {
+                    menu.AddItem(_pastePoseMenu, false, () => PastePose(catIdx, poseIdx, false));
+                    menu.AddItem(_pasteNewPoseMenu, false, () => PastePose(catIdx, poseIdx, true));
+                }
+                else
+                {
+                    menu.AddDisabledItem(_pastePoseMenu);
+                    menu.AddDisabledItem(_pasteNewPoseMenu);
+                }
+
+                menu.ShowAsContext();
+                evt.Use();
+            }
+        }
+
         private void DrawPose(Rect rect, int catIdx, int poseIdx, SerializedProperty poseProp)
         {
             // 既知のバグ。Undoで要素を消したときに、ここでエラー発生
             if (Data.categories.Count-1 < catIdx) return;
             if (Data.categories[catIdx].poses.Count-1 < poseIdx) return;
-            
+
+            PoseSubmenu(rect, catIdx, poseIdx, poseProp);
             Rect fullRect = new Rect(rect.x, rect.y, rect.width, _lineHeight);
-
-            // 右クリックメニュー
-            Event evt = Event.current;
-            if (evt.type == EventType.ContextClick && fullRect.Contains(evt.mousePosition))
-            {
-                GenericMenu menu = new GenericMenu();
-                menu.AddItem(_copyPoseLabel, false, () => CopyPose(catIdx, poseIdx));
-
-                string json = EditorGUIUtility.systemCopyBuffer;
-                if (IsValidJson(json))
-                    menu.AddItem(_pastePoseLabel, false, () => PastePose(catIdx, poseIdx));
-                else
-                    menu.AddDisabledItem(_pastePoseLabel);
-
-                menu.ShowAsContext();
-                evt.Use();
-            }
             
             float y = rect.y + 2f;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_closeLabel).x, GUI.skin.button.CalcSize(_openLabel).x) + 2;
@@ -639,7 +813,51 @@ namespace com.hhotatea.avatar_pose_library.editor
         }
         private static string GetInstancePath(Transform t)=> t.parent? GetInstancePath(t.parent)+"/"+t.gameObject.GetInstanceID(): t.gameObject.GetInstanceID().ToString();
         
-        private void CopyPose(int catIdx, int poseIdx)
+        private bool CopyCategory(int catIdx)
+        {
+            try
+            {
+                var pose = Data.categories[catIdx];
+                string json = JsonUtility.ToJson(pose);
+                EditorGUIUtility.systemCopyBuffer = json;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Copy category failed: " + e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void PasteCategory(int catIdx, bool asNew = false)
+        {
+            try
+            {
+                string json = EditorGUIUtility.systemCopyBuffer;
+
+                PoseCategory newCat = JsonUtility.FromJson<PoseCategory>(json);
+                if (newCat == null) return;
+
+                Apply("Paste category", () =>
+                {
+                    if (asNew)
+                    {
+                        Data.categories.Insert(catIdx + 1, newCat);
+                        
+                    }
+                    else
+                    {
+                        Data.categories[catIdx] = newCat;
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Paste pose failed: " + e.Message);
+            }
+        }
+        private bool CopyPose(int catIdx, int poseIdx)
         {
             try
             {
@@ -650,22 +868,31 @@ namespace com.hhotatea.avatar_pose_library.editor
             catch (Exception e)
             {
                 Debug.LogError("Copy pose failed: " + e.Message);
+                return false;
             }
+            return true;
         }
 
-        private void PastePose(int catIdx, int poseIdx)
+        private void PastePose(int catIdx, int poseIdx, bool asNew = false)
         {
             try
             {
                 string json = EditorGUIUtility.systemCopyBuffer;
-                if (!IsValidJson(json)) return;
 
                 PoseEntry newPose = JsonUtility.FromJson<PoseEntry>(json);
                 if (newPose == null) return;
 
                 Apply("Paste pose", () =>
                 {
-                    Data.categories[catIdx].poses[poseIdx] = newPose;
+                    if (asNew)
+                    {
+                        Data.categories[catIdx].poses.Insert(poseIdx + 1, newPose);
+                        
+                    }
+                    else
+                    {
+                        Data.categories[catIdx].poses[poseIdx] = newPose;
+                    }
                 });
             }
             catch (Exception e)
@@ -674,9 +901,50 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
-        private bool IsValidJson(string json)
+        enum JsonType
         {
-            return !string.IsNullOrEmpty(json) && json.Trim().StartsWith("{") && json.Trim().EndsWith("}");
+            Pose,
+            Category,
+            None
+        }
+        private JsonType IsValidJson(string json)
+        {
+            if (string.IsNullOrEmpty(json)) 
+                return JsonType.None;
+            if (!json.StartsWith("{") || !json.EndsWith("}")) 
+                return JsonType.None;
+            if (json.Contains("poses"))
+            {
+                return JsonType.Category;
+            }
+            if (json.Contains("animationClip"))
+            {
+                return JsonType.Pose;
+            }
+            return JsonType.None;
+        }
+                
+        void MenuHelper(GenericMenu menu, string parent, string label, Action onSelect)
+        {
+            menu.AddItem(new GUIContent($"{parent}/{label}"), false, () =>
+            {
+                onSelect?.Invoke();
+            });
+        }
+
+        void AddTrackingMenu(GenericMenu menu, List<PoseEntry> poses,
+            string optionName, string label, Action<PoseEntry> trackingSetter)
+        {
+            MenuHelper(menu, optionName, label, () =>
+            {
+                Apply($"{optionName} {label}", () =>
+                {
+                    foreach (var pose in poses)
+                    {
+                        trackingSetter(pose);
+                    }
+                });
+            });
         }
         
         #endregion
