@@ -75,9 +75,9 @@ MonoBehaviour:
   enableTrackingTooltip: Enables tracking menu.
   enableFxLabel: "\u2514 Enable FX"
   enableFxTooltip: Enable facial animation.
-  createCategoryLabel: Create
+  createCategoryLabel: Create Category
   createCategoryTooltip: "\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u65B0\u898F\u4F5C\u6210\u3002"
-  deleteCategoryLabel: Delete
+  deleteCategoryLabel: Delete Category
   deleteCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u524A\u9664\u3002"
   copyCategoryLabel: Copy
   copyCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u30B3\u30D4\u30FC\u3002"

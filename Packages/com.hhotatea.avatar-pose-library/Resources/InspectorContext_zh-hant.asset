@@ -71,9 +71,9 @@ MonoBehaviour:
   enableTrackingTooltip: "\u555F\u7528\u8FFD\u8E64\u9EDE\u9078\u55AE\u3002"
   enableFxLabel: "\u2514 \u555F\u7528\u9762\u90E8\u8868\u60C5"
   enableFxTooltip: "\u555F\u7528\u9762\u90E8\u52D5\u756B\u3002"
-  createCategoryLabel: Create
+  createCategoryLabel: Create Category
   createCategoryTooltip: "\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u65B0\u898F\u4F5C\u6210\u3002"
-  deleteCategoryLabel: Delete
+  deleteCategoryLabel: Delete Category
   deleteCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u524A\u9664\u3002"
   copyCategoryLabel: Copy
   copyCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u30B3\u30D4\u30FC\u3002"
@@ -83,9 +83,9 @@ MonoBehaviour:
   pasteCategoryTooltip: "\u9078\u629E\u4E2D\u306E\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u4E0A\u66F8\u304D\u3002"
   pasteNewCategoryLabel: Paste As New
   pasteNewCategoryTooltip: "\u3053\u3053\u306B\u30B3\u30D4\u30FC\u3092\u4F5C\u6210\u3002"
-  createPoseLabel: Create
+  createPoseLabel: Create Pose
   createPoseTooltip: "\u30DD\u30FC\u30BA\u3092\u65B0\u898F\u4F5C\u6210\u3002"
-  deletePoseLabel: Delete
+  deletePoseLabel: Delete Pose
   deletePoseTooltip: "\u9078\u629E\u4E2D\u306E\u30DD\u30FC\u30BA\u3092\u524A\u9664\u3002"
   copyPoseLabel: Copy
   copyPoseTooltip: "\u9078\u629E\u4E2D\u306E\u30DD\u30FC\u30BA\u3092\u30B3\u30D4\u30FC\u3002"

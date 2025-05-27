@@ -961,16 +961,23 @@ namespace com.hhotatea.avatar_pose_library.editor
             string optionName, string label, 
             Action<PoseEntry> trackingSetter, Func<List<PoseEntry>,bool> trackingSelected)
         {
-            MenuHelper(menu, optionName, label, () =>
+            if (poses.Count == 0)
             {
-                Apply($"{optionName} {label}", () =>
+                menu.AddDisabledItem(new GUIContent($"{optionName}"));
+            }
+            else
+            {
+                MenuHelper(menu, optionName, label, () =>
                 {
-                    foreach (var pose in poses)
+                    Apply($"{optionName} {label}", () =>
                     {
-                        trackingSetter(pose);
-                    }
-                });
-            }, trackingSelected.Invoke(poses));
+                        foreach (var pose in poses)
+                        {
+                            trackingSetter(pose);
+                        }
+                    });
+                }, trackingSelected.Invoke(poses));
+            }
         }
         
         #endregion
