@@ -31,9 +31,6 @@ namespace com.hhotatea.avatar_pose_library.model
         
         // 固定するパラメーターの選択
         public TrackingSetting tracking;
-        
-        // UI用のキャッシュ
-        public bool foldout = false;
 
         // システムが使用
         public string Parameter { get; set; }

@@ -70,12 +70,11 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                     while (!operation.isDone)
                     {
-                        // ブロッキング待機（CPU負荷高）
+                        // ブロッキング待機
                     }
 
                     if (request.result == UnityWebRequest.Result.Success)
                     {
-                        Debug.Log(request.downloadHandler.text);
                         var data = JsonUtility.FromJson<AnalyticsResponse>(request.downloadHandler.text);
                         latestVersion = data.version;
                     }
