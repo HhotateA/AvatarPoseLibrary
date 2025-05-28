@@ -83,6 +83,9 @@ namespace com.hhotatea.avatar_pose_library.component
         public string enableMenuLabel = "Enable All Pose";
         [Multiline] public string enableMenuTooltip = "一括で無効化。";
         
+        
+        [Multiline] public string updateMessage = "最新版アップデートがあります。VCCを確認してください。";
+        
         public Texture2D thumbnailBg;
         
         public string headTrackingOption = "Head Lock";
