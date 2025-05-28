@@ -71,6 +71,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableFxParam = false;
         public bool enableDeepSync = true;
         public VRCExpressionsMenu target = null;
+        public VRCExpressionsMenu settings = null;
         
         // システムが使用
         public string Guid { get; set; }

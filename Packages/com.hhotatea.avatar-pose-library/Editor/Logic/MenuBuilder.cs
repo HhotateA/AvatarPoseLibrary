@@ -30,6 +30,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                 // 設定メニュー
                 var settings = new GameObject(DynamicVariables.Settings.Menu.setting.title);
                 settings.transform.SetParent(result.transform);
+                if (poseLibrary.settings != null)
+                {
+                    var installer = settings.AddComponent<ModularAvatarMenuInstaller>();
+                    installer.installTargetMenu = poseLibrary.settings;
+                }
+                
                 var mSettings = settings.AddComponent<ModularAvatarMenuItem>();
                 mSettings.MenuSource = SubmenuSource.Children;
                 mSettings.Control.icon = DynamicVariables.Settings.Menu.setting.thumbnail;

@@ -351,10 +351,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 elementHeightCallback = GetCategoryHeight,
                 drawElementCallback   = DrawCategory,
 
-                onReorderCallback = l =>
+                onReorderCallbackWithDetails = (l, oldIndex, newIndex) =>
                 {
-                    _thumbnails.Clear();
-                    _lastClips.Clear();
+                    // fold outの同期を入れるべきだけど、この時点でデータは失われている。
                 },
 
                 onAddCallback = l => Apply("Add Category", () =>
@@ -439,9 +438,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     if (CopyCategory(catIdx))
                     {
                         Data.categories.RemoveAt(catIdx);
-                        _poseLists.Clear();
-                        _thumbnails.Clear();
-                        _lastClips.Clear();
                     }
                 });
                 if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Category)
@@ -558,9 +554,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     Apply("Remove Category", () =>
                     {
                         Data.categories.RemoveAt(catIdx);
-                        _poseLists.Clear();
-                        _thumbnails.Clear();
-                        _lastClips.Clear();
                     });
                 });
 
@@ -651,15 +644,19 @@ namespace com.hhotatea.avatar_pose_library.editor
                 
                 menu.AddItem(_createPoseMenu, false, () =>
                 {
+                    var newPose = new PoseEntry
+                    {
+                        name = DynamicVariables.Settings.Menu.pose.title,
+                        thumbnail = DynamicVariables.Settings.Menu.pose.thumbnail,
+                        autoThumbnail = true,
+                    };
                     Apply("Add Pose", () =>
                     {
-                        Data.categories[catIdx].poses.Insert(poseIdx+1,new PoseEntry
-                        {
-                            name = DynamicVariables.Settings.Menu.pose.title,
-                            thumbnail = DynamicVariables.Settings.Menu.pose.thumbnail,
-                            autoThumbnail = true,
-                        });
+                        Data.categories[catIdx].poses.Insert(poseIdx+1,newPose);
                     });
+                    
+                    // 開いた状態で張り付ける
+                    SetFoldoutBuffer(newPose,true);
                 });
                 
                 menu.AddItem(_deletePoseMenu, false, () =>
@@ -956,11 +953,17 @@ namespace com.hhotatea.avatar_pose_library.editor
                     if (asNew)
                     {
                         Data.categories[catIdx].poses.Insert(poseIdx + 1, newPose);
-                        
+                
+                        // 開いた状態で張り付ける
+                        SetFoldoutBuffer(newPose,true);
                     }
                     else
                     {
+                        var foldout = GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]);
                         Data.categories[catIdx].poses[poseIdx] = newPose;
+                
+                        // 開いた状態で張り付ける
+                        SetFoldoutBuffer(newPose,foldout);
                     }
                 });
             }
