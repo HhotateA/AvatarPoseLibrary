@@ -11,9 +11,6 @@ namespace com.hhotatea.avatar_pose_library.component
     [HelpURL("https://github.com/HhotateA/AvatarPoseLibrary/wiki")]
     public class AvatarPoseLibrary : MonoBehaviour, IEditorOnly
     {
-        // インストール先のメニュー（通常は空）
-        public VRCExpressionsMenu target = null;
-        
         // データの本体。
         public AvatarPoseData data;
 

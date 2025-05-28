@@ -27,22 +27,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
 
-                    // ターゲットメニューが指定されているものを個別処理
-                    foreach (var setting in settings.Where(e => e.target != null))
-                    {
-                        var d = setting.data.UpdateParameter();
-                        var go = new GameObject(d.Guid);
-                        go.transform.SetParent(setting.transform);
-    
-                        BuildRuntimeAnimator(go, d);
-                        BuildRuntimeMenu(go, d, setting.target);
-                        BuildRuntimeParameter(go, d);
-                    }
-
                     // ターゲット未指定のデータを統合して処理
                     var combinedData = AvatarPoseData.Combine(
-                        settings.Where(e => e.target == null)
-                            .Select(e => e.data)
+                        settings.Select(e => e.data)
                             .ToArray());
 
                     foreach (var d in combinedData)
@@ -107,13 +94,19 @@ namespace com.hhotatea.avatar_pose_library.editor
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="data"></param>
-        /// <param name="target"></param>
-        void BuildRuntimeMenu(GameObject obj,AvatarPoseData data,VRCExpressionsMenu target = null)
+        void BuildRuntimeMenu(GameObject obj,AvatarPoseData data)
         {
             var result = MenuBuilder.BuildPoseMenu(data);
+            foreach (var installer in result.GetComponentsInChildren<ModularAvatarMenuInstaller>())
+            {
+                Debug.Log(installer.gameObject.name);
+                installer.transform.SetParent(obj.transform);
+            }
 
-            var installer = result.AddComponent<ModularAvatarMenuInstaller>();
-            installer.installTargetMenu = target;
+            if (result.GetComponent<ModularAvatarMenuInstaller>() == null)
+            {
+                result.AddComponent<ModularAvatarMenuInstaller>();
+            }
             result.transform.SetParent(obj.transform);
         }
 

@@ -11,6 +11,12 @@ namespace com.hhotatea.avatar_pose_library.logic
         public static GameObject BuildPoseMenu(AvatarPoseData poseLibrary)
         {
             var result = new GameObject(poseLibrary.name);
+            if (poseLibrary.target != null)
+            {
+                var installer = result.AddComponent<ModularAvatarMenuInstaller>();
+                installer.installTargetMenu = poseLibrary.target;
+            }
+            
             var mResult = result.AddComponent<ModularAvatarMenuItem>();
             mResult.MenuSource = SubmenuSource.Children;
             mResult.Control.icon = poseLibrary.thumbnail;
@@ -24,6 +30,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                 // 設定メニュー
                 var settings = new GameObject(DynamicVariables.Settings.Menu.setting.title);
                 settings.transform.SetParent(result.transform);
+                if (poseLibrary.settings != null)
+                {
+                    var installer = settings.AddComponent<ModularAvatarMenuInstaller>();
+                    installer.installTargetMenu = poseLibrary.settings;
+                }
+                
                 var mSettings = settings.AddComponent<ModularAvatarMenuItem>();
                 mSettings.MenuSource = SubmenuSource.Children;
                 mSettings.Control.icon = DynamicVariables.Settings.Menu.setting.thumbnail;
@@ -47,6 +59,12 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 var folder = new GameObject(category.name);
                 folder.transform.SetParent(result.transform);
+                if (category.target != null)
+                {
+                    var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
+                    installer.installTargetMenu = category.target;
+                }
+                
                 var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
                 mFolder.MenuSource = SubmenuSource.Children;
                 mFolder.Control.icon = category.thumbnail;
@@ -57,6 +75,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     var item = new GameObject(pose.name);
                     item.transform.SetParent(folder.transform);
+                    if (pose.target != null)
+                    {
+                        var installer = item.AddComponent<ModularAvatarMenuInstaller>();
+                        installer.installTargetMenu = pose.target;
+                    }
+                    
                     var mItem = item.AddComponent<ModularAvatarMenuItem>();
                     mItem.Control.icon = pose.thumbnail;
                     mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;

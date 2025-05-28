@@ -31,9 +31,6 @@ namespace com.hhotatea.avatar_pose_library.editor
         private ReorderableList _categoryList;
         private readonly List<ReorderableList> _poseLists = new();
 
-        private readonly List<List<Texture2D>>    _thumbnails = new();
-        private readonly List<List<AnimationClip>> _lastClips  = new();
-
         // GUIContent 定義（省略無し）
         private GUIContent _libraryLabel, _categoryListLabel, _categoryIconLabel, _categoryTextLabel,
                            _openAllLabel, _closeAllLabel, _poseListLabel, _openLabel, _closeLabel,
@@ -41,7 +38,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                            _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
                            _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel,
                            _createCategoryMenu, _cutCategoryMenu, _deleteCategoryMenu, 
-                           _createPoseMenu, _cutPoseMenu, _deletePoseMenu, 
+                           _createPoseMenu, _cutPoseMenu, _deletePoseMenu, _clearPosesMenu,
                            _copyCategoryMenu, _pasteCategoryMenu, _pasteNewCategoryMenu,
                            _copyPoseMenu, _pastePoseMenu, _pasteNewPoseMenu;
 
@@ -49,6 +46,92 @@ namespace com.hhotatea.avatar_pose_library.editor
         private int _libraryTagIndex;
         private string _instanceIdPathBuffer = string.Empty;
         private string[] _trackingOptions;
+        #endregion
+        
+        #region ===== Foldout/Cache helpers =====
+
+        private readonly Dictionary<string,Texture2D> _thumbnails = new();
+        private readonly Dictionary<string,AnimationClip> _lastClips  = new();
+        private readonly Dictionary<string,bool> _foldout  = new();
+
+        Texture2D GetThumbnailBuffer(PoseEntry pose)
+        {
+            var p = GetParameter(pose);
+            _thumbnails.TryAdd(p, null);
+            return _thumbnails[p];
+        }
+
+        void SetThumbnailBuffer(PoseEntry pose,Texture2D value)
+        {
+            var p = GetParameter(pose);
+            _thumbnails.TryAdd(p, null);
+            _thumbnails[p] = value;
+        }
+
+        AnimationClip GetClipBuffer(PoseEntry pose)
+        {
+            var p = GetParameter(pose);
+            _lastClips.TryAdd(p, null);
+            return _lastClips[p];
+        }
+
+        void SetClipBuffer(PoseEntry pose,AnimationClip value)
+        {
+            var p = GetParameter(pose);
+            _lastClips.TryAdd(p, null);
+            _lastClips[p] = value;
+        }
+
+        bool GetFoldoutBuffer(PoseEntry pose)
+        {
+            var p = GetParameter(pose);
+            _foldout.TryAdd(p, false);
+            return _foldout[p];
+        }
+
+        void SetFoldoutBuffer(PoseEntry pose,bool value)
+        {
+            var p = GetParameter(pose);
+            _foldout.TryAdd(p, false);
+            _foldout[p] = value;
+        }
+
+        string GetParameter(PoseEntry pose)
+        {
+            if (String.IsNullOrWhiteSpace(pose.Parameter))
+            {
+                pose.Parameter = Guid.NewGuid().ToString("N").Substring(0, 8);
+            }
+
+            return pose.Parameter;
+        }
+
+        void SyncBuffer()
+        {
+            var ps = _thumbnails.Keys.ToList();
+            foreach (var category in Data.categories)
+            {
+                foreach (var pose in category.poses)
+                {
+                    var p = GetParameter(pose);
+                    ps.Remove(p);
+                    _thumbnails.TryAdd(p, null);
+                    _lastClips.TryAdd(p, null);
+                    _foldout.TryAdd(p, false);
+                }
+            }
+
+            foreach (var p in ps)
+            {
+                if(_thumbnails.ContainsKey(p))
+                    _thumbnails.Remove(p);
+                if(_lastClips.ContainsKey(p))
+                    _lastClips.Remove(p);
+                if(_foldout.ContainsKey(p))
+                    _foldout.Remove(p);
+            }
+        }
+        
         #endregion
 
         #region ===== Serialized helpers =====
@@ -69,7 +152,15 @@ namespace com.hhotatea.avatar_pose_library.editor
             BuildGuiContent();
             EnsureInitialData();
             SyncLibraryTags();
-            SyncCacheSize();
+
+            foreach (var category in Data.categories)
+            {
+                foreach (var pose in category.poses)
+                {
+                    // パラメーターの初期化。
+                    pose.Parameter = "";
+                }
+            }
             
             // 初期化時に、タグを合わせる
             SyncGlobalToggles(Data.name);
@@ -108,6 +199,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             _pasteNewCategoryMenu = new(i.pasteNewCategoryLabel, i.pasteNewCategoryTooltip);
             _createPoseMenu     = new(i.createPoseLabel, i.createPoseTooltip);
             _deletePoseMenu     = new(i.deletePoseLabel, i.deletePoseTooltip);
+            _clearPosesMenu     = new(i.clearPoseLabel, i.clearPoseTooltip);
             _copyPoseMenu       = new(i.copyPoseLabel, i.copyPoseTooltip); 
             _cutPoseMenu        = new(i.cutPoseLabel, i.cutPoseTooltip); 
             _pastePoseMenu      = new(i.pastePoseLabel, i.pastePoseTooltip); 
@@ -125,15 +217,6 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void EnsureInitialData()
         {
-            foreach (var cat in Data.categories)
-            {
-                foreach (var pose in cat.poses)
-                {
-                    // 一時データとして、メニューの開閉状態を保存
-                    pose.foldout = false;
-                }
-            }
-            
             // データの初期化
             if (_library.isInitialized) return;
             _library.data = new AvatarPoseData();
@@ -150,7 +233,14 @@ namespace com.hhotatea.avatar_pose_library.editor
             int    newIdx  = _libraryTagIndex;
 
             float texSize = _lineHeight * 8f;
-            // EditorGUILayout.LabelField("Avatar Pose Library Settings", EditorStyles.boldLabel);
+            if (DynamicVariables.NowVersion != DynamicVariables.LatestVersion)
+            {
+                GUIStyle updateStyle = new GUIStyle(EditorStyles.boldLabel);
+                updateStyle.normal.textColor = Color.red;
+
+                EditorGUILayout.LabelField(
+                    DynamicVariables.Settings.Inspector.updateMessage + $" (v{DynamicVariables.NowVersion} => v{DynamicVariables.LatestVersion})", updateStyle);
+            }
 
             using (new GUILayout.HorizontalScope())
             {
@@ -240,8 +330,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         public override void OnInspectorGUI()
         {
             EnsureGuiLists();
-            SyncCacheSize();
             DetectHierarchyChange();
+            SyncBuffer();
 
             DrawMainHeader();
             EditorGUILayout.Space(15);
@@ -261,12 +351,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 elementHeightCallback = GetCategoryHeight,
                 drawElementCallback   = DrawCategory,
 
-                onReorderCallback = l =>
+                onReorderCallbackWithDetails = (l, oldIndex, newIndex) =>
                 {
-                    _thumbnails.Clear();
-                    _lastClips.Clear();
-                    // _thumbnails.Insert(newIdx, _thumbnails[oldIdx]);     _thumbnails.RemoveAt(oldIdx < newIdx ? oldIdx : oldIdx+1);
-                    // _lastClips.Insert(newIdx, _lastClips[oldIdx]);       _lastClips.RemoveAt(oldIdx < newIdx ? oldIdx : oldIdx+1);
+                    // fold outの同期を入れるべきだけど、この時点でデータは失われている。
                 },
 
                 onAddCallback = l => Apply("Add Category", () =>
@@ -277,18 +364,13 @@ namespace com.hhotatea.avatar_pose_library.editor
                     c.FindPropertyRelative("name").stringValue               = DynamicVariables.Settings.Menu.category.title;
                     c.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.category.thumbnail;
                     c.FindPropertyRelative("poses").arraySize                = 0;
-                    // 同期して空行を追加
                     _poseLists.Insert(i, null);
-                    _thumbnails.Insert(i, new List<Texture2D>());
-                    _lastClips.Insert(i, new List<AnimationClip>());
                 }),
 
                 onRemoveCallback = l => Apply("Remove Category", () =>
                 {
                     catProp.DeleteArrayElementAtIndex(l.index);
                     _poseLists.Clear();
-                    _thumbnails.Clear();
-                    _lastClips.Clear();
                 }),
 
                 onChangedCallback = _ => serializedObject.ApplyModifiedProperties()
@@ -309,23 +391,21 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 onReorderCallbackWithDetails = (l, oldIndex, newIndex) =>
                 {
-                    Swap(_thumbnails[catIdx], oldIndex, newIndex);
-                    Swap(_lastClips[catIdx], oldIndex, newIndex);
+                    var a = Data.categories[catIdx].poses[oldIndex].Parameter;
+                    var b = Data.categories[catIdx].poses[newIndex].Parameter;
+                    Data.categories[catIdx].poses[oldIndex].Parameter = b;
+                    Data.categories[catIdx].poses[newIndex].Parameter = a;
                 },
+
 
                 onAddCallback = l => Apply("Add Pose", () =>
                 {
                     AddPose(posesProp);
-                    // cache 行追加
-                    _thumbnails[catIdx].Add(null);
-                    _lastClips[catIdx].Add(null);
                 }),
 
                 onRemoveCallback = l => Apply("Remove Pose", () =>
                 {
                     posesProp.DeleteArrayElementAtIndex(l.index);
-                    _thumbnails[catIdx].Clear();
-                    _lastClips[catIdx].Clear();
                 }),
 
                 onChangedCallback = _ => serializedObject.ApplyModifiedProperties()
@@ -334,41 +414,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             while (_poseLists.Count <= catIdx) _poseLists.Add(null);
             _poseLists[catIdx] = list;
             return list;
-        }
-        #endregion
-
-        #region ===== Foldout/Cache helpers =====
-        private static void Swap<T>(List<T> list, int a, int b)
-        {
-            var tmp = list[a]; list[a] = list[b]; list[b] = tmp;
-        }
-
-        private void SyncCacheSize()
-        {
-            int catCount = Data.categories.Count;
-
-            Resize2DList(_thumbnails, catCount);
-            Resize2DList(_lastClips,  catCount);
-            for (int c=0; c<catCount; ++c)
-            {
-                int poseCount = Data.categories[c].poses.Count;
-                Resize1D(_thumbnails[c],  poseCount);
-                Resize1D(_lastClips[c],   poseCount);
-            }
-            
-            // poseLists 同期
-            Resize1D(_poseLists, catCount);
-        }
-
-        private static void Resize2DList<T>(List<List<T>> list, int size)
-        {
-            while (list.Count < size) list.Add(new List<T>());
-            while (list.Count > size) list.RemoveAt(list.Count-1);
-        }
-        private static void Resize1D<T>(List<T> list, int size, T defaultVal=default)
-        {
-            while (list.Count < size) list.Add(defaultVal);
-            while (list.Count > size) list.RemoveAt(list.Count-1);
         }
         #endregion
 
@@ -393,9 +438,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     if (CopyCategory(catIdx))
                     {
                         Data.categories.RemoveAt(catIdx);
-                        _poseLists.Clear();
-                        _thumbnails.Clear();
-                        _lastClips.Clear();
                     }
                 });
                 if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Category)
@@ -410,6 +452,11 @@ namespace com.hhotatea.avatar_pose_library.editor
                 }
                 
                 menu.AddSeparator("");
+
+                menu.AddItem(_clearPosesMenu, false, () => Apply("Clear Pose", () =>
+                {
+                    Data.categories[catIdx].poses = new List<PoseEntry>();
+                }));
                 
                 // トラッキング設定定義
                 var trackingSettings = new[]
@@ -507,9 +554,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     Apply("Remove Category", () =>
                     {
                         Data.categories.RemoveAt(catIdx);
-                        _poseLists.Clear();
-                        _thumbnails.Clear();
-                        _lastClips.Clear();
                     });
                 });
 
@@ -547,10 +591,10 @@ namespace com.hhotatea.avatar_pose_library.editor
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_openAllLabel).x, GUI.skin.button.CalcSize(_closeAllLabel).x)+5f;
             if (GUI.Button(new Rect(rect.x+rect.width-btnW*2-10, y, btnW, _lineHeight), _openAllLabel))
                 foreach (var t in Data.categories[index].poses)
-                    t.foldout = true;
+                    SetFoldoutBuffer(t,true);
             if (GUI.Button(new Rect(rect.x+rect.width-btnW-5, y, btnW, _lineHeight), _closeAllLabel))
                 foreach (var t in Data.categories[index].poses)
-                    t.foldout = false;
+                    SetFoldoutBuffer(t,false);
 
 
             y += _lineHeight + Spacing;
@@ -566,7 +610,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (Data.categories.Count-1 < catIdx) return _lineHeight;
             if (Data.categories[catIdx].poses.Count-1 < poseIdx) return _lineHeight;
             
-            return Data.categories[catIdx].poses[poseIdx].foldout ? _lineHeight*7f : _lineHeight*1.5f;
+            return GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]) ? _lineHeight*7f : _lineHeight*1.5f;
         }
 
         void PoseSubmenu(Rect rect, int catIdx, int poseIdx, SerializedProperty poseProp)
@@ -583,8 +627,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     if (CopyPose(catIdx, poseIdx))
                     {
                         Data.categories[catIdx].poses.RemoveAt(poseIdx);
-                        _thumbnails[catIdx].Clear();
-                        _lastClips[catIdx].Clear();
                     }
                 });
                 if (IsValidJson(EditorGUIUtility.systemCopyBuffer) == JsonType.Pose)
@@ -602,17 +644,19 @@ namespace com.hhotatea.avatar_pose_library.editor
                 
                 menu.AddItem(_createPoseMenu, false, () =>
                 {
+                    var newPose = new PoseEntry
+                    {
+                        name = DynamicVariables.Settings.Menu.pose.title,
+                        thumbnail = DynamicVariables.Settings.Menu.pose.thumbnail,
+                        autoThumbnail = true,
+                    };
                     Apply("Add Pose", () =>
                     {
-                        Data.categories[catIdx].poses.Insert(poseIdx+1,new PoseEntry
-                        {
-                            name = DynamicVariables.Settings.Menu.pose.title,
-                            thumbnail = DynamicVariables.Settings.Menu.pose.thumbnail,
-                            autoThumbnail = true,
-                        });
-                        _thumbnails[catIdx].Add(null);
-                        _lastClips[catIdx].Add(null);
+                        Data.categories[catIdx].poses.Insert(poseIdx+1,newPose);
                     });
+                    
+                    // 開いた状態で張り付ける
+                    SetFoldoutBuffer(newPose,true);
                 });
                 
                 menu.AddItem(_deletePoseMenu, false, () =>
@@ -620,8 +664,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     Apply("Remove Pose", () =>
                     {
                         Data.categories[catIdx].poses.RemoveAt(poseIdx);
-                        _thumbnails[catIdx].Clear();
-                        _lastClips[catIdx].Clear();
                     });
                 });
 
@@ -641,20 +683,20 @@ namespace com.hhotatea.avatar_pose_library.editor
             
             float y = rect.y + 2f;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_closeLabel).x, GUI.skin.button.CalcSize(_openLabel).x) + 2;
-            if (Data.categories[catIdx].poses[poseIdx].foldout)
+            if (GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]))
             {
                 string newName = GUI.TextField(new Rect(rect.x+10, y, Mathf.Min(TextBoxWidth, rect.width-60), _lineHeight),
                                                poseProp.FindPropertyRelative("name").stringValue);
                 if (newName != poseProp.FindPropertyRelative("name").stringValue)
                     Apply("Rename Pose", () => poseProp.FindPropertyRelative("name").stringValue = newName);
-                if (GUI.Button(new Rect(rect.x+rect.width-btnW, y, btnW, 20), _closeLabel)) 
-                    Data.categories[catIdx].poses[poseIdx].foldout = false;
+                if (GUI.Button(new Rect(rect.x+rect.width-btnW, y, btnW, 20), _closeLabel))
+                    SetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx],false);
             }
             else
             {
                 GUI.Label(new Rect(rect.x+10, y, rect.width-60, _lineHeight), poseProp.FindPropertyRelative("name").stringValue);
                 if (GUI.Button(new Rect(rect.x+rect.width-btnW, y, btnW, 20), _openLabel))
-                    Data.categories[catIdx].poses[poseIdx].foldout = true;
+                    SetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx],true);
                 return;
             }
             y += _lineHeight + Spacing + 4;
@@ -671,15 +713,16 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             if (autoTnProp.boolValue && clipProp.objectReferenceValue)
             {
-                if (_lastClips[catIdx][poseIdx] != clipProp.objectReferenceValue)
+                var p = Data.categories[catIdx].poses[poseIdx];
+                if (GetClipBuffer(p) != clipProp.objectReferenceValue)
                 {
-                    _lastClips[catIdx][poseIdx]=(AnimationClip)clipProp.objectReferenceValue;
-                    _thumbnails[catIdx][poseIdx]=GenerateThumbnail(_library.gameObject,(AnimationClip)clipProp.objectReferenceValue);
+                    SetClipBuffer(p,(AnimationClip)clipProp.objectReferenceValue);
+                    SetThumbnailBuffer(p,GenerateThumbnail(_library.gameObject,(AnimationClip)clipProp.objectReferenceValue));
                 }
-                if (_thumbnails[catIdx][poseIdx])
+                if (GetThumbnailBuffer(p))
                 {
                     GUI.DrawTexture(thumbRect, DynamicVariables.Settings.Inspector.thumbnailBg, ScaleMode.StretchToFill,false);
-                    GUI.DrawTexture(Rect.MinMaxRect(thumbRect.xMin+1,thumbRect.yMin+1,thumbRect.xMax-1,thumbRect.yMax-1), _thumbnails[catIdx][poseIdx], ScaleMode.StretchToFill,true);
+                    GUI.DrawTexture(Rect.MinMaxRect(thumbRect.xMin+1,thumbRect.yMin+1,thumbRect.xMax-1,thumbRect.yMax-1), GetThumbnailBuffer(p), ScaleMode.StretchToFill,true);
                     GUI.Button(thumbRect, _posePreviewLabel, GUIStyle.none);
                 }
             }
@@ -723,8 +766,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                 foreach(var clip in DragAndDrop.objectReferences.OfType<AnimationClip>())
                 {
                     AddPose(posesProp,clip);
-                    _thumbnails[catIdx].Add(null);
-                    _lastClips[catIdx].Add(null);
                 }
             });
             evt.Use();
@@ -912,11 +953,17 @@ namespace com.hhotatea.avatar_pose_library.editor
                     if (asNew)
                     {
                         Data.categories[catIdx].poses.Insert(poseIdx + 1, newPose);
-                        
+                
+                        // 開いた状態で張り付ける
+                        SetFoldoutBuffer(newPose,true);
                     }
                     else
                     {
+                        var foldout = GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]);
                         Data.categories[catIdx].poses[poseIdx] = newPose;
+                
+                        // 開いた状態で張り付ける
+                        SetFoldoutBuffer(newPose,foldout);
                     }
                 });
             }

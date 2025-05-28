@@ -22,7 +22,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string MotionAnimatorPrefix = "AnimPoseMotion";
         public const string FxAnimatorPrefix = "AnimPoseFx";
         public const string ParamAnimatorPrefix = "AnimPoseParam";
-        
+
         // 1つのIntパラメーターで管理するAnimationの最大数。
         public const int MaxAnimationState = 255;
         public const int PoseFlagCount = 2;

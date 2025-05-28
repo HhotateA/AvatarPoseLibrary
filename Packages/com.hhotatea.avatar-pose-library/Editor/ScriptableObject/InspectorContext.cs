@@ -63,6 +63,8 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string pasteCategoryTooltip = "選択中のカテゴリーを上書き。";
         public string pasteNewCategoryLabel = "Paste Category As New";
         [Multiline] public string pasteNewCategoryTooltip = "ここにコピーを作成。";
+        public string clearPoseLabel = "Clear Pose";
+        [Multiline] public string clearPoseTooltip = "ポーズを全消去。";
         public string createPoseLabel = "Create Pose";
         [Multiline] public string createPoseTooltip = "ポーズを新規作成。";
         public string deletePoseLabel = "Delete Pose";
@@ -82,6 +84,9 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string disableMenuTooltip = "一括で有効化。";
         public string enableMenuLabel = "Enable All Pose";
         [Multiline] public string enableMenuTooltip = "一括で無効化。";
+        
+        
+        [Multiline] public string updateMessage = "最新版アップデートがあります。VCCを確認してください。";
         
         public Texture2D thumbnailBg;
         

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using VRC.SDK3.Avatars.ScriptableObjects;
 
 namespace com.hhotatea.avatar_pose_library.model
 {
@@ -26,12 +27,10 @@ namespace com.hhotatea.avatar_pose_library.model
         public AnimationClip beforeAnimationClip;
         public AnimationClip afterAnimationClip;
         public AnimationClip animationClip;
+        public VRCExpressionsMenu target = null;
         
         // 固定するパラメーターの選択
         public TrackingSetting tracking;
-        
-        // UI用のキャッシュ
-        public bool foldout = false;
 
         // システムが使用
         public string Parameter { get; set; }
@@ -56,6 +55,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public string name;
         public Texture2D thumbnail;
         public List<PoseEntry> poses = new List<PoseEntry>();
+        public VRCExpressionsMenu target = null;
     }
 
     [Serializable]
@@ -70,6 +70,8 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableTrackingParam = true;
         public bool enableFxParam = false;
         public bool enableDeepSync = true;
+        public VRCExpressionsMenu target = null;
+        public VRCExpressionsMenu settings = null;
         
         // システムが使用
         public string Guid { get; set; }
@@ -116,17 +118,18 @@ namespace com.hhotatea.avatar_pose_library.model
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static AvatarPoseData[] Combine(AvatarPoseData[] data)
+        public static List<AvatarPoseData> Combine(AvatarPoseData[] data)
         {
+            var result = new List<AvatarPoseData>();
             var ps = data.Select(d => d.name).Distinct().ToArray();
-            var result = new AvatarPoseData[ps.Length];
-            for (int i = 0; i < ps.Length; i++)
+            foreach (var t in ps)
             {
                 var apd = new AvatarPoseData();
-                apd.name = ps[i];
+                apd.name = t;
                 foreach (var d in data)
                 {
                     if(d.name != apd.name) continue;
+                    if(d.target != null) continue;
                     apd.categories.AddRange(d.categories);
                     apd.thumbnail = d.thumbnail;
                 }
@@ -138,9 +141,20 @@ namespace com.hhotatea.avatar_pose_library.model
                 apd.enableFxParam = data.Any(e => e.enableFxParam);
                 apd.enableDeepSync = data.Any(e => e.enableDeepSync);
 
-                apd.UpdateParameter();
-                result[i] = apd;
+                if (apd.categories.Count > 0)
+                {
+                    apd.UpdateParameter();
+                    result.Add(apd);
+                }
             }
+
+            foreach (var apd in data)
+            {
+                if(apd.target == null) continue;
+                apd.UpdateParameter();
+                result.Add(apd);
+            }
+            
             return result;
         }
     }
