@@ -63,14 +63,22 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             get
             {
-                if (String.IsNullOrWhiteSpace(latestVersion))
+                if (string.IsNullOrWhiteSpace(latestVersion))
                 {
                     UnityWebRequest request = UnityWebRequest.Get(analyticsURL);
                     var operation = request.SendWebRequest();
 
+                    float timeout = 5f; // タイムアウト秒数
+                    float startTime = Time.realtimeSinceStartup;
+
                     while (!operation.isDone)
                     {
-                        // ブロッキング待機
+                        if (Time.realtimeSinceStartup - startTime > timeout)
+                        {
+                            Debug.LogError("Error: Request timed out.");
+                            request.Abort();
+                            return NowVersion;
+                        }
                     }
 
                     if (request.result == UnityWebRequest.Result.Success)
@@ -81,6 +89,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     else
                     {
                         Debug.LogError("Error: " + request.error);
+                        return NowVersion;
                     }
                 }
 
