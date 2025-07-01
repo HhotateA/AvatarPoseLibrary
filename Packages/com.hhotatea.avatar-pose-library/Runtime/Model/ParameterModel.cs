@@ -79,23 +79,26 @@ namespace com.hhotatea.avatar_pose_library.model {
         /// <summary>
         /// パラメーターの最適化
         /// </summary>
-        public AvatarPoseData UpdateParameter () {
-            int paramCount = 999;
-            int paramIndex = 1;
-            string paramName = "";
-            foreach (var category in categories) {
-                foreach (var pose in category.poses) {
-                    var guid = System.Guid.NewGuid ().ToString ("N").Substring (0, 8);
-                    if (paramCount > ConstVariables.MaxAnimationState) {
-                        paramName = $"AnimPose_{guid}";
-                        paramCount = 1;
-                    }
+        public AvatarPoseData UpdateParameter (bool poseParam = false) {
+            if (poseParam)
+            {
+                int paramCount = 999;
+                int paramIndex = 1;
+                string paramName = "";
+                foreach (var category in categories) {
+                    foreach (var pose in category.poses) {
+                        if (paramCount > ConstVariables.MaxAnimationState) {
+                            var guid = System.Guid.NewGuid ().ToString ("N").Substring (0, 8);
+                            paramName = $"AnimPose_{guid}";
+                            paramCount = 1;
+                        }
 
-                    pose.Parameter = paramName;
-                    pose.Value = paramCount;
-                    pose.Index = paramIndex;
-                    paramCount++;
-                    paramIndex++;
+                        pose.Parameter = paramName;
+                        pose.Value = paramCount;
+                        pose.Index = paramIndex;
+                        paramCount++;
+                        paramIndex++;
+                    }
                 }
             }
             Guid = System.Guid.NewGuid ().ToString ("N").Substring (0, 8);
@@ -119,7 +122,7 @@ namespace com.hhotatea.avatar_pose_library.model {
                     apd.categories.AddRange (d.categories);
                     apd.thumbnail = d.thumbnail;
 
-                    // とりあえず、値を代入し続ける。
+                    // とりあえず、値を代入し続ける。（Index最下位の者が採用）
                     apd.enableHeightParam = d.enableHeightParam;
                     apd.enableSpeedParam = d.enableSpeedParam;
                     apd.enableMirrorParam = d.enableMirrorParam;
@@ -130,14 +133,14 @@ namespace com.hhotatea.avatar_pose_library.model {
                 }
 
                 if (apd.categories.Count > 0) {
-                    apd.UpdateParameter ();
+                    apd.UpdateParameter (true);
                     result.Add (apd);
                 }
             }
 
             foreach (var apd in data) {
                 if (apd.target == null) continue;
-                apd.UpdateParameter ();
+                apd.UpdateParameter (true);
                 result.Add (apd);
             }
 
