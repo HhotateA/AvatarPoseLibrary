@@ -233,13 +233,13 @@ namespace com.hhotatea.avatar_pose_library.editor
             int    newIdx  = _libraryTagIndex;
 
             float texSize = _lineHeight * 8f;
-            if (DynamicVariables.NowVersion != DynamicVariables.LatestVersion)
+            if (DynamicVariables.CurrentVersion <= DynamicVariables.LatestVersion)
             {
                 GUIStyle updateStyle = new GUIStyle(EditorStyles.boldLabel);
                 updateStyle.normal.textColor = Color.red;
 
                 EditorGUILayout.LabelField(
-                    DynamicVariables.Settings.Inspector.updateMessage + $" (v{DynamicVariables.NowVersion} => v{DynamicVariables.LatestVersion})", updateStyle);
+                    DynamicVariables.Settings.Inspector.updateMessage + $" (v{DynamicVariables.CurrentVersion} => v{DynamicVariables.LatestVersion})", updateStyle);
             }
 
             using (new GUILayout.HorizontalScope())

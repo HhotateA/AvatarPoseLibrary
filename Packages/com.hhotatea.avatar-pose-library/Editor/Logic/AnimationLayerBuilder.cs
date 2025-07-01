@@ -2,122 +2,113 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using com.hhotatea.avatar_pose_library.editor;
-using UnityEngine;
-using UnityEditor.Animations;
 using com.hhotatea.avatar_pose_library.model;
+using UnityEditor.Animations;
+using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
 
-namespace com.hhotatea.avatar_pose_library.logic
-{
-    public static class AnimationLayerBuilder
-    {
-        public static AnimatorControllerLayer ResetLayer(string param,AvatarPoseData poseLibrary)
-        {
+namespace com.hhotatea.avatar_pose_library.logic {
+    public class AnimationLayerBuilder {
+        bool writeDefault_;
+
+        public AnimationLayerBuilder (bool writeDefault) {
+            writeDefault_ = writeDefault;
+        }
+
+        public AnimatorControllerLayer ResetLayer (string param, AvatarPoseData poseLibrary) {
             // レイヤー作成
-            AnimatorControllerLayer layer = new AnimatorControllerLayer
-            {
+            AnimatorControllerLayer layer = new AnimatorControllerLayer {
                 name = param,
                 defaultWeight = 0f,
-                stateMachine = new AnimatorStateMachine(),
+                stateMachine = new AnimatorStateMachine (),
                 blendingMode = AnimatorLayerBlendingMode.Override,
             };
 
             // ステートの初期化
-            var defaultState = layer.stateMachine.AddState("Default");
-            defaultState.writeDefaultValues = false;
+            var defaultState = layer.stateMachine.AddState ("Default");
+            defaultState.writeDefaultValues = writeDefault_;
             defaultState.motion = MotionBuilder.FrameAnimation;
-            
-            var resetState = layer.stateMachine.AddState("Reset");
-            resetState.writeDefaultValues = false;
+
+            var resetState = layer.stateMachine.AddState ("Reset");
+            resetState.writeDefaultValues = writeDefault_;
             resetState.motion = MotionBuilder.FrameAnimation;
-            
-            var paramReset = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            foreach (var parameter in poseLibrary.Parameters)
-            {
-                paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
+
+            var paramReset = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+            foreach (var parameter in poseLibrary.Parameters) {
+                paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = parameter,
-                    value = 0,
+                        name = parameter,
+                        value = 0,
                 });
             }
-            foreach (var parameter in new String[]{
-                         ConstVariables.HeadParamPrefix,
-                         ConstVariables.ArmParamPrefix,
-                         ConstVariables.FootParamPrefix,
-                         ConstVariables.FingerParamPrefix,
-                         ConstVariables.BaseParamPrefix,
-                         ConstVariables.MirrorParamPrefix,
-                         ConstVariables.ActionParamPrefix
-                     })
-            {
-                paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
+            foreach (var parameter in new String[] {
+                    ConstVariables.HeadParamPrefix,
+                        ConstVariables.ArmParamPrefix,
+                        ConstVariables.FootParamPrefix,
+                        ConstVariables.FingerParamPrefix,
+                        ConstVariables.BaseParamPrefix,
+                        ConstVariables.MirrorParamPrefix,
+                        ConstVariables.ActionParamPrefix
+                }) {
+                paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{parameter}_{poseLibrary.Guid}",
-                    value = 0,
+                        name = $"{parameter}_{poseLibrary.Guid}",
+                        value = 0,
                 });
             }
-            foreach (var parameter in new String[]{
-                         ConstVariables.SpeedParamPrefix,
-                         ConstVariables.HeightParamPrefix,})
-            {
-                paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
+            foreach (var parameter in new String[] {
+                    ConstVariables.SpeedParamPrefix,
+                        ConstVariables.HeightParamPrefix,
+                }) {
+                paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{parameter}_{poseLibrary.Guid}",
-                    value = 0.5f,
+                        name = $"{parameter}_{poseLibrary.Guid}",
+                        value = 0.5f,
                 });
             }
-            paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
+            paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
-                name = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
-                value = 1,
+                    name = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
+                    value = 1,
             });
-            paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-            {
+            paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
-                name = param,
-                value = 0,
-            });
-            
-            for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
-            {
-                paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
-                    type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
+                    name = param,
                     value = 0,
+            });
+
+            for (int i = 0; i < ConstVariables.PoseFlagCount; i++) {
+                paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
+                        value = 0,
                 });
             }
-            
-            var additive = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+
+            var additive = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
             additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
             additive.goalWeight = 0f;
-            
-            var gesture = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+
+            var gesture = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
             gesture.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
             gesture.goalWeight = 1f;
-            
+
             // 遷移の設定
-            var resetTransition = defaultState.AddTransition(resetState);
+            var resetTransition = defaultState.AddTransition (resetState);
             resetTransition.canTransitionToSelf = false;
             resetTransition.hasExitTime = true;
             resetTransition.exitTime = 0f;
             resetTransition.hasFixedDuration = true;
             resetTransition.duration = 0.0f;
-            resetTransition.conditions = new AnimatorCondition[]
-            {
-                new AnimatorCondition
-                {
-                    mode = AnimatorConditionMode.If,
-                    parameter = param,
+            resetTransition.conditions = new AnimatorCondition[] {
+                new AnimatorCondition {
+                mode = AnimatorConditionMode.If,
+                parameter = param,
                 }
             };
-            
-            var defaultTransition = resetState.AddTransition(defaultState);
+
+            var defaultTransition = resetState.AddTransition (defaultState);
             defaultTransition.canTransitionToSelf = false;
             defaultTransition.hasExitTime = true;
             defaultTransition.exitTime = 0f;
@@ -127,8 +118,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             return layer;
         }
 
-        public enum TrackingType
-        {
+        public enum TrackingType {
             Base,
             Head,
             Arm,
@@ -138,55 +128,52 @@ namespace com.hhotatea.avatar_pose_library.logic
             Action
         }
 
-        public static AnimatorControllerLayer TrackingLayer(
-            TrackingType type,string param)
-        {
+        public AnimatorControllerLayer TrackingLayer (
+            TrackingType type, string param) {
             // レイヤー作成
-            AnimatorControllerLayer layer = new AnimatorControllerLayer
-            {
+            AnimatorControllerLayer layer = new AnimatorControllerLayer {
                 name = param,
                 defaultWeight = 0f,
-                stateMachine = new AnimatorStateMachine(),
+                stateMachine = new AnimatorStateMachine (),
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
 
-            var noneClip = MotionBuilder.CreateFrameAnimation(0.3f);
-            
+            var noneClip = MotionBuilder.CreateFrameAnimation (0.3f);
+
             // ステートの初期化
-            var offIdleState = layer.stateMachine.AddState("OffIdle");
-            offIdleState.writeDefaultValues = false;
+            var offIdleState = layer.stateMachine.AddState ("OffIdle");
+            offIdleState.writeDefaultValues = writeDefault_;
             offIdleState.motion = noneClip;
-            
-            var offConState = layer.stateMachine.AddState("OffConState");
-            offConState.writeDefaultValues = false;
+
+            var offConState = layer.stateMachine.AddState ("OffConState");
+            offConState.writeDefaultValues = writeDefault_;
             offConState.motion = noneClip;
 
-            var onIdleState = layer.stateMachine.AddState("OnIdle");
-            onIdleState.writeDefaultValues = false;
+            var onIdleState = layer.stateMachine.AddState ("OnIdle");
+            onIdleState.writeDefaultValues = writeDefault_;
             onIdleState.motion = noneClip;
-            
-            var onConState = layer.stateMachine.AddState("OnConState");
-            onConState.writeDefaultValues = false;
+
+            var onConState = layer.stateMachine.AddState ("OnConState");
+            onConState.writeDefaultValues = writeDefault_;
             onConState.motion = noneClip;
-            
+
             // コンポーネント
-            switch (type)
-            {
+            switch (type) {
                 case TrackingType.Base:
-                    var locoOn = offConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl>();
+                    var locoOn = offConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl> ();
                     locoOn.disableLocomotion = false;
-                    var locoOff = onConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl>();
+                    var locoOff = onConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl> ();
                     locoOff.disableLocomotion = true;
                     break;
 
                 case TrackingType.Head:
-                    ApplyTrackingLayer(offConState, onConState,
+                    ApplyTrackingLayer (offConState, onConState,
                         off => off.trackingHead = VRC_AnimatorTrackingControl.TrackingType.Tracking,
                         on => on.trackingHead = VRC_AnimatorTrackingControl.TrackingType.Animation);
                     break;
 
                 case TrackingType.Arm:
-                    ApplyTrackingLayer(offConState, onConState,
+                    ApplyTrackingLayer (offConState, onConState,
                         off => {
                             off.trackingLeftHand = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                             off.trackingRightHand = VRC_AnimatorTrackingControl.TrackingType.Tracking;
@@ -198,7 +185,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     break;
 
                 case TrackingType.Foot:
-                    ApplyTrackingLayer(offConState, onConState,
+                    ApplyTrackingLayer (offConState, onConState,
                         off => {
                             off.trackingLeftFoot = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                             off.trackingRightFoot = VRC_AnimatorTrackingControl.TrackingType.Tracking;
@@ -212,13 +199,13 @@ namespace com.hhotatea.avatar_pose_library.logic
                     break;
 
                 case TrackingType.Finger:
-                    var gestureOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    var gestureOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                     gestureOff.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
                     gestureOff.goalWeight = 1f;
-                    var gestureOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    var gestureOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                     gestureOn.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
                     gestureOn.goalWeight = 0f;
-                    ApplyTrackingLayer(offConState, onConState,
+                    ApplyTrackingLayer (offConState, onConState,
                         off => {
                             off.trackingLeftFingers = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                             off.trackingRightFingers = VRC_AnimatorTrackingControl.TrackingType.Tracking;
@@ -230,78 +217,74 @@ namespace com.hhotatea.avatar_pose_library.logic
                     break;
 
                 case TrackingType.Face:
-                    var fxOff = offConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
+                    var fxOff = offConState.AddStateMachineBehaviour<VRCAnimatorLayerControl> ();
                     fxOff.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
                     fxOff.layer = 1;
                     fxOff.goalWeight = 0f;
-                    var fxOn = onConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
+                    var fxOn = onConState.AddStateMachineBehaviour<VRCAnimatorLayerControl> ();
                     fxOn.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
                     fxOn.layer = 1;
                     fxOn.goalWeight = 1f;
                     break;
 
                 case TrackingType.Action:
-                    var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                     additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                     additiveOff.goalWeight = 1f;
-                    var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                     additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                     additiveOn.goalWeight = 0f;
-                    
-                    var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+
+                    var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                     actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                     actionOff.goalWeight = 0f;
 
                     break;
             }
-            
+
             // 遷移の設定
-            var fromOffToOn = offIdleState.AddTransition(onConState);
+            var fromOffToOn = offIdleState.AddTransition (onConState);
             fromOffToOn.canTransitionToSelf = false;
             fromOffToOn.hasExitTime = true;
             fromOffToOn.exitTime = 0f;
             fromOffToOn.hasFixedDuration = true;
             fromOffToOn.duration = 0.0f;
-            fromOffToOn.conditions = new AnimatorCondition[]
-            {
-                new AnimatorCondition
-                {
-                    mode = AnimatorConditionMode.If,
-                    parameter = param,
+            fromOffToOn.conditions = new AnimatorCondition[] {
+                new AnimatorCondition {
+                mode = AnimatorConditionMode.If,
+                parameter = param,
                 }
             };
-            
-            var fromOnToOn = onConState.AddTransition(onIdleState);
+
+            var fromOnToOn = onConState.AddTransition (onIdleState);
             fromOnToOn.canTransitionToSelf = false;
             fromOnToOn.hasExitTime = true;
             fromOnToOn.exitTime = 0f;
             fromOnToOn.hasFixedDuration = true;
             fromOnToOn.duration = 0.0f;
-            
-            var fromOnToOff = onIdleState.AddTransition(offConState);
+
+            var fromOnToOff = onIdleState.AddTransition (offConState);
             fromOnToOff.canTransitionToSelf = false;
             fromOnToOff.hasExitTime = true;
             fromOnToOff.exitTime = 0f;
             fromOnToOff.hasFixedDuration = true;
             fromOnToOff.duration = 0.0f;
-            fromOnToOff.conditions = new AnimatorCondition[]
-            {
-                new AnimatorCondition
-                {
-                    mode = AnimatorConditionMode.IfNot,
-                    parameter = param,
+            fromOnToOff.conditions = new AnimatorCondition[] {
+                new AnimatorCondition {
+                mode = AnimatorConditionMode.IfNot,
+                parameter = param,
                 }
             };
-            
-            var fromOffToOff = offConState.AddTransition(offIdleState);
+
+            var fromOffToOff = offConState.AddTransition (offIdleState);
             fromOffToOff.canTransitionToSelf = false;
             fromOffToOff.hasExitTime = true;
             fromOffToOff.exitTime = 0f;
             fromOffToOff.hasFixedDuration = true;
             fromOffToOff.duration = 0.0f;
-            
+
             // Off設定を維持する
-            var loopTransition = onIdleState.AddTransition(onConState);
+            var loopTransition = onIdleState.AddTransition (onConState);
             loopTransition.canTransitionToSelf = false;
             loopTransition.hasExitTime = true;
             loopTransition.exitTime = 0f;
@@ -310,23 +293,21 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             return layer;
         }
-        
-        private static void ApplyTrackingLayer(
+
+        private void ApplyTrackingLayer (
             AnimatorState offState, AnimatorState onState,
             Action<VRCAnimatorTrackingControl> configureOff,
-            Action<VRCAnimatorTrackingControl> configureOn)
-        {
-            var offCon = offState.AddStateMachineBehaviour<VRCAnimatorTrackingControl>();
-            var onCon = onState.AddStateMachineBehaviour<VRCAnimatorTrackingControl>();
-            configureOff(offCon);
-            configureOn(onCon);
+            Action<VRCAnimatorTrackingControl> configureOn) {
+            var offCon = offState.AddStateMachineBehaviour<VRCAnimatorTrackingControl> ();
+            var onCon = onState.AddStateMachineBehaviour<VRCAnimatorTrackingControl> ();
+            configureOff (offCon);
+            configureOn (onCon);
         }
 
-        public static void AddParamLayer(
-            AnimatorControllerLayer layer, PoseEntry pose, 
+        public void AddParamLayer (
+            AnimatorControllerLayer layer, PoseEntry pose,
             List<string> parameters, string guid,
-            AnimatorState defaultState, AnimatorState resetState, AnimatorState preResetState)
-        {
+            AnimatorState defaultState, AnimatorState resetState, AnimatorState preResetState) {
             /*
              * 基本的な処理の流れは
              * Default => Reserve => Pose => (PreReset =>) Reset => Default
@@ -335,98 +316,88 @@ namespace com.hhotatea.avatar_pose_library.logic
              * Reserveでパラメーターの同期、Resetでパラメーターの初期化を行う
              * Loopアニメーションの場合は、再生終了後にPreResetを経由する
              */
-            bool isMove = MotionBuilder.IsMoveAnimation(pose.animationClip);
-            var anim = MotionBuilder.SafeAnimation(pose.animationClip,pose.beforeAnimationClip,pose.afterAnimationClip);
+            bool isMove = MotionBuilder.IsMoveAnimation (pose.animationClip);
+            var anim = MotionBuilder.SafeAnimation (pose.animationClip, pose.beforeAnimationClip, pose.afterAnimationClip);
 
             // 準備ステートの作成
-            var reserveState = layer.stateMachine.AddState("Reserve_"+pose.Value.ToString());
+            var reserveState = layer.stateMachine.AddState ("Reserve_" + pose.Value.ToString ());
             reserveState.motion = MotionBuilder.FrameAnimation;
-            reserveState.writeDefaultValues = false;
+            reserveState.writeDefaultValues = writeDefault_; 
             {
-                var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-                trackingOnParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
+                var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+                trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{ConstVariables.SpeedParamPrefix}_{guid}",
-                    value = pose.tracking.motionSpeed == 0f ?  0f : 0.5f,
+                        name = $"{ConstVariables.SpeedParamPrefix}_{guid}",
+                        value = pose.tracking.motionSpeed == 0f ? 0f : 0.5f,
                 });
-                trackingOnParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
+                trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{ConstVariables.ActionParamPrefix}_{guid}",
-                    value = 1f,
+                        name = $"{ConstVariables.ActionParamPrefix}_{guid}",
+                        value = 1f,
                 });
-                trackingOnParam.parameters.AddRange(
-                    pose.GetAnimatorFlag().Select((flag, index) => new VRC_AvatarParameterDriver.Parameter
-                    {
+                trackingOnParam.parameters.AddRange (
+                    pose.GetAnimatorFlag ().Select ((flag, index) => new VRC_AvatarParameterDriver.Parameter {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.FlagParamPrefix}_{guid}_{index}",
-                        value = flag
+                            name = $"{ConstVariables.FlagParamPrefix}_{guid}_{index}",
+                            value = flag
                     })
                 );
-                var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                 additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 additive.goalWeight = 1f;
             }
-            
+
             // メインステートの作成
-            var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
-            poseState.writeDefaultValues = false;
-            poseState.motion = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.None);
-            if (isMove)
-            {
+            var poseState = layer.stateMachine.AddState ("Pose_" + pose.Value.ToString ());
+            poseState.writeDefaultValues = writeDefault_;
+            poseState.motion = MotionBuilder.PartAnimation (anim, MotionBuilder.AnimationPart.None);
+            if (isMove) {
                 // スピードを制御可能にする
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
             }
-            
+
             // 遷移を作成
-            var joinTransition = defaultState.AddTransition(reserveState);
+            var joinTransition = defaultState.AddTransition (reserveState);
             joinTransition.canTransitionToSelf = false;
             joinTransition.hasExitTime = false;
             joinTransition.hasFixedDuration = true;
             joinTransition.duration = 0.0f;
-            joinTransition.conditions = new AnimatorCondition[]
-            {
-                new AnimatorCondition()
-                {
-                    mode = AnimatorConditionMode.Equals,
-                    parameter = pose.Parameter,
-                    threshold = pose.Value
+            joinTransition.conditions = new AnimatorCondition[] {
+                new AnimatorCondition () {
+                mode = AnimatorConditionMode.Equals,
+                parameter = pose.Parameter,
+                threshold = pose.Value
                 }
             };
-            
+
             // 侵入経路
-            if (pose.beforeAnimationClip)
-            {
+            if (pose.beforeAnimationClip) {
                 // メインステートの作成
-                var beforeState = layer.stateMachine.AddState("Before_" + pose.Value.ToString());
-                beforeState.writeDefaultValues = false;
+                var beforeState = layer.stateMachine.AddState ("Before_" + pose.Value.ToString ());
+                beforeState.writeDefaultValues = writeDefault_;
                 beforeState.mirrorParameterActive = true;
                 beforeState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-                beforeState.motion = MotionBuilder.PartAnimation(pose.beforeAnimationClip, MotionBuilder.AnimationPart.None);
-
+                beforeState.motion = MotionBuilder.PartAnimation (pose.beforeAnimationClip, MotionBuilder.AnimationPart.None);
 
                 // バイパスの作成
-                var bypassTransition = reserveState.AddTransition(beforeState);
+                var bypassTransition = reserveState.AddTransition (beforeState);
                 bypassTransition.canTransitionToSelf = false;
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
-            
+
                 // メインへの移行
-                var mainTransition = beforeState.AddTransition(poseState);
+                var mainTransition = beforeState.AddTransition (poseState);
                 mainTransition.canTransitionToSelf = false;
                 mainTransition.hasExitTime = true;
                 mainTransition.exitTime = 0f;
                 mainTransition.hasFixedDuration = true;
                 mainTransition.duration = 0.0f;
-            }
-            else
-            {
+            } else {
                 // メインへの移行
-                var mainTransition = reserveState.AddTransition(poseState);
+                var mainTransition = reserveState.AddTransition (poseState);
                 mainTransition.canTransitionToSelf = false;
                 mainTransition.hasExitTime = true;
                 mainTransition.exitTime = 0f;
@@ -435,48 +406,41 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
             // 脱出経路
-            if(true)
-            {
+            if (true) {
                 // リセットへの遷移
-                var leftTransition = poseState.AddTransition(resetState);
+                var leftTransition = poseState.AddTransition (resetState);
                 leftTransition.canTransitionToSelf = false;
                 leftTransition.hasExitTime = false;
                 leftTransition.hasFixedDuration = true;
                 leftTransition.duration = 0.0f;
-                leftTransition.conditions = new AnimatorCondition[]
-                {
-                    new AnimatorCondition()
-                    {
-                        mode = AnimatorConditionMode.NotEqual,
-                        parameter = pose.Parameter,
-                        threshold = pose.Value
+                leftTransition.conditions = new AnimatorCondition[] {
+                    new AnimatorCondition () {
+                    mode = AnimatorConditionMode.NotEqual,
+                    parameter = pose.Parameter,
+                    threshold = pose.Value
                     }
                 };
-                
+
                 // パラメーターリストを作成
-                parameters.Remove(pose.Parameter);
-                foreach (var p in parameters)
-                {
+                parameters.Remove (pose.Parameter);
+                foreach (var p in parameters) {
                     // プレリセットへの遷移
-                    var preResetTransition = poseState.AddTransition(preResetState);
+                    var preResetTransition = poseState.AddTransition (preResetState);
                     preResetTransition.canTransitionToSelf = false;
                     preResetTransition.hasExitTime = false;
                     preResetTransition.hasFixedDuration = true;
                     preResetTransition.duration = 0.0f;
-                    preResetTransition.conditions = new AnimatorCondition[]
-                    {
-                        new AnimatorCondition
-                        {
-                            mode = AnimatorConditionMode.NotEqual,
-                            parameter = p,
-                            threshold = 0
+                    preResetTransition.conditions = new AnimatorCondition[] {
+                        new AnimatorCondition {
+                        mode = AnimatorConditionMode.NotEqual,
+                        parameter = p,
+                        threshold = 0
                         }
                     };
                 }
 
-                if (!pose.tracking.loop)
-                {
-                    var endTransition = poseState.AddTransition(preResetState);
+                if (!pose.tracking.loop) {
+                    var endTransition = poseState.AddTransition (preResetState);
                     endTransition.canTransitionToSelf = false;
                     endTransition.hasExitTime = true;
                     endTransition.exitTime = 0f;
@@ -485,13 +449,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                 }
             }
         }
-        
-        public static void AddFxLayer(
+
+        public void AddFxLayer (
             PoseEntry pose,
             AnimatorControllerLayer layer,
             AnimatorState defaultState, AnimatorState resetState,
-            string guid)
-        {
+            string guid) {
             /*
              * 基本的な処理の流れは
              * Default => Reserve => Pose => Reset => Default
@@ -499,13 +462,12 @@ namespace com.hhotatea.avatar_pose_library.logic
              * 
              * ReserveでActionの有効化、ResetでActionの無効化を行う
              */
-            bool isMove = MotionBuilder.IsMoveAnimation(pose.animationClip);
-            var flags = pose.GetAnimatorFlag();
-            var anim = MotionBuilder.SafeAnimation(pose.animationClip,pose.beforeAnimationClip,pose.afterAnimationClip);
-            
+            bool isMove = MotionBuilder.IsMoveAnimation (pose.animationClip);
+            var flags = pose.GetAnimatorFlag ();
+            var anim = MotionBuilder.SafeAnimation (pose.animationClip, pose.beforeAnimationClip, pose.afterAnimationClip);
+
             // トラッキング設定用のオブジェクト
-            var trackingMap = new (bool enabled, string prefix)[]
-            {
+            var trackingMap = new (bool enabled, string prefix) [] {
                 (pose.tracking.head, ConstVariables.HeadParamPrefix),
                 (pose.tracking.arm, ConstVariables.ArmParamPrefix),
                 (pose.tracking.foot, ConstVariables.FootParamPrefix),
@@ -514,23 +476,20 @@ namespace com.hhotatea.avatar_pose_library.logic
             };
 
             // メインステートの作成
-            var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
-            poseState.writeDefaultValues = false;
+            var poseState = layer.stateMachine.AddState ("Pose_" + pose.Value.ToString ());
+            poseState.writeDefaultValues = writeDefault_;
             poseState.mirrorParameterActive = true;
             poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-            poseState.motion = MakeFxAnim(anim,pose.tracking.loop);
-            var trackingOnParam = poseState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            foreach (var (enabled, prefix) in trackingMap)
-            {
-                trackingOnParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
-                {
+            poseState.motion = MakeFxAnim (anim, pose.tracking.loop);
+            var trackingOnParam = poseState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+            foreach (var (enabled, prefix) in trackingMap) {
+                trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{prefix}_{guid}",
-                    value = enabled ? 1f : 0f,
+                        name = $"{prefix}_{guid}",
+                        value = enabled ? 1f : 0f,
                 });
             }
-            if (isMove)
-            {
+            if (isMove) {
                 // スピードを制御可能にする
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
@@ -538,143 +497,127 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
             // 侵入経路
-            if (pose.beforeAnimationClip)
-            {
+            if (pose.beforeAnimationClip) {
                 // メインステートの作成
-                var beforeState = layer.stateMachine.AddState("Before_"+pose.Value.ToString());
-                beforeState.writeDefaultValues = false;
+                var beforeState = layer.stateMachine.AddState ("Before_" + pose.Value.ToString ());
+                beforeState.writeDefaultValues = writeDefault_;
                 beforeState.mirrorParameterActive = true;
                 beforeState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-                beforeState.motion = MakeFxAnim(pose.beforeAnimationClip,pose.tracking.loop);
-                
+                beforeState.motion = MakeFxAnim (pose.beforeAnimationClip, pose.tracking.loop);
+
                 // 遷移を作成
-                var joinTransition = defaultState.AddTransition(beforeState);
+                var joinTransition = defaultState.AddTransition (beforeState);
                 joinTransition.canTransitionToSelf = false;
                 joinTransition.hasExitTime = false;
                 joinTransition.hasFixedDuration = true;
                 joinTransition.duration = 0.0f;
-                joinTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
-                    {
+                joinTransition.conditions = flags.Select ((flag, i) => new AnimatorCondition {
                         mode = AnimatorConditionMode.Equals,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                        threshold = flag,
+                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                            threshold = flag,
                     })
-                    .ToArray();
-                
+                    .ToArray ();
+
                 // バイパスの作成
-                var bypassTransition = beforeState.AddTransition(poseState);
+                var bypassTransition = beforeState.AddTransition (poseState);
                 bypassTransition.canTransitionToSelf = false;
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
 
                 // レイヤーの設定
-                var additiveOn = beforeState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                var additiveOn = beforeState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                 additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 additiveOn.goalWeight = 1f;
-            }
-            else
-            {
+            } else {
                 // 遷移を作成
-                var joinTransition = defaultState.AddTransition(poseState);
+                var joinTransition = defaultState.AddTransition (poseState);
                 joinTransition.canTransitionToSelf = false;
                 joinTransition.hasExitTime = false;
                 joinTransition.hasFixedDuration = true;
                 joinTransition.duration = 0.0f;
-                joinTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
-                    {
+                joinTransition.conditions = flags.Select ((flag, i) => new AnimatorCondition {
                         mode = AnimatorConditionMode.Equals,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                        threshold = flag,
+                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                            threshold = flag,
                     })
-                    .ToArray();
+                    .ToArray ();
 
                 // レイヤーの設定
-                var additiveOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                var additiveOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                 additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 additiveOn.goalWeight = 1f;
             }
 
             // 脱出経路
-            if (pose.afterAnimationClip)
-            {
+            if (pose.afterAnimationClip) {
                 // メインステートの作成
-                var afterState = layer.stateMachine.AddState("After_"+pose.Value.ToString());
-                afterState.writeDefaultValues = false;
+                var afterState = layer.stateMachine.AddState ("After_" + pose.Value.ToString ());
+                afterState.writeDefaultValues = writeDefault_;
                 afterState.mirrorParameterActive = true;
                 afterState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-                afterState.motion = MakeFxAnim(pose.afterAnimationClip,pose.tracking.loop);
-                
+                afterState.motion = MakeFxAnim (pose.afterAnimationClip, pose.tracking.loop);
+
                 // 遷移を作成
-                for (int i = 0; i < flags.Length; i++)
-                {
+                for (int i = 0; i < flags.Length; i++) {
                     // Preからリセットへの遷移
-                    var leftTransition = poseState.AddTransition(afterState);
+                    var leftTransition = poseState.AddTransition (afterState);
                     leftTransition.canTransitionToSelf = false;
                     leftTransition.hasExitTime = false;
                     leftTransition.hasFixedDuration = true;
                     leftTransition.duration = 0.0f;
-                    leftTransition.conditions = new AnimatorCondition[]
-                    {
-                        new AnimatorCondition
-                        {
-                            mode = AnimatorConditionMode.NotEqual,
-                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                            threshold = flags[i],
+                    leftTransition.conditions = new AnimatorCondition[] {
+                        new AnimatorCondition {
+                        mode = AnimatorConditionMode.NotEqual,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                        threshold = flags[i],
                         }
                     };
                 }
-                
+
                 // バイパスを作成
-                var bypassTransition = afterState.AddTransition(resetState);
+                var bypassTransition = afterState.AddTransition (resetState);
                 bypassTransition.canTransitionToSelf = false;
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
-            }
-            else
-            {
+            } else {
                 // 遷移を作成
-                for (int i = 0; i < flags.Length; i++)
-                {
+                for (int i = 0; i < flags.Length; i++) {
                     // Preからリセットへの遷移
-                    var leftTransition = poseState.AddTransition(resetState);
+                    var leftTransition = poseState.AddTransition (resetState);
                     leftTransition.canTransitionToSelf = false;
                     leftTransition.hasExitTime = false;
                     leftTransition.hasFixedDuration = true;
                     leftTransition.duration = 0.0f;
-                    leftTransition.conditions = new AnimatorCondition[]
-                    {
-                        new AnimatorCondition
-                        {
-                            mode = AnimatorConditionMode.NotEqual,
-                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                            threshold = flags[i],
+                    leftTransition.conditions = new AnimatorCondition[] {
+                        new AnimatorCondition {
+                        mode = AnimatorConditionMode.NotEqual,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                        threshold = flags[i],
                         }
                     };
                 }
             }
         }
 
-        public static void AddLocomotionLayer(
+        public void AddLocomotionLayer (
             PoseEntry pose,
             AnimatorControllerLayer layer,
             AnimatorState defaultState,
             bool height, bool speed, bool mirror,
-            string guid)
-        {
-            bool isMove = MotionBuilder.IsMoveAnimation(pose.animationClip);
-            var flags = pose.GetAnimatorFlag();
-            var anim = MotionBuilder.SafeAnimation(pose.animationClip,pose.beforeAnimationClip,pose.afterAnimationClip);
-            
+            string guid) {
+            bool isMove = MotionBuilder.IsMoveAnimation (pose.animationClip);
+            var flags = pose.GetAnimatorFlag ();
+            var anim = MotionBuilder.SafeAnimation (pose.animationClip, pose.beforeAnimationClip, pose.afterAnimationClip);
+
             // メインステートの作成
-            var poseState = layer.stateMachine.AddState("Pose_"+pose.Value.ToString());
-            poseState.writeDefaultValues = false;
+            var poseState = layer.stateMachine.AddState ("Pose_" + pose.Value.ToString ());
+            poseState.writeDefaultValues = writeDefault_;
             poseState.mirrorParameterActive = true;
             poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-            poseState.motion = MakeLocomotionAnim(anim,pose.tracking.loop,height,speed,guid);
-            if (isMove)
-            {
+            poseState.motion = MakeLocomotionAnim (anim, pose.tracking.loop, height, speed, guid);
+            if (isMove) {
                 // スピードを制御可能にする
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
@@ -682,154 +625,135 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
             // 侵入経路
-            if (pose.beforeAnimationClip)
-            {
-                var beforeState = layer.stateMachine.AddState("Before_"+pose.Value.ToString());
-                beforeState.writeDefaultValues = false;
+            if (pose.beforeAnimationClip) {
+                var beforeState = layer.stateMachine.AddState ("Before_" + pose.Value.ToString ());
+                beforeState.writeDefaultValues = writeDefault_;
                 beforeState.mirrorParameterActive = true;
                 beforeState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-                beforeState.motion = MakeLocomotionAnim(pose.beforeAnimationClip,pose.tracking.loop,height,speed,guid);
-                
+                beforeState.motion = MakeLocomotionAnim (pose.beforeAnimationClip, pose.tracking.loop, height, speed, guid);
+
                 // 遷移を作成
-                var joinTransition = defaultState.AddTransition(beforeState);
+                var joinTransition = defaultState.AddTransition (beforeState);
                 joinTransition.canTransitionToSelf = false;
                 joinTransition.hasExitTime = false;
                 joinTransition.hasFixedDuration = true;
                 joinTransition.duration = 0.0f;
-                joinTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
-                    {
+                joinTransition.conditions = flags.Select ((flag, i) => new AnimatorCondition {
                         mode = AnimatorConditionMode.Equals,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                        threshold = flag
+                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                            threshold = flag
                     })
-                    .ToArray();
-                
+                    .ToArray ();
+
                 // バイパスの作成
-                var bypassTransition = beforeState.AddTransition(poseState);
+                var bypassTransition = beforeState.AddTransition (poseState);
                 bypassTransition.canTransitionToSelf = false;
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
-            }
-            else
-            {
+            } else {
                 // 遷移を作成
-                var joinTransition = defaultState.AddTransition(poseState);
+                var joinTransition = defaultState.AddTransition (poseState);
                 joinTransition.canTransitionToSelf = false;
                 joinTransition.hasExitTime = false;
                 joinTransition.hasFixedDuration = true;
                 joinTransition.duration = 0.0f;
-                joinTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
-                    {
+                joinTransition.conditions = flags.Select ((flag, i) => new AnimatorCondition {
                         mode = AnimatorConditionMode.Equals,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                        threshold = flag
+                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                            threshold = flag
                     })
-                    .ToArray();
+                    .ToArray ();
             }
-            
+
             // 脱出経路
-            if (pose.afterAnimationClip)
-            {
+            if (pose.afterAnimationClip) {
                 // メインステートの作成
-                var afterState = layer.stateMachine.AddState("After_"+pose.Value.ToString());
-                afterState.writeDefaultValues = false;
+                var afterState = layer.stateMachine.AddState ("After_" + pose.Value.ToString ());
+                afterState.writeDefaultValues = writeDefault_;
                 afterState.mirrorParameterActive = true;
                 afterState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
-                afterState.motion = MakeLocomotionAnim(pose.afterAnimationClip,pose.tracking.loop,height,speed,guid);
-                
+                afterState.motion = MakeLocomotionAnim (pose.afterAnimationClip, pose.tracking.loop, height, speed, guid);
+
                 // 遷移を作成
-                for (int i = 0; i < flags.Length; i++)
-                {
-                    var leftTransition = poseState.AddTransition(afterState);
+                for (int i = 0; i < flags.Length; i++) {
+                    var leftTransition = poseState.AddTransition (afterState);
                     leftTransition.canTransitionToSelf = false;
                     leftTransition.hasExitTime = false;
                     leftTransition.hasFixedDuration = true;
                     leftTransition.duration = 0.0f;
-                    leftTransition.conditions = new AnimatorCondition[]
-                    {
-                        new AnimatorCondition
-                        {
-                            mode = AnimatorConditionMode.NotEqual,
-                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                            threshold = flags[i],
+                    leftTransition.conditions = new AnimatorCondition[] {
+                        new AnimatorCondition {
+                        mode = AnimatorConditionMode.NotEqual,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                        threshold = flags[i],
                         }
                     };
                 }
-                
+
                 // バイパスを作成
-                var bypassTransition = afterState.AddTransition(defaultState);
+                var bypassTransition = afterState.AddTransition (defaultState);
                 bypassTransition.canTransitionToSelf = false;
                 bypassTransition.hasExitTime = true;
                 bypassTransition.hasFixedDuration = true;
                 bypassTransition.duration = 0.1f;
-            }
-            else
-            {
+            } else {
                 // 遷移を作成
-                for (int i = 0; i < flags.Length; i++)
-                {
-                    var leftTransition = poseState.AddTransition(defaultState);
+                for (int i = 0; i < flags.Length; i++) {
+                    var leftTransition = poseState.AddTransition (defaultState);
                     leftTransition.canTransitionToSelf = false;
                     leftTransition.hasExitTime = false;
                     leftTransition.hasFixedDuration = true;
                     leftTransition.duration = 0.0f;
-                    leftTransition.conditions = new AnimatorCondition[]
-                    {
-                        new AnimatorCondition
-                        {
-                            mode = AnimatorConditionMode.NotEqual,
-                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                            threshold = flags[i],
+                    leftTransition.conditions = new AnimatorCondition[] {
+                        new AnimatorCondition {
+                        mode = AnimatorConditionMode.NotEqual,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                        threshold = flags[i],
                         }
                     };
                 }
             }
         }
 
-        static Motion MakeFxAnim(AnimationClip anim,bool loop)
-        {
+        Motion MakeFxAnim (AnimationClip anim, bool loop) {
             // blendTree
-            anim = MotionBuilder.SetAnimationLoop(anim,loop);
+            anim = MotionBuilder.SetAnimationLoop (anim, loop);
             // Transform以外のAnimationを抽出
-            anim = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Fx);
+            anim = MotionBuilder.PartAnimation (anim, MotionBuilder.AnimationPart.Fx);
 
             return anim;
         }
 
-        static Motion MakeLocomotionAnim(AnimationClip anim,bool loop,bool height,bool speed,string guid)
-        {
-            var blendTree = new BlendTree();
-            
-            if (MotionBuilder.IsMoveAnimation(anim))
-            {
-                anim = MotionBuilder.SetAnimationLoop(anim,loop);
-                anim = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Locomotion);
+        Motion MakeLocomotionAnim (AnimationClip anim, bool loop, bool height, bool speed, string guid) {
+            var blendTree = new BlendTree ();
+
+            if (MotionBuilder.IsMoveAnimation (anim)) {
+                anim = MotionBuilder.SetAnimationLoop (anim, loop);
+                anim = MotionBuilder.PartAnimation (anim, MotionBuilder.AnimationPart.Locomotion);
                 // アニメーションの生成
-                AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel(anim, +DynamicVariables.Settings.minMaxHeight) : anim;
-                AnimationClip motionClip1 = height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim;
+                AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel (anim, +DynamicVariables.Settings.minMaxHeight) : anim;
+                AnimationClip motionClip1 = height ? MotionBuilder.BuildMotionLevel (anim, -DynamicVariables.Settings.minMaxHeight) : anim;
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
-                blendTree.AddChild(motionClip0, 0);
-                blendTree.AddChild(motionClip1, 1);
-            }
-            else
-            {
-                anim = MotionBuilder.SetAnimationLoop(anim,loop);
-                anim = MotionBuilder.PartAnimation(anim,MotionBuilder.AnimationPart.Locomotion);
+                blendTree.AddChild (motionClip0, 0);
+                blendTree.AddChild (motionClip1, 1);
+            } else {
+                anim = MotionBuilder.SetAnimationLoop (anim, loop);
+                anim = MotionBuilder.PartAnimation (anim, MotionBuilder.AnimationPart.Locomotion);
                 // アニメーションの生成
-                var motionClip0 = speed ? MotionBuilder.IdleAnimation(anim,0f) : anim;
-                var motionClip1 = speed ? MotionBuilder.IdleAnimation(anim,DynamicVariables.Settings.motionNoiseScale) : anim;
-                var motionClip00 = height ? MotionBuilder.BuildMotionLevel(motionClip0,+DynamicVariables.Settings.minMaxHeight) : motionClip0;
-                var motionClip01 = height ? MotionBuilder.BuildMotionLevel(motionClip0,-DynamicVariables.Settings.minMaxHeight) : motionClip0;
-                var motionClip10 = height ? MotionBuilder.BuildMotionLevel(motionClip1,+DynamicVariables.Settings.minMaxHeight) : motionClip1;
-                var motionClip11 = height ? MotionBuilder.BuildMotionLevel(motionClip1,-DynamicVariables.Settings.minMaxHeight) : motionClip1;
+                var motionClip0 = speed ? MotionBuilder.IdleAnimation (anim, 0f) : anim;
+                var motionClip1 = speed ? MotionBuilder.IdleAnimation (anim, DynamicVariables.Settings.motionNoiseScale) : anim;
+                var motionClip00 = height ? MotionBuilder.BuildMotionLevel (motionClip0, +DynamicVariables.Settings.minMaxHeight) : motionClip0;
+                var motionClip01 = height ? MotionBuilder.BuildMotionLevel (motionClip0, -DynamicVariables.Settings.minMaxHeight) : motionClip0;
+                var motionClip10 = height ? MotionBuilder.BuildMotionLevel (motionClip1, +DynamicVariables.Settings.minMaxHeight) : motionClip1;
+                var motionClip11 = height ? MotionBuilder.BuildMotionLevel (motionClip1, -DynamicVariables.Settings.minMaxHeight) : motionClip1;
                 blendTree.blendType = BlendTreeType.FreeformCartesian2D;
                 blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
                 blendTree.blendParameterY = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                blendTree.AddChild(motionClip00 , new Vector2(0f,0f));
-                blendTree.AddChild(motionClip01, new Vector2(1f,0f));
-                blendTree.AddChild(motionClip10, new Vector2(0f,1f));
-                blendTree.AddChild(motionClip11, new Vector2(1f,1f));
+                blendTree.AddChild (motionClip00, new Vector2 (0f, 0f));
+                blendTree.AddChild (motionClip01, new Vector2 (1f, 0f));
+                blendTree.AddChild (motionClip10, new Vector2 (0f, 1f));
+                blendTree.AddChild (motionClip11, new Vector2 (1f, 1f));
             }
 
             return blendTree;
