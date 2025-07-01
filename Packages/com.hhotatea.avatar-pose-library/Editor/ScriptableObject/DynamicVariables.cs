@@ -16,7 +16,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         private const string analyticsURL =
             "https://script.google.com/macros/s/AKfycbyIJ6zUa0LHzdZU5GSO7h0pDWUPCZ1xAKQxWNST88Y9KpgCSsw0fE2u00xHLWW9_S-eng/exec";
 
-        private static string nowVersion, latestVersion;
+        private static Version currentVersion, latestVersion;
 
         private static AvatarPoseSettings settingsBuff;
 
@@ -37,33 +37,40 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
-        public static string NowVersion
+        public static Version CurrentVersion
         {
             get
             {
-                if (String.IsNullOrWhiteSpace(nowVersion))
+                if (currentVersion == null)
                 {
                     var request = Client.List(true, true);
-                    while (!request.IsCompleted)
-                    {
-                    }
+                    while (!request.IsCompleted) { }
 
                     if (request.Status == StatusCode.Success)
                     {
-                        nowVersion = request.Result.FirstOrDefault(pkg =>
+                        var versionStr = request.Result.FirstOrDefault(pkg =>
                             pkg.name == packageName)?.version ?? "";
+
+                        if (!string.IsNullOrWhiteSpace(versionStr))
+                        {
+                            currentVersion = Version.Parse(versionStr);
+                        }
+                        else
+                        {
+                            currentVersion = new Version(0, 0, 0); // デフォルト
+                        }
                     }
                 }
 
-                return nowVersion;
+                return currentVersion;
             }
         }
 
-        public static string LatestVersion
+        public static Version LatestVersion
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(latestVersion))
+                if (latestVersion == null)
                 {
                     UnityWebRequest request = UnityWebRequest.Get(analyticsURL);
                     var operation = request.SendWebRequest();
@@ -77,19 +84,26 @@ namespace com.hhotatea.avatar_pose_library.editor
                         {
                             Debug.LogError("Error: Request timed out.");
                             request.Abort();
-                            return NowVersion;
+                            return CurrentVersion;
                         }
                     }
 
                     if (request.result == UnityWebRequest.Result.Success)
                     {
                         var data = JsonUtility.FromJson<AnalyticsResponse>(request.downloadHandler.text);
-                        latestVersion = data.version;
+                        if (!string.IsNullOrWhiteSpace(data.version))
+                        {
+                            latestVersion = Version.Parse(data.version);
+                        }
+                        else
+                        {
+                            latestVersion = CurrentVersion;
+                        }
                     }
                     else
                     {
                         Debug.LogError("Error: " + request.error);
-                        return NowVersion;
+                        return CurrentVersion;
                     }
                 }
 
