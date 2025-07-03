@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: facf1bf2fe40e384a9ddc0645a18be6b, type: 3}
+  m_Name: InspectorContext_zh-cn
+  m_EditorClassIdentifier: 
+  libraryMenuLabel: "\u3010 \u5E93\u540D\u79F0 \u3011"
+  libraryMenuTooltip: "\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u540D\u79F0\u3002"
+  categoriesLabel: "\u7C7B\u522B\u6E05\u5355"
+  categoriesTooltip: "\u7C7B\u522B\u7684\u6E05\u5355\u3002"
+  categoryIconLabel: 
+  categoryIconTooltip: "\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u7C7B\u522B\u56FE\u6807\u3002"
+  categoryTextLabel: "\u3010\u7C7B\u522B\u540D\u79F0\u3011"
+  categoryTextTooltip: "\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u7C7B\u522B\u540D\u79F0\u3002"
+  openAllLabel: "\u5168\u90E8\u5C55\u5F00"
+  openAllTooltip: "\u5C55\u5F00\u5168\u90E8\u59FF\u52BF\u9879\u3002"
+  closeAllLabel: "\u5168\u90E8\u6536\u5408"
+  closeAllTooltip: "\u6536\u5408\u5168\u90E8\u59FF\u52BF\u9879\u3002"
+  openLabel: "\u5C55\u5F00"
+  openTooltip: "\u5C55\u5F00\u4EE5\u67E5\u770B\u3001\u7F16\u8F91\u59FF\u52BF\u9879\u3002"
+  closeLabel: "\u6536\u5408"
+  closeTooltip: "\u6536\u5408\u59FF\u52BF\u9879\u3002"
+  poseListLabel: "\u59FF\u52BF\u6E05\u5355"
+  poseListTooltip: "\u5DF2\u8BB0\u5F55\u7684\u59FF\u52BF\u7684\u6E05\u5355\u3002"
+  thumbnailAutoLabel: "\u81EA\u52A8"
+  thumbnailAutoTooltip: "\u542F\u7528\u81EA\u52A8\u62CD\u6444\u56FE\u6807\u3002"
+  animationClipLabel: "\u52A8\u753B"
+  animationClipTooltip: "\u8981\u64AD\u653E\u7684\u52A8\u753B\uFF08Animation Clip\uFF09\u3002"
+  trackingSettingsLabel: "\u8FFD\u8E2A\u70B9\u8BBE\u5B9A"
+  trackingSettingsTooltip: "\u8FFD\u8E2A\u70B9\u8BBE\u5B9A"
+  isLoopLabel: "\u5FAA\u73AF"
+  isLoopTooltip: "\u5FAA\u73AF\u52A8\u753B\u3002"
+  motionSpeedLabel: "\u8FD0\u52A8\u901F\u5EA6"
+  motionSpeedTooltip: "\u52A8\u753B\u521D\u59CB\u64AD\u653E\u901F\u5EA6"
+  dropboxLabel: "\u5C06\u52A8\u753B\uFF08Animation Clip\uFF09\u62D6\u5165\u81F3\u6B64\u4EE5\u65B0\u589E\u4E3A\u59FF\u52BF"
+  dropboxTooltip: "\u53EF\u5C06\u52A8\u753B\uFF08Animation Clip\uFF09\u62D6\u5165\u81F3\u6B64\u533A\u57DF\u4EE5\u65B0\u589E\u4E3A\u59FF\u52BF\u3002"
+  mainThumbnailTooltip: 'AvatarPoseLibrary Staff
+
+
+    Main Program: Hotate Nekomajin
+
+    https://www.hhotatea.com/work/
+
+
+    Logo:
+    lowteq
+
+    https://x.com/lowteq_neko
+
+
+    Store: meron-farm
+
+    https://meronfarm.booth.pm/'
+  poseThumbnailTooltip: "\u9884\u89C8\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u56FE\u6807"
+  posePreviewTooltip: "\u9884\u89C8\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u56FE\u6807\u3002\n\u9884\u89C8\u65F6\u53EF\u80FD\u4F1A\u51FA\u73B0\u4E00\u4E9B\u663E\u793A\u504F\u79FB\uFF08\u5982\u670D\u88C5\u4F4D\u7F6E\uFF09\uFF0C\u5728\u4E0A\u4F20\u65F6\u4F1A\u91CD\u65B0\u62CD\u6444\u3002"
+  enableHeightLabel: "\u251C\u542F\u7528\u9AD8\u5EA6\u8C03\u6574"
+  enableHeightTooltip: "\u542F\u7528\u9AD8\u5EA6\u8C03\u6574\u529F\u80FD\u3002"
+  enableSpeedLabel: "\u251C\u542F\u7528\u901F\u5EA6\u8C03\u6574"
+  enableSpeedTooltip: "\u542F\u7528\u901F\u5EA6\u8C03\u6574\u529F\u80FD\u3002"
+  enableMirrorLabel: "\u251C\u542F\u7528\u955C\u50CF"
+  enableMirrorTooltip: "\u542F\u7528\u955C\u50CF\u529F\u80FD\u3002"
+  enableTrackingLabel: "\u2514\u542F\u7528\u8FFD\u8E2A\u70B9"
+  enableTrackingTooltip: "\u542F\u7528\u8FFD\u8E2A\u70B9\u83DC\u5355\u3002"
+  enableFxLabel: "\u2514\u542F\u7528\u9762\u90E8\u8868\u60C5"
+  enableFxTooltip: "\u542F\u7528\u9762\u90E8\u52A8\u753B\u3002"
+  createCategoryLabel: "\u521B\u5EFA\u7C7B\u522B"
+  createCategoryTooltip: "\u65B0\u5EFA\u7C7B\u522B\u3002"
+  deleteCategoryLabel: "\u5220\u9664\u7C7B\u522B"
+  deleteCategoryTooltip: "\u5220\u9664\u9009\u5B9A\u7684\u7C7B\u522B\u3002"
+  copyCategoryLabel: "\u590D\u5236"
+  copyCategoryTooltip: "\u590D\u5236\u9009\u5B9A\u7684\u7C7B\u522B\u3002"
+  cutCategoryLabel: "\u526A\u5207"
+  cutCategoryTooltip: "\u526A\u5207\u9009\u5B9A\u7684\u7C7B\u522B\u3002"
+  pasteCategoryLabel: "\u7C98\u8D34"
+  pasteCategoryTooltip: "\u8986\u76D6\u9009\u5B9A\u7684\u7C7B\u522B\u3002"
+  pasteNewCategoryLabel: "\u7C98\u8D34\u4E3A\u65B0"
+  pasteNewCategoryTooltip: "\u5728\u6B64\u5904\u521B\u5EFA\u526F\u672C\u3002"
+  clearPoseLabel: "\u6E05\u9664\u59FF\u52BF\u5217\u8868"
+  clearPoseTooltip: "\u5B8C\u5168\u6E05\u9664\u59FF\u52BF\u3002"
+  createPoseLabel: "\u521B\u5EFA\u59FF\u52BF"
+  createPoseTooltip: "\u65B0\u5EFA\u59FF\u52BF\u3002"
+  deletePoseLabel: "\u5220\u9664\u59FF\u52BF"
+  deletePoseTooltip: "\u5220\u9664\u9009\u4E2D\u7684\u59FF\u52BF\u3002"
+  copyPoseLabel: "\u590D\u5236"
+  copyPoseTooltip: "\u590D\u5236\u9009\u5B9A\u59FF\u52BF\u3002"
+  cutPoseLabel: "\u526A\u5207"
+  cutPoseTooltip: "\u526A\u5207\u9009\u4E2D\u7684\u59FF\u52BF\u3002"
+  pastePoseLabel: "\u7C98\u8D34"
+  pastePoseTooltip: "\u8986\u76D6\u9009\u5B9A\u59FF\u52BF\u3002"
+  pasteNewPoseLabel: "\u7C98\u8D34\u4E3A\u65B0"
+  pasteNewPoseTooltip: "\u5728\u6B64\u5904\u521B\u5EFA\u526F\u672C\u3002"
+  autoThumbnailMenu: "\u81EA\u52A8\u7F29\u7565\u56FE"
+  disableMenuLabel: "\u5168\u90E8\u7981\u7528"
+  disableMenuTooltip: "\u6279\u91CF\u542F\u7528\u3002"
+  enableMenuLabel: "\u5168\u90E8\u542F\u7528"
+  enableMenuTooltip: "\u6279\u91CF\u7981\u7528\u3002"
+  updateMessage: "\u6709\u6700\u65B0\u7248\u66F4\u65B0\u3002VCC\u4E2D\u6240\u8FF0\u4FEE\u6539\u76F8\u5E94\u53C2\u6570\u7684\u503C\u3002"
+  thumbnailBg: {fileID: 2800000, guid: 9c605c794272c614d8cf187acf554b3a, type: 3}
+  headTrackingOption: "\u56FA\u5B9A\u5934"
+  armTrackingOption: "\u56FA\u5B9A\u624B\u81C2"
+  fingerTrackingOption: "\u56FA\u5B9A\u624B\u6307"
+  footTrackingOption: "\u56FA\u5B9A\u8173"
+  locomotionTrackingOption: "\u7981\u6B62\u79FB\u52A8"
