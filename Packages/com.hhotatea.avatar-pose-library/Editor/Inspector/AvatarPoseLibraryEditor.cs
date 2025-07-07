@@ -233,7 +233,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             int    newIdx  = _libraryTagIndex;
 
             float texSize = _lineHeight * 8f;
-            if (DynamicVariables.CurrentVersion <= DynamicVariables.LatestVersion)
+            if (DynamicVariables.CurrentVersion < DynamicVariables.LatestVersion)
             {
                 GUIStyle updateStyle = new GUIStyle(EditorStyles.boldLabel);
                 updateStyle.normal.textColor = Color.red;
