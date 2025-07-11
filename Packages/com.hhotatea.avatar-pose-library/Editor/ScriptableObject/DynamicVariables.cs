@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using com.hhotatea.avatar_pose_library.component;
 using UnityEditor;
 using UnityEditor.PackageManager;
@@ -17,6 +18,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             "https://script.google.com/macros/s/AKfycbyIJ6zUa0LHzdZU5GSO7h0pDWUPCZ1xAKQxWNST88Y9KpgCSsw0fE2u00xHLWW9_S-eng/exec";
 
         private static Version currentVersion, latestVersion;
+
+        private static bool isFetchedLatestVersion = false;
 
         private static AvatarPoseSettings settingsBuff;
 
@@ -70,44 +73,52 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             get
             {
-                if (latestVersion == null)
+                // 取得済みならそれを返す
+                if (latestVersion != null)
                 {
-                    UnityWebRequest request = UnityWebRequest.Get(analyticsURL);
-                    var operation = request.SendWebRequest();
+                    return latestVersion;
+                }
 
-                    float timeout = 5f; // タイムアウト秒数
-                    float startTime = Time.realtimeSinceStartup;
+                // 取得中でなければタスクを開始
+                if (!isFetchedLatestVersion)
+                {
+                    isFetchedLatestVersion = true;
+                    FetchLatestVersionAsync();
+                }
 
-                    while (!operation.isDone)
+                // 完了するまではCurrentVersionを返す
+                return CurrentVersion;
+            }
+        }
+
+        private static async Task FetchLatestVersionAsync()
+        {
+            using (UnityWebRequest request = UnityWebRequest.Get(analyticsURL))
+            {
+                var tcs = new TaskCompletionSource<bool>();
+
+                var operation = request.SendWebRequest();
+                operation.completed += _ => tcs.SetResult(true);
+
+                await tcs.Task;
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    var data = JsonUtility.FromJson<AnalyticsResponse>(request.downloadHandler.text);
+                    if (!string.IsNullOrWhiteSpace(data.version))
                     {
-                        if (Time.realtimeSinceStartup - startTime > timeout)
-                        {
-                            Debug.LogError("Error: Request timed out.");
-                            request.Abort();
-                            return CurrentVersion;
-                        }
-                    }
-
-                    if (request.result == UnityWebRequest.Result.Success)
-                    {
-                        var data = JsonUtility.FromJson<AnalyticsResponse>(request.downloadHandler.text);
-                        if (!string.IsNullOrWhiteSpace(data.version))
-                        {
-                            latestVersion = Version.Parse(data.version);
-                        }
-                        else
-                        {
-                            latestVersion = CurrentVersion;
-                        }
+                        latestVersion = Version.Parse(data.version);
                     }
                     else
                     {
-                        Debug.LogError("Error: " + request.error);
-                        return CurrentVersion;
+                        latestVersion = CurrentVersion;
                     }
                 }
-
-                return latestVersion;
+                else
+                {
+                    Debug.LogError("Failed to fetch latest version: " + request.error);
+                    latestVersion = CurrentVersion;
+                }
             }
         }
 
