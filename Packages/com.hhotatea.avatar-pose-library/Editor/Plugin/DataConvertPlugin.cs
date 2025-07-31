@@ -52,7 +52,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
             bool matchAvatarWriteDefaults = (data.writeDefaultType == WriteDefaultType.MatchAvatar);
 
             var locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator (data, overrideWriteDefault);
-            var paramLayer = AnimatorBuilder.BuildFxAnimator (data, overrideWriteDefault);
+            var paramLayer = AnimatorBuilder.BuildFxAnimator (data, overrideWriteDefault, data.enablePoseSpace);
             var trackingLayer = AnimatorBuilder.BuildTrackingAnimator (data, overrideWriteDefault);
 
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator> ();

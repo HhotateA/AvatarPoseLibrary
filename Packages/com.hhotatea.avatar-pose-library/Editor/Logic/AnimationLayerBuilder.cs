@@ -125,7 +125,8 @@ namespace com.hhotatea.avatar_pose_library.logic {
             Foot,
             Finger,
             Face,
-            Action
+            Action,
+            Space
         }
 
         public AnimatorControllerLayer TrackingLayer (
@@ -240,6 +241,14 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     actionOff.goalWeight = 0f;
 
                     break;
+
+                case TrackingType.Space:
+                    var spaceEnter = onConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace> ();
+                    spaceEnter.enterPoseSpace = true;
+                    var spaceExit = offConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace> ();
+                    spaceExit.enterPoseSpace = false;
+
+                    break;
             }
 
             // 遷移の設定
@@ -324,7 +333,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             reserveState.motion = MotionBuilder.FrameAnimation;
             reserveState.writeDefaultValues = writeDefault_; 
             {
-                var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+                var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver> (); 
                 trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                         name = $"{ConstVariables.SpeedParamPrefix}_{guid}",
@@ -338,10 +347,15 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 trackingOnParam.parameters.AddRange (
                     pose.GetAnimatorFlag ().Select ((flag, index) => new VRC_AvatarParameterDriver.Parameter {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
-                            name = $"{ConstVariables.FlagParamPrefix}_{guid}_{index}",
-                            value = flag
+                        name = $"{ConstVariables.FlagParamPrefix}_{guid}_{index}",
+                        value = flag
                     })
                 );
+                trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{ConstVariables.PoseSpacePrefix}_{guid}",
+                    value = 1f,
+                });
                 var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                 additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 additive.goalWeight = 1f;

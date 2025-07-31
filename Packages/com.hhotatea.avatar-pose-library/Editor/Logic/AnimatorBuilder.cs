@@ -64,7 +64,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             return result;
         }
 
-        public static AnimatorController BuildFxAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
+        public static AnimatorController BuildFxAnimator (AvatarPoseData poseLibrary, bool writeDefault, bool poseSpace) {
             var result = BaseAnimator (poseLibrary, writeDefault);
             var builder = new AnimationLayerBuilder (writeDefault);
 
@@ -86,19 +86,25 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 // トラッキングリセット用のステート
                 var resetState = layer.stateMachine.AddState ("Reset");
                 resetState.writeDefaultValues = writeDefault;
-                resetState.motion = MotionBuilder.FrameAnimation; {
-                    var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+                resetState.motion = MotionBuilder.FrameAnimation; 
+                {
+                    var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> (); 
                     for (int i = 0; i < ConstVariables.PoseFlagCount; i++) {
                         trackingOffParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter () {
                             type = VRC_AvatarParameterDriver.ChangeType.Set,
-                                name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
-                                value = 0
+                            name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
+                            value = 0
                         });
                     }
                     trackingOffParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
-                            name = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
-                            value = 0f,
+                        name = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
+                        value = 0f,
+                    });
+                    trackingOffParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = $"{ConstVariables.PoseSpacePrefix}_{poseLibrary.Guid}",
+                        value = 0f,
                     });
                 }
                 // デフォルトへの遷移
@@ -114,11 +120,12 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     var preResetState = layer.stateMachine.AddState ("PreReset" + param);
                     preResetState.writeDefaultValues = writeDefault;
                     preResetState.motion = MotionBuilder.FrameAnimation;
-                    var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> (); {
+                    {
+                        var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
                         resetParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                             type = VRC_AvatarParameterDriver.ChangeType.Set,
-                                name = param,
-                                value = 0,
+                            name = param,
+                            value = 0,
                         });
                     }
                     // Preからリセットへの遷移
@@ -233,6 +240,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddLayer (builder.TrackingLayer (TrackingType.Foot, $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.TrackingLayer (TrackingType.Finger, $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.TrackingLayer (TrackingType.Face, $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}"));
+            if(poseSpace) result.AddLayer (builder.TrackingLayer (TrackingType.Space, $"{ConstVariables.PoseSpacePrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.ResetLayer ($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
 
             return result;
@@ -282,6 +290,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddParameter ($"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter ($"{ConstVariables.PoseSpacePrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
 
             for (int i = 0; i < ConstVariables.PoseFlagCount; i++) {
                 result.AddParameter ($"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}", AnimatorControllerParameterType.Int);
