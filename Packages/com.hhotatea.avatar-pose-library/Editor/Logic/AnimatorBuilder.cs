@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.model;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -64,7 +61,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             return result;
         }
 
-        public static AnimatorController BuildFxAnimator (AvatarPoseData poseLibrary, bool writeDefault, bool poseSpace) {
+        public static AnimatorController BuildFxAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = BaseAnimator (poseLibrary, writeDefault);
             var builder = new AnimationLayerBuilder (writeDefault);
 
@@ -103,7 +100,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     });
                     trackingOffParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                         type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.PoseSpacePrefix}_{poseLibrary.Guid}",
+                        name = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
                         value = 0f,
                     });
                 }
@@ -240,8 +237,35 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddLayer (builder.TrackingLayer (TrackingType.Foot, $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.TrackingLayer (TrackingType.Finger, $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.TrackingLayer (TrackingType.Face, $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}"));
-            if(poseSpace) result.AddLayer (builder.TrackingLayer (TrackingType.Space, $"{ConstVariables.PoseSpacePrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.ResetLayer ($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
+            result.AddLayer (builder.TrackingLayer (TrackingType.Space, $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
+            (onTo,offTo,onState,offState) => {
+                var off_1 = offTo;
+                var off_2 = DuplicateTransition(offTo,onState);
+                onTo.conditions = new AnimatorCondition[] {
+                    new AnimatorCondition {
+                    mode = AnimatorConditionMode.If,
+                    parameter = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}"
+                    },
+                    new AnimatorCondition {
+                    mode = AnimatorConditionMode.If,
+                    parameter = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"
+                    }
+                };
+                off_1.conditions = new AnimatorCondition[] {
+                    new AnimatorCondition {
+                    mode = AnimatorConditionMode.IfNot,
+                    parameter = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}"
+                    }
+                };
+                off_2.conditions = new AnimatorCondition[] {
+                    new AnimatorCondition {
+                    mode = AnimatorConditionMode.IfNot,
+                    parameter = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"
+                    }
+                };
+                
+            }));
 
             return result;
         }
@@ -282,6 +306,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
 
             // Tracking制御ノード
+            result.AddParameter ($"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
@@ -290,13 +315,34 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddParameter ($"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
-            result.AddParameter ($"{ConstVariables.PoseSpacePrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            result.AddParameter ($"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
 
             for (int i = 0; i < ConstVariables.PoseFlagCount; i++) {
                 result.AddParameter ($"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}", AnimatorControllerParameterType.Int);
             }
 
             return result;
+        }
+
+        public static AnimatorStateTransition DuplicateTransition(AnimatorStateTransition source, AnimatorState state)
+        {
+            var dest = state.AddTransition(source.destinationState);
+            dest.hasExitTime = source.hasExitTime;
+            dest.exitTime = source.exitTime;
+            dest.hasFixedDuration = source.hasFixedDuration;
+            dest.duration = source.duration;
+            dest.offset = source.offset;
+            dest.interruptionSource = source.interruptionSource;
+            dest.orderedInterruption = source.orderedInterruption;
+            dest.canTransitionToSelf = source.canTransitionToSelf;
+
+            // 条件のコピー
+            foreach (var condition in source.conditions)
+            {
+                dest.AddCondition(condition.mode, condition.threshold, condition.parameter);
+            }
+
+            return dest;
         }
     }
 }

@@ -1,16 +1,12 @@
-using System;
 using System.Linq;
-using System.Threading.Tasks;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.logic;
 using com.hhotatea.avatar_pose_library.model;
 using nadena.dev.modular_avatar.core;
 using nadena.dev.ndmf;
-using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
-using VRC.SDK3.Avatars.ScriptableObjects;
 
 [assembly : ExportsPlugin (typeof (DataConvertPlugin))]
 namespace com.hhotatea.avatar_pose_library.editor {
@@ -52,7 +48,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
             bool matchAvatarWriteDefaults = (data.writeDefaultType == WriteDefaultType.MatchAvatar);
 
             var locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator (data, overrideWriteDefault);
-            var paramLayer = AnimatorBuilder.BuildFxAnimator (data, overrideWriteDefault, data.enablePoseSpace);
+            var paramLayer = AnimatorBuilder.BuildFxAnimator (data, overrideWriteDefault);
             var trackingLayer = AnimatorBuilder.BuildTrackingAnimator (data, overrideWriteDefault);
 
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator> ();
