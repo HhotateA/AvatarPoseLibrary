@@ -1,4 +1,5 @@
 using System.Linq;
+using VRC.SDK3.Avatars.ScriptableObjects;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.logic;
@@ -30,7 +31,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
                         go.transform.SetParent (root?.transform ?? ctx.AvatarRootObject.transform);
 
                         BuildRuntimeAnimator (go, d);
-                        BuildRuntimeMenu (go, d);
+                        BuildRuntimeMenu (go, d, root?.transform);
                         BuildRuntimeParameter (go, d);
                     }
                 });
@@ -87,17 +88,56 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="data"></param>
-        void BuildRuntimeMenu (GameObject obj, AvatarPoseData data) {
+        void BuildRuntimeMenu (GameObject obj, AvatarPoseData data, Transform root) {
             var result = MenuBuilder.BuildPoseMenu (data);
             foreach (var installer in result.GetComponentsInChildren<ModularAvatarMenuInstaller> ()) {
-                Debug.Log (installer.gameObject.name);
                 installer.transform.SetParent (obj.transform);
             }
 
-            if (result.GetComponent<ModularAvatarMenuInstaller> () == null) {
-                result.AddComponent<ModularAvatarMenuInstaller> ();
+            if (IsItenRoot(root))
+            {
+                var parent = root.parent;
+                result.transform.SetParent(parent);
+                int targetIndex = root.GetSiblingIndex();
+                result.transform.SetSiblingIndex(targetIndex + 1);
             }
-            result.transform.SetParent (obj.transform);
+            else
+            {
+                result.AddComponent<ModularAvatarMenuInstaller>();
+                result.transform.SetParent(obj.transform);
+            }
+        }
+
+        bool IsItenRoot(Transform root)
+        {
+            if (root == null)
+            {
+                return false;
+            }
+
+            var parent = root.parent;
+            if (parent == null)
+            {
+                return false;
+            }
+
+            var menuRoot = parent.gameObject;
+
+            var group = menuRoot.GetComponent<ModularAvatarMenuGroup>();
+            if (group)
+            {
+                return true;
+            }
+
+            var item = menuRoot.GetComponent<ModularAvatarMenuItem>();
+            if (item)
+            {
+                if (item.Control.type == VRCExpressionsMenu.Control.ControlType.SubMenu &&
+                    item.MenuSource == SubmenuSource.Children)
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>

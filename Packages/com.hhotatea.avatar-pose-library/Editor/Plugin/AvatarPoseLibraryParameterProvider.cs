@@ -6,6 +6,7 @@ using com.hhotatea.avatar_pose_library.model;
 using com.hhotatea.avatar_pose_library.editor;
 using Unity.Collections;
 using UnityEngine;
+using System.Linq;
 
 namespace com.hhotatea.avatar_pose_library.logic {
     // AvatarPoseLibrary のパラメータを提供するクラス
@@ -21,10 +22,27 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
         public IEnumerable<ProvidedParameter> GetSuppliedParameters(BuildContext ctx = null)
         {
+            // 最上位オブジェクトのみで実行
+            if (!_component.IsRootComponent())
+            {
+                yield break;
+            }
+
+            // データ抽出
+            var data = AvatarPoseData.Combine(
+                _component.GetComponentMember()
+                    .Select(e => e.data)
+                    .ToArray())
+                .FirstOrDefault(e=>e.name == _component.data.name);
+            if (data == null)
+            {
+                yield break;
+            }
+            
             // パラメーターの最適化
-            _component.data.UpdateParameter();
+            data.UpdateParameter();
             // AvatarPoseLibrary のデータからパラメータ用の GameObject を構築
-            var parameterGameObj = ParameterBuilder.BuildPoseParameter(_component.data);
+            var parameterGameObj = ParameterBuilder.BuildPoseParameter(data);
             // ModularAvatarParameters コンポーネントを取得
             var mParams = parameterGameObj.GetComponent<ModularAvatarParameters>();
 

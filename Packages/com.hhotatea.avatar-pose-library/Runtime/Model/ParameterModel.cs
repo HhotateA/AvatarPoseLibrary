@@ -78,8 +78,9 @@ namespace com.hhotatea.avatar_pose_library.model {
 
         /// <summary>
         /// パラメーターの最適化
+        /// pose系は、2回処理が走ってしまうケースがあるので制御する。
         /// </summary>
-        public AvatarPoseData UpdateParameter (bool poseParam = false) {
+        public AvatarPoseData UpdateParameter (bool poseParam = false){
             if (poseParam)
             {
                 int paramCount = 999;
