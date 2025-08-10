@@ -1,5 +1,5 @@
-using System.Linq;
 using com.hhotatea.avatar_pose_library.model;
+using com.hhotatea.avatar_pose_library.editor;
 using nadena.dev.modular_avatar.core;
 using UnityEngine;
 
@@ -142,6 +142,24 @@ namespace com.hhotatea.avatar_pose_library.logic
                     saved = true,
                 });
             }
+
+            mResult.parameters.Add(new ParameterConfig
+            {
+                nameOrPrefix = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
+                syncType = ParameterSyncType.Bool,
+                localOnly = true,
+                defaultValue = DynamicVariables.Settings.poseSpaceMenu ? 1 : 0,
+                saved = true,
+            });
+
+            mResult.parameters.Add(new ParameterConfig
+            {
+                nameOrPrefix = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
+                syncType = ParameterSyncType.Bool,
+                localOnly = true,
+                defaultValue = 0,
+                saved = false,
+            });
 
             return result;
         }

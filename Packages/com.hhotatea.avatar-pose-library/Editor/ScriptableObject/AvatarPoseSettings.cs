@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace com.hhotatea.avatar_pose_library.component
 {
-// [CreateAssetMenu(menuName = "HhotateA/AvatarPoseSettings")]
+    // [CreateAssetMenu(menuName = "HhotateA/AvatarPoseSettings")]
     public class AvatarPoseSettings : ScriptableObject
     {
         [SerializeField] MenuContext menuContext;
@@ -20,14 +20,14 @@ namespace com.hhotatea.avatar_pose_library.component
                             return localContext.menuContext;
                     }
                 }
-                
-                if (menuContext != null) 
+
+                if (menuContext != null)
                     return menuContext;
-                
+
                 throw new NullReferenceException("MenuContextファイルが見つかりません。再インポートしてください。");
             }
         }
-        
+
         [SerializeField] InspectorContext inspectorContext;
         public InspectorContext Inspector
         {
@@ -42,10 +42,10 @@ namespace com.hhotatea.avatar_pose_library.component
                             return localContext.inspectorContext;
                     }
                 }
-                
-                if (inspectorContext != null) 
+
+                if (inspectorContext != null)
                     return inspectorContext;
-                
+
                 throw new NullReferenceException("InspectorContextファイルが見つかりません。再インポートしてください。");
             }
         }
@@ -57,7 +57,7 @@ namespace com.hhotatea.avatar_pose_library.component
         /// サムネイル撮影用のレイヤー
         /// </summary>
         public int thumbnailLayer = 4;
-    
+
         /// <summary>
         /// サムネイルテクスチャのサイズ
         /// </summary>
@@ -80,11 +80,16 @@ namespace com.hhotatea.avatar_pose_library.component
         public float fieldOfView = 30f;
         public float cameraDistance = 1f;
         public Vector3 cameraOffset = Vector3.zero;
-        
+
         /// <summary>
         /// AnimatorLayerに使うアセット群
         /// </summary>
         public AnimationClip defaultAnimation;
+        
+        /// <summary>
+        /// Menuの項目
+        /// </summary>
+        public bool poseSpaceMenu = true;
     }
 
     [Serializable]

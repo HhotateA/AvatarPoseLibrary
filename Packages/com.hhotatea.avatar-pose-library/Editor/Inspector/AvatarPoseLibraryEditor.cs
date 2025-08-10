@@ -233,6 +233,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             int    newIdx  = _libraryTagIndex;
 
             float texSize = _lineHeight * 8f;
+
             if (DynamicVariables.CurrentVersion < DynamicVariables.LatestVersion)
             {
                 GUIStyle updateStyle = new GUIStyle(EditorStyles.boldLabel);
@@ -249,13 +250,31 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 using (new GUILayout.VerticalScope())
                 {
-                    EditorGUILayout.LabelField(_libraryLabel, EditorStyles.label);
+                    using (new GUILayout.HorizontalScope())
+                    {
+                        EditorGUILayout.LabelField(_libraryLabel, EditorStyles.label,GUILayout.MaxWidth(TextBoxWidth-texSize));
+
+                        // 同名ルートオブジェクトの表示
+                        if (!_library.IsRootComponent())
+                        {
+                            using (new EditorGUI.DisabledScope(true))
+                            {
+                                EditorGUILayout.ObjectField(
+                                    "",
+                                    _library.GetComponentLeader(),
+                                    typeof(Component),
+                                    true,
+                                    GUILayout.MaxWidth(texSize + 20)
+                                );
+                            }
+                        }
+                    }
                     EditorGUILayout.Space();
 
                     using (new GUILayout.HorizontalScope())
                     {
                         newName = EditorGUILayout.TextField(Data.name, GUILayout.MaxWidth(TextBoxWidth));
-                        newIdx  = EditorGUILayout.Popup(string.Empty, _libraryTagIndex, _libraryTagList, GUILayout.Width(20));
+                        newIdx = EditorGUILayout.Popup(string.Empty, _libraryTagIndex, _libraryTagList, GUILayout.Width(20));
                     }
 
                     EditorGUILayout.Space();
@@ -284,7 +303,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             Apply("Toggle Global Flags", () =>
             {
-                foreach (var lib in GetLibraryComponents().Where(l => l.data.name == Data.name))
+                foreach (var lib in _library.GetComponentMember())
                 {
                     var so = new SerializedObject(lib);
                     so.FindProperty("data.enableHeightParam").boolValue = height;
@@ -308,8 +327,10 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             
             // フラグの整合性を取る。
-            var comp = GetLibraryComponents().FirstOrDefault(
-                e => e.data.name == tag && e.data != Data);
+            var comp = _library
+                .GetComponentMember()
+                .FirstOrDefault(e =>
+                    e.data != Data);
             if (!comp) return;
             if (comp.data.enableHeightParam   != Data.enableHeightParam ||
                 comp.data.enableSpeedParam    != Data.enableSpeedParam ||
@@ -830,15 +851,9 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void SyncLibraryTags()
         {
-            string[] duplicates=GetLibraryComponents().Select(e=>e.data.name).ToArray();
-            _libraryTagList=duplicates.Distinct().ToArray();
-            _libraryTagIndex=Array.FindIndex(_libraryTagList, n=>n==Data.name);
-        }
-
-        private AvatarPoseLibrary[] GetLibraryComponents()
-        {
-            var avatar=_library.transform.GetComponentInParent<VRCAvatarDescriptor>();
-            return avatar? avatar.GetComponentsInChildren<AvatarPoseLibrary>() : new[]{ _library };
+            string[] duplicates = _library.GetLibraries().Select(e=>e.data.name).ToArray();
+            _libraryTagList = duplicates.Distinct().ToArray();
+            _libraryTagIndex = Array.FindIndex(_libraryTagList, n=>n==Data.name);
         }
 
         private void ApplyClipChange(SerializedProperty poseProp, AnimationClip clip)

@@ -38,51 +38,57 @@ namespace com.hhotatea.avatar_pose_library.logic {
             foreach (var parameter in poseLibrary.Parameters) {
                 paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = parameter,
-                        value = 0,
+                    name = parameter,
+                    value = 0,
                 });
             }
             foreach (var parameter in new String[] {
+                    ConstVariables.OnPlayParamPrefix,
                     ConstVariables.HeadParamPrefix,
-                        ConstVariables.ArmParamPrefix,
-                        ConstVariables.FootParamPrefix,
-                        ConstVariables.FingerParamPrefix,
-                        ConstVariables.BaseParamPrefix,
-                        ConstVariables.MirrorParamPrefix,
-                        ConstVariables.ActionParamPrefix
+                    ConstVariables.ArmParamPrefix,
+                    ConstVariables.FootParamPrefix,
+                    ConstVariables.FingerParamPrefix,
+                    ConstVariables.BaseParamPrefix,
+                    ConstVariables.MirrorParamPrefix,
+                    ConstVariables.ActionParamPrefix,
                 }) {
                 paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{parameter}_{poseLibrary.Guid}",
-                        value = 0,
+                    name = $"{parameter}_{poseLibrary.Guid}",
+                    value = 0,
                 });
             }
+            paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
+                type = VRC_AvatarParameterDriver.ChangeType.Set,
+                name = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
+                value = DynamicVariables.Settings.poseSpaceMenu ? 1 : 0,
+            });
             foreach (var parameter in new String[] {
                     ConstVariables.SpeedParamPrefix,
                         ConstVariables.HeightParamPrefix,
                 }) {
                 paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{parameter}_{poseLibrary.Guid}",
-                        value = 0.5f,
+                    name = $"{parameter}_{poseLibrary.Guid}",
+                    value = 0.5f,
                 });
             }
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
-                    value = 1,
+                name = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
+                value = 1,
             });
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = param,
-                    value = 0,
+                name = param,
+                value = 0,
             });
 
             for (int i = 0; i < ConstVariables.PoseFlagCount; i++) {
                 paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
-                        value = 0,
+                    name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
+                    value = 0,
                 });
             }
 
@@ -130,7 +136,8 @@ namespace com.hhotatea.avatar_pose_library.logic {
         }
 
         public AnimatorControllerLayer TrackingLayer (
-            TrackingType type, string param) {
+            TrackingType type, string param, 
+            Action<AnimatorStateTransition,AnimatorStateTransition,AnimatorState,AnimatorState> onSetTrasitions = null) {
             // レイヤー作成
             AnimatorControllerLayer layer = new AnimatorControllerLayer {
                 name = param,
@@ -292,6 +299,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
             fromOffToOff.hasFixedDuration = true;
             fromOffToOff.duration = 0.0f;
 
+            // PoseSpaceの設定用（Loopより優先するためにここで挿し込む）
+            onSetTrasitions?.Invoke(fromOffToOn,fromOnToOff,onIdleState,offIdleState);
+
             // Off設定を維持する
             var loopTransition = onIdleState.AddTransition (onConState);
             loopTransition.canTransitionToSelf = false;
@@ -299,7 +309,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
             loopTransition.exitTime = 0f;
             loopTransition.hasFixedDuration = true;
             loopTransition.duration = 0.0f;
-
             return layer;
         }
 
@@ -353,7 +362,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 );
                 trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{ConstVariables.PoseSpacePrefix}_{guid}",
+                    name = $"{ConstVariables.OnPlayParamPrefix}_{guid}",
                     value = 1f,
                 });
                 var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();

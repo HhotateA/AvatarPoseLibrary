@@ -2,6 +2,8 @@ namespace com.hhotatea.avatar_pose_library.model
 {
     public static class ConstVariables
     {
+        public const string OnPlayParamPrefix = "AnimPosePlay";
+        
         /// <summary>
         /// パラメーター名
         /// </summary>
@@ -17,7 +19,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string ResetParamPrefix = "AnimPoseReset";
         public const string MirrorParamPrefix = "AnimPoseMirror";
         public const string FlagParamPrefix = "AnimPoseFlag";
-        public const string PoseSpacePrefix = "AnimPoseSpace";
+        public const string PoseSpaceParamPrefix = "AnimPoseSpace";
         // public const string BlockIdleParamPrefix = "AnimPoseBlock"; // 動的アニメーションかどうかのフラグ
         
         public const string MotionAnimatorPrefix = "AnimPoseMotion";

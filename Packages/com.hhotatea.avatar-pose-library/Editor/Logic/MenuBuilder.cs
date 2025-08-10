@@ -121,6 +121,16 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
 
+            if(DynamicVariables.Settings.poseSpaceMenu)
+            {
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.poseSpace.title,
+                    DynamicVariables.Settings.Menu.poseSpace.thumbnail,
+                    $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}"
+                );
+            }
+
             if (poseLibrary.enableSpeedParam)
             {
                 CreateRadialMenu(
