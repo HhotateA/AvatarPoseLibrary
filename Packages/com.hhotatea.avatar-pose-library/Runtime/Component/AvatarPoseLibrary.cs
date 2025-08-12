@@ -1,9 +1,7 @@
 using com.hhotatea.avatar_pose_library.model;
 using UnityEngine;
-using nadena.dev.modular_avatar.core.menu;
 using VRC.SDKBase;
 using VRC.SDK3.Avatars.Components;
-using VRC.SDK3.Avatars.ScriptableObjects;
 using System.Linq;
 
 namespace com.hhotatea.avatar_pose_library.component
@@ -12,7 +10,7 @@ namespace com.hhotatea.avatar_pose_library.component
     /// アバターにアタッチすることでポーズカテゴリを設定可能にするコンポーネント
     /// </summary>
     [HelpURL("https://github.com/HhotateA/AvatarPoseLibrary/wiki")]
-    public class AvatarPoseLibrary : MenuSourceComponent, IEditorOnly
+    public class AvatarPoseLibrary : MonoBehaviour, IEditorOnly
     {
         // データの本体。
         public AvatarPoseData data;
@@ -25,6 +23,7 @@ namespace com.hhotatea.avatar_pose_library.component
             isInitialized = false;
         }
 
+        /* MenuSourceComponent参照でバグりそうなので将来的実装
         public override void Visit(NodeContext context)
         {
             if (Application.isPlaying)
@@ -35,7 +34,7 @@ namespace com.hhotatea.avatar_pose_library.component
             context.PushControl(new VRCExpressionsMenu.Control()
             {
                 name = data.name,
-                icon = data.thumbnail
+                icon = data.thumbnail,
             });
         }
 
@@ -43,6 +42,7 @@ namespace com.hhotatea.avatar_pose_library.component
         {
             // no-op
         }
+        */
 
         public AvatarPoseLibrary[] GetLibraries()
         {
