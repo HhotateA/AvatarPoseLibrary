@@ -148,7 +148,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 nameOrPrefix = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
-                defaultValue = DynamicVariables.Settings.poseSpaceMenu ? 1 : 0,
+                defaultValue = poseLibrary.enablePoseSpace ? 1 : 0,
                 saved = true,
             });
 

@@ -71,10 +71,12 @@ MonoBehaviour:
   enableSpeedTooltip: Enables speed adjustment function.
   enableMirrorLabel: "\u251C Enable Mirror"
   enableMirrorTooltip: Enables mirror function.
-  enableTrackingLabel: "\u2514 Enable Tracking"
+  enableTrackingLabel: "\u251C Enable Tracking"
   enableTrackingTooltip: Enables tracking menu.
   enableFxLabel: "\u2514 Enable FX"
   enableFxTooltip: Enable facial animation.
+  enablePoseSpace: "\u2514 Follow View Point"
+  enablePoseSpaceTooltip: Move the camera according to the pose.
   createCategoryLabel: Create Category
   createCategoryTooltip: "\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u65B0\u898F\u4F5C\u6210\u3002"
   deleteCategoryLabel: Delete Category

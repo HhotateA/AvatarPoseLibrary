@@ -36,7 +36,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                            _openAllLabel, _closeAllLabel, _poseListLabel, _openLabel, _closeLabel,
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
                            _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
-                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel,
+                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel, _enablePoseSpace,
                            _createCategoryMenu, _cutCategoryMenu, _deleteCategoryMenu, 
                            _createPoseMenu, _cutPoseMenu, _deletePoseMenu, _clearPosesMenu,
                            _copyCategoryMenu, _pasteCategoryMenu, _pasteNewCategoryMenu,
@@ -189,6 +189,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             _enableSpeedLabel   = new(i.enableSpeedLabel, i.enableSpeedTooltip);
             _enableMirrorLabel  = new(i.enableMirrorLabel, i.enableMirrorTooltip);
             _enableFxLabel      = new(i.enableFxLabel, i.enableFxTooltip);
+            _enablePoseSpace    = new(i.enablePoseSpace, i.enablePoseSpaceTooltip);
             _poseThumbnailLabel = new("",i.poseThumbnailTooltip);
             _posePreviewLabel   = new("",i.posePreviewTooltip);
             _createCategoryMenu = new(i.createCategoryLabel, i.createCategoryTooltip);
@@ -295,11 +296,14 @@ namespace com.hhotatea.avatar_pose_library.editor
             bool speed    = EditorGUILayout.Toggle(_enableSpeedLabel,  Data.enableSpeedParam);
             bool mirror   = EditorGUILayout.Toggle(_enableMirrorLabel, Data.enableMirrorParam);
             bool fxLayer  = EditorGUILayout.Toggle(_enableFxLabel, Data.enableFxParam);
+            bool poseSpace= EditorGUILayout.Toggle(_enablePoseSpace, Data.enablePoseSpace);
+
 
             if (height == Data.enableHeightParam && 
                 speed == Data.enableSpeedParam && 
                 mirror == Data.enableMirrorParam && 
-                fxLayer == Data.enableFxParam) return;
+                fxLayer == Data.enableFxParam &&
+                poseSpace == Data.enablePoseSpace ) return;
 
             Apply("Toggle Global Flags", () =>
             {
@@ -310,6 +314,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     so.FindProperty("data.enableSpeedParam").boolValue  = speed;
                     so.FindProperty("data.enableMirrorParam").boolValue = mirror;
                     so.FindProperty("data.enableFxParam").boolValue     = fxLayer;
+                    so.FindProperty("data.enablePoseSpace").boolValue   = poseSpace;
                     so.ApplyModifiedProperties();
                 }
             });
@@ -335,7 +340,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (comp.data.enableHeightParam   != Data.enableHeightParam ||
                 comp.data.enableSpeedParam    != Data.enableSpeedParam ||
                 comp.data.enableMirrorParam   != Data.enableMirrorParam ||
-                comp.data.enableFxParam       != Data.enableFxParam)
+                comp.data.enableFxParam       != Data.enableFxParam ||
+                comp.data.enablePoseSpace     != Data.enablePoseSpace )
             {
                 Apply("Sync APL Param", () =>
                 {
@@ -343,6 +349,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     FindData("enableSpeedParam").boolValue  = comp.data.enableSpeedParam;
                     FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
                     FindData("enableFxParam").boolValue     = comp.data.enableFxParam;
+                    FindData("enablePoseSpace").boolValue   = comp.data.enablePoseSpace;
                 });
             }
         }
