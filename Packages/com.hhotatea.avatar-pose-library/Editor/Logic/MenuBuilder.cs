@@ -22,10 +22,6 @@ namespace com.hhotatea.avatar_pose_library.logic
             mResult.Control.icon = poseLibrary.thumbnail;
             mResult.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
 
-            if (poseLibrary.enableHeightParam ||
-                poseLibrary.enableSpeedParam ||
-                poseLibrary.enableMirrorParam ||
-                poseLibrary.enableTrackingParam)
             {
                 // 設定メニュー
                 var settings = new GameObject(DynamicVariables.Settings.Menu.setting.title);
@@ -35,62 +31,52 @@ namespace com.hhotatea.avatar_pose_library.logic
                     var installer = settings.AddComponent<ModularAvatarMenuInstaller>();
                     installer.installTargetMenu = poseLibrary.settings;
                 }
-                
+
                 var mSettings = settings.AddComponent<ModularAvatarMenuItem>();
                 mSettings.MenuSource = SubmenuSource.Children;
                 mSettings.Control.icon = DynamicVariables.Settings.Menu.setting.thumbnail;
                 mSettings.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-                SettingsMenu(mSettings.transform,poseLibrary);
-            }
-            else
-            {
-                // メニューが存在しない場合
-                CreateToggleMenu(
-                    result.transform,
-                    DynamicVariables.Settings.Menu.reset.title,
-                    DynamicVariables.Settings.Menu.reset.thumbnail,
-                    $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}"
-                );
+                SettingsMenu(mSettings.transform, poseLibrary);
             }
 
 
             // メニューの構造を作る
-            foreach (var category in poseLibrary.categories)
-            {
-                var folder = new GameObject(category.name);
-                folder.transform.SetParent(result.transform);
-                if (category.target != null)
+                foreach (var category in poseLibrary.categories)
                 {
-                    var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
-                    installer.installTargetMenu = category.target;
-                }
-                
-                var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
-                mFolder.MenuSource = SubmenuSource.Children;
-                mFolder.Control.icon = category.thumbnail;
-                mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-
-                // 各ポーズステート
-                foreach (var pose in category.poses)
-                {
-                    var item = new GameObject(pose.name);
-                    item.transform.SetParent(folder.transform);
-                    if (pose.target != null)
+                    var folder = new GameObject(category.name);
+                    folder.transform.SetParent(result.transform);
+                    if (category.target != null)
                     {
-                        var installer = item.AddComponent<ModularAvatarMenuInstaller>();
-                        installer.installTargetMenu = pose.target;
+                        var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
+                        installer.installTargetMenu = category.target;
                     }
-                    
-                    var mItem = item.AddComponent<ModularAvatarMenuItem>();
-                    mItem.Control.icon = pose.thumbnail;
-                    mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
-                    mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
+
+                    var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
+                    mFolder.MenuSource = SubmenuSource.Children;
+                    mFolder.Control.icon = category.thumbnail;
+                    mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
+
+                    // 各ポーズステート
+                    foreach (var pose in category.poses)
                     {
-                        name = pose.Parameter
-                    };
-                    mItem.Control.value = pose.Value;
+                        var item = new GameObject(pose.name);
+                        item.transform.SetParent(folder.transform);
+                        if (pose.target != null)
+                        {
+                            var installer = item.AddComponent<ModularAvatarMenuInstaller>();
+                            installer.installTargetMenu = pose.target;
+                        }
+
+                        var mItem = item.AddComponent<ModularAvatarMenuItem>();
+                        mItem.Control.icon = pose.thumbnail;
+                        mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
+                        mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
+                        {
+                            name = pose.Parameter
+                        };
+                        mItem.Control.value = pose.Value;
+                    }
                 }
-            }
 
             return result;
         }

@@ -50,6 +50,8 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string enableTrackingTooltip = "トラッキングメニューを有効にする。";
         public string enableFxLabel = "Enable Fx";
         [Multiline] public string enableFxTooltip = "表情用のレイヤーを有効にする。";
+        public string enablePoseSpace = "Enable Pose Space";
+        [Multiline] public string enablePoseSpaceTooltip = "カメラをアニメーションに追従する。";
         
         public string createCategoryLabel = "Create Category";
         [Multiline] public string createCategoryTooltip = "カテゴリーを新規作成。";

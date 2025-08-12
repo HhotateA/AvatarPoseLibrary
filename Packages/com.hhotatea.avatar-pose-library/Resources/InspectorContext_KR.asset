@@ -63,10 +63,12 @@ MonoBehaviour:
   enableSpeedTooltip: "\uC18D\uB3C4 \uC870\uC808 \uAE30\uB2A5\uC744 \uD65C\uC131\uD654\uD569\uB2C8\uB2E4."
   enableMirrorLabel: "\u251C \uBBF8\uB7EC \uAE30\uB2A5 \uD65C\uC131\uD654"
   enableMirrorTooltip: "\uBBF8\uB7EC \uAE30\uB2A5\uC744 \uD65C\uC131\uD654\uD569\uB2C8\uB2E4."
-  enableTrackingLabel: "\u2514 \uD2B8\uB798\uD0B9 \uAE30\uB2A5 \uD65C\uC131\uD654"
+  enableTrackingLabel: "\u251C \uD2B8\uB798\uD0B9 \uAE30\uB2A5 \uD65C\uC131\uD654"
   enableTrackingTooltip: "\uD2B8\uB798\uD0B9 \uBA54\uB274\uB97C \uD65C\uC131\uD654\uD569\uB2C8\uB2E4."
-  enableFxLabel: "\u2514 \uD45C\uC815 \uAE30\uB2A5 \uD65C\uC131\uD654"
+  enableFxLabel: "\u251C \uD45C\uC815 \uAE30\uB2A5 \uD65C\uC131\uD654"
   enableFxTooltip: "\uD45C\uC815 \uC560\uB2C8\uBA54\uC774\uC158\uC744 \uD65C\uC131\uD654\uD569\uB2C8\uB2E4."
+  enablePoseSpace: "\u2514 Follow View Point"
+  enablePoseSpaceTooltip: Move the camera according to the pose.
   createCategoryLabel: Create Category
   createCategoryTooltip: "\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u65B0\u898F\u4F5C\u6210\u3002"
   deleteCategoryLabel: Delete Category

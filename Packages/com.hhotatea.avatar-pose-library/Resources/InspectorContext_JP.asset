@@ -55,10 +55,12 @@ MonoBehaviour:
   enableSpeedTooltip: "\u30B9\u30D4\u30FC\u30C9\u8ABF\u6574\u6A5F\u80FD\u3092\u6709\u52B9\u306B\u3059\u308B\u3002"
   enableMirrorLabel: "\u251C Enable Mirror"
   enableMirrorTooltip: "\u30DF\u30E9\u30FC\u6A5F\u80FD\u3092\u6709\u52B9\u306B\u3059\u308B\u3002"
-  enableTrackingLabel: "\u2514 Enable Tracking"
+  enableTrackingLabel: "\u251C Enable Tracking"
   enableTrackingTooltip: "\u30C8\u30E9\u30C3\u30AD\u30F3\u30B0\u30E1\u30CB\u30E5\u30FC\u3092\u6709\u52B9\u306B\u3059\u308B\u3002"
-  enableFxLabel: "\u2514 Enable FX"
+  enableFxLabel: "\u251C Enable FX"
   enableFxTooltip: "\u8868\u60C5\u7528\u30EC\u30A4\u30E4\u30FC\u306E\u8A2D\u5B9A\u3092\u6709\u52B9\u306B\u3059\u308B\u3002"
+  enablePoseSpace: "\u2514 Follow View Point"
+  enablePoseSpaceTooltip: "\u30AB\u30E1\u30E9\u3092\u30A2\u30CB\u30E1\u30FC\u30B7\u30E7\u30F3\u306B\u8FFD\u5F93\u3059\u308B\u3002"
   createCategoryLabel: Create Category
   createCategoryTooltip: "\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u65B0\u898F\u4F5C\u6210\u3002"
   deleteCategoryLabel: Delete Category

@@ -67,10 +67,12 @@ MonoBehaviour:
   enableSpeedTooltip: "\u555F\u7528\u901F\u5EA6\u8ABF\u6574\u529F\u80FD\u3002"
   enableMirrorLabel: "\u251C \u555F\u7528\u93E1\u50CF"
   enableMirrorTooltip: "\u555F\u7528\u93E1\u50CF\u529F\u80FD\u3002"
-  enableTrackingLabel: "\u2514 \u555F\u7528\u8FFD\u8E64\u9EDE"
+  enableTrackingLabel: "\u251C \u555F\u7528\u8FFD\u8E64\u9EDE"
   enableTrackingTooltip: "\u555F\u7528\u8FFD\u8E64\u9EDE\u9078\u55AE\u3002"
-  enableFxLabel: "\u2514 \u555F\u7528\u9762\u90E8\u8868\u60C5"
+  enableFxLabel: "\u251C \u555F\u7528\u9762\u90E8\u8868\u60C5"
   enableFxTooltip: "\u555F\u7528\u9762\u90E8\u52D5\u756B\u3002"
+  enablePoseSpace: "\u2514 Follow View Point"
+  enablePoseSpaceTooltip: Move the camera according to the pose.
   createCategoryLabel: Create Category
   createCategoryTooltip: "\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u65B0\u898F\u4F5C\u6210\u3002"
   deleteCategoryLabel: Delete Category

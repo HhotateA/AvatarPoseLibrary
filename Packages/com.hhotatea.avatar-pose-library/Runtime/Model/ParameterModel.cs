@@ -63,6 +63,7 @@ namespace com.hhotatea.avatar_pose_library.model {
         public bool enableTrackingParam = true;
         public bool enableFxParam = false;
         public bool enableDeepSync = true;
+        public bool enablePoseSpace = true;
         public VRCExpressionsMenu target = null;
         public VRCExpressionsMenu settings = null;
         public WriteDefaultType writeDefaultType = WriteDefaultType.MatchAvatar;
@@ -130,6 +131,7 @@ namespace com.hhotatea.avatar_pose_library.model {
                     apd.enableTrackingParam = d.enableTrackingParam;
                     apd.enableFxParam = d.enableFxParam;
                     apd.enableDeepSync = d.enableDeepSync;
+                    apd.enablePoseSpace = d.enablePoseSpace;
                     apd.writeDefaultType = d.writeDefaultType;
                 }
 
