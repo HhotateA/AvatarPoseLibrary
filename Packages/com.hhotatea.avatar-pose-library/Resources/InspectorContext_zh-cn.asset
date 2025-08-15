@@ -61,17 +61,17 @@ MonoBehaviour:
     https://meronfarm.booth.pm/'
   poseThumbnailTooltip: "\u9884\u89C8\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u56FE\u6807"
   posePreviewTooltip: "\u9884\u89C8\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u56FE\u6807\u3002\n\u9884\u89C8\u65F6\u53EF\u80FD\u4F1A\u51FA\u73B0\u4E00\u4E9B\u663E\u793A\u504F\u79FB\uFF08\u5982\u670D\u88C5\u4F4D\u7F6E\uFF09\uFF0C\u5728\u4E0A\u4F20\u65F6\u4F1A\u91CD\u65B0\u62CD\u6444\u3002"
-  enableHeightLabel: "\u251C\u542F\u7528\u9AD8\u5EA6\u8C03\u6574"
+  enableHeightLabel: "\u542F\u7528\u9AD8\u5EA6\u8C03\u6574"
   enableHeightTooltip: "\u542F\u7528\u9AD8\u5EA6\u8C03\u6574\u529F\u80FD\u3002"
-  enableSpeedLabel: "\u251C\u542F\u7528\u901F\u5EA6\u8C03\u6574"
+  enableSpeedLabel: "\u542F\u7528\u901F\u5EA6\u8C03\u6574"
   enableSpeedTooltip: "\u542F\u7528\u901F\u5EA6\u8C03\u6574\u529F\u80FD\u3002"
-  enableMirrorLabel: "\u251C\u542F\u7528\u955C\u50CF"
+  enableMirrorLabel: "\u542F\u7528\u955C\u50CF"
   enableMirrorTooltip: "\u542F\u7528\u955C\u50CF\u529F\u80FD\u3002"
-  enableTrackingLabel: "\u251C\u542F\u7528\u8FFD\u8E2A\u70B9"
+  enableTrackingLabel: "\u542F\u7528\u8FFD\u8E2A\u70B9"
   enableTrackingTooltip: "\u542F\u7528\u8FFD\u8E2A\u70B9\u83DC\u5355\u3002"
-  enableFxLabel: "\u251C\u542F\u7528\u9762\u90E8\u8868\u60C5"
+  enableFxLabel: "\u542F\u7528\u9762\u90E8\u8868\u60C5"
   enableFxTooltip: "\u542F\u7528\u9762\u90E8\u52A8\u753B\u3002"
-  enablePoseSpace: "\u2514 Follow View Point"
+  enablePoseSpace: Follow View Point
   enablePoseSpaceTooltip: Move the camera according to the pose.
   createCategoryLabel: "\u521B\u5EFA\u7C7B\u522B"
   createCategoryTooltip: "\u65B0\u5EFA\u7C7B\u522B\u3002"

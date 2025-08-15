@@ -65,17 +65,17 @@ MonoBehaviour:
     Some
     display shifts (like clothing) may occur in the preview, but it will be recaptured
     during upload.'
-  enableHeightLabel: "\u251C Enable Height"
+  enableHeightLabel: Enable Height
   enableHeightTooltip: Enables height adjustment function.
-  enableSpeedLabel: "\u251C Enable Speed"
+  enableSpeedLabel: Enable Speed
   enableSpeedTooltip: Enables speed adjustment function.
-  enableMirrorLabel: "\u251C Enable Mirror"
+  enableMirrorLabel: Enable Mirror
   enableMirrorTooltip: Enables mirror function.
-  enableTrackingLabel: "\u251C Enable Tracking"
+  enableTrackingLabel: Enable Tracking
   enableTrackingTooltip: Enables tracking menu.
-  enableFxLabel: "\u2514 Enable FX"
+  enableFxLabel: Enable FX
   enableFxTooltip: Enable facial animation.
-  enablePoseSpace: "\u2514 Follow View Point"
+  enablePoseSpace: Follow View Point
   enablePoseSpaceTooltip: Move the camera according to the pose.
   createCategoryLabel: Create Category
   createCategoryTooltip: "\u30AB\u30C6\u30B4\u30EA\u30FC\u3092\u65B0\u898F\u4F5C\u6210\u3002"

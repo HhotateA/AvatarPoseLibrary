@@ -292,11 +292,26 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void ApplyGlobalToggles()
         {
-            bool height   = EditorGUILayout.Toggle(_enableHeightLabel, Data.enableHeightParam);
-            bool speed    = EditorGUILayout.Toggle(_enableSpeedLabel,  Data.enableSpeedParam);
-            bool mirror   = EditorGUILayout.Toggle(_enableMirrorLabel, Data.enableMirrorParam);
-            bool fxLayer  = EditorGUILayout.Toggle(_enableFxLabel, Data.enableFxParam);
-            bool poseSpace= EditorGUILayout.Toggle(_enablePoseSpace, Data.enablePoseSpace);
+            bool height    = Data.enableHeightParam;
+            bool speed     = Data.enableSpeedParam;
+            bool mirror    = Data.enableMirrorParam;
+            bool fxLayer   = Data.enableFxParam;
+            bool poseSpace = Data.enablePoseSpace;
+            
+            using (new GUILayout.HorizontalScope())
+            {
+                height = EditorGUILayout.ToggleLeft(_enableHeightLabel, height, GUILayout.MaxWidth(TextBoxWidth / 2));
+                fxLayer = EditorGUILayout.ToggleLeft(_enableFxLabel, fxLayer, GUILayout.MaxWidth(TextBoxWidth / 2));
+            }
+            using (new GUILayout.HorizontalScope())
+            {
+                speed     = EditorGUILayout.ToggleLeft(_enableSpeedLabel,  speed, GUILayout.MaxWidth(TextBoxWidth/2));
+                poseSpace = EditorGUILayout.ToggleLeft(_enablePoseSpace, poseSpace, GUILayout.MaxWidth(TextBoxWidth/2));
+            }
+            using (new GUILayout.HorizontalScope())
+            {
+                mirror    = EditorGUILayout.ToggleLeft(_enableMirrorLabel, mirror, GUILayout.MaxWidth(TextBoxWidth/2));
+            }
 
 
             if (height == Data.enableHeightParam && 
