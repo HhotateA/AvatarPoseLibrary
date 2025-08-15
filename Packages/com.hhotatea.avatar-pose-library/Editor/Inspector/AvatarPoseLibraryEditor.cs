@@ -377,7 +377,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             SyncBuffer();
 
             DrawMainHeader();
-            EditorGUILayout.Space(15);
             _categoryList.DoLayoutList();
         }
         #endregion
