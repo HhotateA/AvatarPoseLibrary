@@ -81,9 +81,9 @@ const setTheme = () => {
     const vccUrlField = document.getElementById('vccListingInfoUrlField');
     vccUrlField.select();
     navigator.clipboard.writeText(vccUrlField.value);
-    vccUrlFieldCopy.appearance = 'accent';
+    vccListingInfoUrlFieldCopy.appearance = 'accent';
     setTimeout(() => {
-      vccUrlFieldCopy.appearance = 'neutral';
+      vccListingInfoUrlFieldCopy.appearance = 'neutral';
     }, 1000);
   });
 
@@ -218,9 +218,9 @@ const setTheme = () => {
     const vccUrlField = document.getElementById('packageInfoVccUrlField');
     vccUrlField.select();
     navigator.clipboard.writeText(vccUrlField.value);
-    vccUrlFieldCopy.appearance = 'accent';
+    packageInfoVccUrlFieldCopy.appearance = 'accent';
     setTimeout(() => {
-      vccUrlFieldCopy.appearance = 'neutral';
+      packageInfoVccUrlFieldCopy.appearance = 'neutral';
     }, 1000);
   });
 
