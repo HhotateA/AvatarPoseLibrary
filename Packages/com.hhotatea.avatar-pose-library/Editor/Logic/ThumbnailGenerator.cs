@@ -15,7 +15,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         private GameObject avatarGO;
         private GameObject cameraGO;
         private Transform headTransform;
-        private Vector3 currentPosition;
+        private Quaternion headInverse;
         private float distance;
         
         private Dictionary<GameObject,int> currentLayers = new Dictionary<GameObject, int>();
@@ -39,6 +39,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     // HeadBoneの取得
                     headTransform = animator.GetBoneTransform(HumanBodyBones.Head);
+                    headInverse = Quaternion.Inverse(headTransform.rotation);
                 }
             }
 
@@ -106,9 +107,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                 // カメラ位置調整
                 var aPos = avatarGO.transform.position;
                 var hPos = headTransform.position;
+                var headFoward = headTransform.rotation * headInverse * Vector3.forward;
                 Vector3 center = (aPos + hPos) * 0.5f;
                 cameraGO.transform.position = center 
-                                              + distance * Vector3.Lerp(Vector3.forward, headTransform.forward, DynamicVariables.Settings.lookAtFace).normalized
+                                              + distance * Vector3.Lerp(Vector3.forward, headFoward, DynamicVariables.Settings.lookAtFace).normalized
                                               + DynamicVariables.Settings.cameraOffset * AvatarHeight;
                 cameraGO.transform.LookAt((center + hPos) * 0.5f);
             }
