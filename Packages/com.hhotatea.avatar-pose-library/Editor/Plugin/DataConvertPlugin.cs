@@ -30,6 +30,8 @@ namespace com.hhotatea.avatar_pose_library.editor {
                         var root = settings.FirstOrDefault (e => e.data.name == d.name);
                         go.transform.SetParent (root?.transform ?? ctx.AvatarRootObject.transform);
 
+                        Debug.Log("Hash:"+d.ToHash());
+
                         BuildRuntimeAnimator (go, d);
                         BuildRuntimeMenu (go, d, root?.transform);
                         BuildRuntimeParameter (go, d);

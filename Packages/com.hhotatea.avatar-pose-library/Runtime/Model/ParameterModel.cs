@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace com.hhotatea.avatar_pose_library.model {
     [Serializable]
@@ -148,6 +150,21 @@ namespace com.hhotatea.avatar_pose_library.model {
             }
 
             return result;
+        }
+
+        public string ToHash()
+        {
+            string json;
+#if UNITY_EDITOR
+            json = UnityEditor.EditorJsonUtility.ToJson(this, false);
+#else
+            json = JsonUtility.ToJson(this, false);
+#endif
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(json ?? ""));
+            var sb = new StringBuilder(bytes.Length * 2);
+            foreach (var b in bytes) sb.AppendFormat("{0:x2}", b);
+            return sb.ToString();
         }
     }
 
