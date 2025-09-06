@@ -8,6 +8,7 @@ using nadena.dev.modular_avatar.core;
 using nadena.dev.ndmf;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
+using UnityEditor.Animations;
 
 [assembly : ExportsPlugin (typeof (DataConvertPlugin))]
 namespace com.hhotatea.avatar_pose_library.editor {
@@ -30,8 +31,6 @@ namespace com.hhotatea.avatar_pose_library.editor {
                         var root = settings.FirstOrDefault (e => e.data.name == d.name);
                         go.transform.SetParent (root?.transform ?? ctx.AvatarRootObject.transform);
 
-                        Debug.Log("Hash:"+d.ToHash());
-
                         BuildRuntimeAnimator (go, d);
                         BuildRuntimeMenu (go, d, root?.transform);
                         BuildRuntimeParameter (go, d);
@@ -46,13 +45,9 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// <param name="data"></param>
         void BuildRuntimeAnimator (GameObject obj, AvatarPoseData data) {
             var result = new GameObject ();
-
-            bool overrideWriteDefault = (data.writeDefaultType == WriteDefaultType.OverrideTrue);
+            AnimatorController locomotionLayer, paramLayer, trackingLayer;
+            GetAnimatorController(data, true, out locomotionLayer, out paramLayer, out trackingLayer);
             bool matchAvatarWriteDefaults = (data.writeDefaultType == WriteDefaultType.MatchAvatar);
-
-            var locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator (data, overrideWriteDefault);
-            var paramLayer = AnimatorBuilder.BuildFxAnimator (data, overrideWriteDefault);
-            var trackingLayer = AnimatorBuilder.BuildTrackingAnimator (data, overrideWriteDefault);
 
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator> ();
             ma_base.layerPriority = 1;
@@ -83,6 +78,46 @@ namespace com.hhotatea.avatar_pose_library.editor {
             ma_tracking.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
 
             result.transform.SetParent (obj.transform);
+        }
+
+        void GetAnimatorController(AvatarPoseData data, bool useCache,
+            out AnimatorController locomotionLayer,
+            out AnimatorController paramLayer,
+            out AnimatorController trackingLayer)
+        {
+            bool overrideWriteDefault = (data.writeDefaultType == WriteDefaultType.OverrideTrue);
+
+            if (useCache)
+            {
+                var cache = new CacheSave(data.ToHash());
+                locomotionLayer = cache.LoadAsset<AnimatorController>("locomotionLayer");
+                paramLayer = cache.LoadAsset<AnimatorController>("paramLayer");
+                trackingLayer = cache.LoadAsset<AnimatorController>("trackingLayer");
+
+                if (locomotionLayer == null)
+                {
+                    locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data, overrideWriteDefault);
+                    cache.SaveAsset("locomotionLayer", locomotionLayer);
+                }
+
+                if (paramLayer == null)
+                {
+                    paramLayer = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault);
+                    cache.SaveAsset("paramLayer", paramLayer);
+                }
+
+                if (trackingLayer == null)
+                {
+                    trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data, overrideWriteDefault);
+                    cache.SaveAsset("trackingLayer", trackingLayer);
+                }
+            }
+            else
+            {
+                locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data, overrideWriteDefault);
+                paramLayer = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault);
+                trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data, overrideWriteDefault);
+            }
         }
 
         /// <summary>

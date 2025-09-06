@@ -1,16 +1,17 @@
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using UnityEditor.Animations;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
     public class CacheSave
     {
-        const string folderPath = "Packages/com.hhotatea.avatar_pose_library/_Cache";
+        const string folderPath = "Assets/_APLCache";
         string fileName;
         string filePath;
         ScriptableObject mainAsset;
-        ScriptableObject[] assets;
+        Object[] assets;
 
         public CacheSave(string guid)
         {
@@ -25,22 +26,118 @@ namespace com.hhotatea.avatar_pose_library.editor
             foreach (var obj in assets)
             {
                 if (obj.name == name)
+                {
                     return obj as T;
+                }
             }
             return null;
         }
 
         public bool SaveAsset(string name, Object asset)
         {
+            if (asset == null)
+            {
+                Debug.LogError("AvatarPoseLibrary.CacheSave: asset is null");
+                return false;
+            }
             var obj = LoadAsset<Object>(name);
             if (obj)
             {
-                return false;
+                Undo.DestroyObjectImmediate(obj);
             }
-            AssetDatabase.AddObjectToAsset(asset, filePath);
+            asset.name = name;
+            AddAsset(asset, filePath);
+
+            if (asset is AnimatorController ac)
+            {
+                SaveAnimator(ac,filePath);
+            }
+
             EditorUtility.SetDirty(mainAsset);
             AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(filePath);
             return true;
+        }
+
+        static void SaveAnimator(AnimatorController ac, string path)
+        {
+            if (ac == null) return;
+            foreach (var l in ac.layers)
+            {
+                SaveStateMachine(l.stateMachine, path);
+            }
+        }
+
+        static void SaveStateMachine(AnimatorStateMachine st, string path)
+        {
+            if (st == null) return;
+            AddAsset(st, path);
+            foreach (var t in st.anyStateTransitions)
+            {
+                AddAsset(t, path);
+            }
+            foreach (var t in st.entryTransitions)
+            {
+                AddAsset(t, path);
+            }
+            foreach (var s in st.stateMachines)
+            {
+                SaveStateMachine(s.stateMachine, path);
+            }
+            foreach (var s in st.states)
+            {
+                SaveState(s.state,path);
+            }
+            foreach (var t in st.anyStateTransitions)
+            {
+                AddAsset(t, path);
+            }
+            foreach (var t in st.entryTransitions)
+            {
+                AddAsset(t, path);
+            }
+            foreach (var b in st.behaviours)
+            {
+                AddAsset(b, path);
+            }
+        }
+
+        static void SaveState(AnimatorState st, string path)
+        {
+            if (st == null) return;
+            AddAsset(st, path);
+            foreach (var m in st.behaviours)
+            {
+                AddAsset(m, path);
+            }
+            foreach (var t in st.transitions)
+            {
+                AddAsset(t, path);
+            }
+            SaveMotion(st.motion, path);
+        }
+
+        static void SaveMotion(Motion mt, string path)
+        {
+            if (mt == null) return;
+            AddAsset(mt, path);
+            if (mt is BlendTree bt)
+            {
+                foreach (var cm in bt.children)
+                {
+                    SaveMotion(cm.motion, path);
+                }
+            }
+        }
+
+        static void AddAsset(Object o, string path)
+        {
+            if (o == null) return;
+            var existingPath = AssetDatabase.GetAssetPath(o);
+            if (!string.IsNullOrEmpty(existingPath)) return;
+
+            AssetDatabase.AddObjectToAsset(o, path);
+            EditorUtility.SetDirty(o);
         }
 
         static string EnsureFilePath(string fileName)
@@ -49,7 +146,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 Directory.CreateDirectory(folderPath);
             }
-            return Path.Combine(folderPath,fileName);
+            return Path.Combine(folderPath, fileName);
         }
 
         static ScriptableObject EnsureMainAsset(string filePath)
@@ -67,10 +164,10 @@ namespace com.hhotatea.avatar_pose_library.editor
             return asset;
         }
 
-        static ScriptableObject[] EnsureAssets(string filePath)
+        static Object[] EnsureAssets(string filePath)
         {
             var objs = AssetDatabase.LoadAllAssetsAtPath(filePath);
-            return System.Array.ConvertAll(objs, o => (ScriptableObject)o);
+            return System.Array.ConvertAll(objs, o => (Object)o);
         }
     }
 }
