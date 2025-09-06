@@ -36,7 +36,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                            _openAllLabel, _closeAllLabel, _poseListLabel, _openLabel, _closeLabel,
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
                            _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
-                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel, _enablePoseSpace,
+                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel, _enablePoseSpace, _enableUseCache,
                            _createCategoryMenu, _cutCategoryMenu, _deleteCategoryMenu, 
                            _createPoseMenu, _cutPoseMenu, _deletePoseMenu, _clearPosesMenu,
                            _copyCategoryMenu, _pasteCategoryMenu, _pasteNewCategoryMenu,
@@ -190,6 +190,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             _enableMirrorLabel  = new(i.enableMirrorLabel, i.enableMirrorTooltip);
             _enableFxLabel      = new(i.enableFxLabel, i.enableFxTooltip);
             _enablePoseSpace    = new(i.enablePoseSpace, i.enablePoseSpaceTooltip);
+            _enableUseCache     = new(i.enableUseCache, i.enableUseCacheTooltip);
             _poseThumbnailLabel = new("",i.poseThumbnailTooltip);
             _posePreviewLabel   = new("",i.posePreviewTooltip);
             _createCategoryMenu = new(i.createCategoryLabel, i.createCategoryTooltip);
@@ -297,6 +298,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             bool mirror    = Data.enableMirrorParam;
             bool fxLayer   = Data.enableFxParam;
             bool poseSpace = Data.enablePoseSpace;
+            bool useCache  = Data.enableUseCache;
             
             using (new GUILayout.HorizontalScope())
             {
@@ -311,14 +313,30 @@ namespace com.hhotatea.avatar_pose_library.editor
             using (new GUILayout.HorizontalScope())
             {
                 mirror    = EditorGUILayout.ToggleLeft(_enableMirrorLabel, mirror, GUILayout.MaxWidth(TextBoxWidth/2));
+                useCache  = EditorGUILayout.ToggleLeft(_enableUseCache, useCache, GUILayout.MaxWidth(TextBoxWidth/2));
+            }
+
+            if (Data.enableUseCache == true && useCache == false)
+            {
+                // トグルをオフにしたとき、キャッシュの削除を行う
+                var member = _library.GetComponentMember();
+                var combine = AvatarPoseData.Combine(member.Select(e => e.data).ToArray());
+
+                if (combine.Count != 1) return;
+
+                var hash = combine[0].ToHash();
+                Debug.Log($"AssetPoseLibrary.Editor: Deleate Cache {hash}");
+                var cache = new CacheSave(hash);
+                cache.Deleate();
             }
 
 
-            if (height == Data.enableHeightParam && 
-                speed == Data.enableSpeedParam && 
-                mirror == Data.enableMirrorParam && 
+            if (height == Data.enableHeightParam &&
+                speed == Data.enableSpeedParam &&
+                mirror == Data.enableMirrorParam &&
                 fxLayer == Data.enableFxParam &&
-                poseSpace == Data.enablePoseSpace ) return;
+                poseSpace == Data.enablePoseSpace &&
+                useCache == Data.enableUseCache) return;
 
             Apply("Toggle Global Flags", () =>
             {
@@ -330,6 +348,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     so.FindProperty("data.enableMirrorParam").boolValue = mirror;
                     so.FindProperty("data.enableFxParam").boolValue     = fxLayer;
                     so.FindProperty("data.enablePoseSpace").boolValue   = poseSpace;
+                    so.FindProperty("data.enableUseCache").boolValue    = useCache;
                     so.ApplyModifiedProperties();
                 }
             });
@@ -356,7 +375,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                 comp.data.enableSpeedParam    != Data.enableSpeedParam ||
                 comp.data.enableMirrorParam   != Data.enableMirrorParam ||
                 comp.data.enableFxParam       != Data.enableFxParam ||
-                comp.data.enablePoseSpace     != Data.enablePoseSpace )
+                comp.data.enablePoseSpace     != Data.enablePoseSpace ||
+                comp.data.enableUseCache      != Data.enableUseCache)
             {
                 Apply("Sync APL Param", () =>
                 {
@@ -365,6 +385,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
                     FindData("enableFxParam").boolValue     = comp.data.enableFxParam;
                     FindData("enablePoseSpace").boolValue   = comp.data.enablePoseSpace;
+                    FindData("enableUseCache").boolValue    = comp.data.enableUseCache;
                 });
             }
         }

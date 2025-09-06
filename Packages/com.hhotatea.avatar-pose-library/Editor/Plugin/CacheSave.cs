@@ -21,12 +21,26 @@ namespace com.hhotatea.avatar_pose_library.editor
             assets = EnsureAssets(filePath);
         }
 
+        public void Deleate()
+        {
+            if (string.IsNullOrEmpty(filePath)) return;
+            if (AssetDatabase.DeleteAsset(filePath))
+            {
+                AssetDatabase.Refresh();
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to delete asset at {filePath}");
+            }
+        }
+
         public T LoadAsset<T>(string name) where T : Object
         {
             foreach (var obj in assets)
             {
                 if (obj.name == name)
                 {
+                    Debug.Log($"AssetPoseLibrary.CacheSave: Get Cache {fileName} _ {name}");
                     return obj as T;
                 }
             }
@@ -37,7 +51,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             if (asset == null)
             {
-                Debug.LogError("AvatarPoseLibrary.CacheSave: asset is null");
+                Debug.LogError("AvatarPoseLibrary.CacheSave: Asset is Null");
                 return false;
             }
             var obj = LoadAsset<Object>(name);
