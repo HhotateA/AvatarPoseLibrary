@@ -3,6 +3,8 @@ using UnityEditor;
 using System.IO;
 using UnityEditor.Animations;
 using com.hhotatea.avatar_pose_library.component;
+using com.hhotatea.avatar_pose_library.model;
+using Object = UnityEngine.Object;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
@@ -14,24 +16,37 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         public CacheSave(string guid)
         {
-            fileName = Path.ChangeExtension(guid, "asset");
-            filePath = EnsureFilePath(fileName);
+            fileName = guid;
+            filePath = EnsureFilePath(Path.ChangeExtension(guid, "asset"));
             cacheAsset = AssetDatabase.LoadAssetAtPath<CacheModel>(filePath);
         }
 
         public void Deleate()
         {
-            if (string.IsNullOrEmpty(filePath)) return;
-            if (AssetDatabase.DeleteAsset(filePath))
+            if (cacheAsset == null)
             {
-                Debug.Log($"AssetPoseLibrary.CacheSave: Deleate cache at {filePath}");
-                AssetDatabase.Refresh();
+                return;
+            }
+            DeleateAsset(cacheAsset.menuObject);
+            DeleateAsset(cacheAsset.paramObject);
+            DeleateAsset(cacheAsset);
+            AssetDatabase.Refresh();
+            cacheAsset = null;
+        }
+
+        void DeleateAsset(Object o)
+        {
+            if (o == null) return;
+            var existingPath = AssetDatabase.GetAssetPath(o);
+            if (string.IsNullOrEmpty(existingPath)) return;
+            if (AssetDatabase.DeleteAsset(existingPath))
+            {
+                Debug.Log($"AssetPoseLibrary.CacheSave: Deleate cache at {existingPath}");
             }
             else
             {
-                Debug.LogWarning($"AssetPoseLibrary.CacheSave: Failed to delete cache at {filePath}");
+                Debug.LogWarning($"AssetPoseLibrary.CacheSave: Failed to delete cache at {existingPath}");
             }
-            cacheAsset = null;
         }
 
         void Create(CacheModel asset)
@@ -45,6 +60,14 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         public CacheModel LoadAsset()
         {
+            if (cacheAsset?.menuObject)
+            {
+                cacheAsset.menuObject.name = cacheAsset.libraryName;
+            }
+            if (cacheAsset?.paramObject)
+            {
+                cacheAsset.paramObject.name = cacheAsset.libraryName;
+            }
             return cacheAsset;
         }
 
@@ -59,15 +82,27 @@ namespace com.hhotatea.avatar_pose_library.editor
             Deleate();
             Create(asset);
 
+            asset.libraryName = asset.menuObject.name;
             SaveAnimator(asset.locomotionLayer,filePath);
             SaveAnimator(asset.paramLayer,filePath);
             SaveAnimator(asset.trackingLayer,filePath);
+            asset.menuObject = SaveGameObject(asset.menuObject,filePath);
+            asset.paramObject = SaveGameObject(asset.paramObject,filePath);
 
             EditorUtility.SetDirty(asset);
             AssetDatabase.SaveAssets();
             AssetDatabase.ImportAsset(filePath);
             Debug.Log($"AvatarPoseLibrary.CacheSave: Save cache to {fileName}");
             return true;
+        }
+
+        GameObject SaveGameObject(GameObject go, string path)
+        {
+            var prefabName = System.Guid.NewGuid ().ToString ("N").Substring (0, ConstVariables.HashLong);
+            var prefabPath = EnsureFilePath(Path.ChangeExtension(prefabName, "prefab"));
+            var prefab = PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
+            GameObject.DestroyImmediate(go);
+            return prefab;
         }
 
         void SaveAnimator(AnimatorController ac, string path)

@@ -162,7 +162,7 @@ namespace com.hhotatea.avatar_pose_library.model {
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(json ?? ""));
             var sb = new StringBuilder(bytes.Length * 2);
             foreach (var b in bytes) sb.AppendFormat("{0:x2}", b);
-            return sb.ToString();
+            return sb.ToString ().Substring (0, ConstVariables.HashLong);
         }
     }
 

@@ -29,5 +29,6 @@ namespace com.hhotatea.avatar_pose_library.model
         // 1つのIntパラメーターで管理するAnimationの最大数。
         public const int MaxAnimationState = 255;
         public const int PoseFlagCount = 2;
+        public const int HashLong = 16;
     }
 }
