@@ -73,6 +73,8 @@ MonoBehaviour:
   enableFxTooltip: "\u542F\u7528\u9762\u90E8\u52A8\u753B\u3002"
   enablePoseSpace: Follow View Point
   enablePoseSpaceTooltip: Move the camera according to the pose.
+  enableUseCache: Enable Use Cache
+  enableUseCacheTooltip: Use caching to speed up builds.
   createCategoryLabel: "\u521B\u5EFA\u7C7B\u522B"
   createCategoryTooltip: "\u65B0\u5EFA\u7C7B\u522B\u3002"
   deleteCategoryLabel: "\u5220\u9664\u7C7B\u522B"

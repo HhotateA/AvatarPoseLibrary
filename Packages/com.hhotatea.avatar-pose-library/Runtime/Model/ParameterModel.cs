@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace com.hhotatea.avatar_pose_library.model {
     [Serializable]
@@ -64,6 +66,7 @@ namespace com.hhotatea.avatar_pose_library.model {
         public bool enableFxParam = false;
         public bool enableDeepSync = true;
         public bool enablePoseSpace = false;
+        public bool enableUseCache = true;
         public VRCExpressionsMenu target = null;
         public VRCExpressionsMenu settings = null;
         public WriteDefaultType writeDefaultType = WriteDefaultType.MatchAvatar;
@@ -79,31 +82,27 @@ namespace com.hhotatea.avatar_pose_library.model {
 
         /// <summary>
         /// パラメーターの最適化
-        /// pose系は、2回処理が走ってしまうケースがあるので制御する。
+        /// 0906コミットにより、決定論的に動作
         /// </summary>
-        public AvatarPoseData UpdateParameter (bool poseParam = false){
-            if (poseParam)
-            {
-                int paramCount = 999;
-                int paramIndex = 1;
-                string paramName = "";
-                foreach (var category in categories) {
-                    foreach (var pose in category.poses) {
-                        if (paramCount > ConstVariables.MaxAnimationState) {
-                            var guid = System.Guid.NewGuid ().ToString ("N").Substring (0, 8);
-                            paramName = $"AnimPose_{guid}";
-                            paramCount = 1;
-                        }
-
-                        pose.Parameter = paramName;
-                        pose.Value = paramCount;
-                        pose.Index = paramIndex;
-                        paramCount++;
-                        paramIndex++;
+        public AvatarPoseData UpdateParameter (){
+            Guid = ToHash();
+            int paramCount = 999;
+            int paramIndex = 1;
+            string paramName = "";
+            foreach (var category in categories) {
+                foreach (var pose in category.poses) {
+                    if (paramCount > ConstVariables.MaxAnimationState) {
+                        paramName = $"AnimPose_{Guid}_from{paramIndex}";
+                        paramCount = 1;
                     }
+
+                    pose.Parameter = paramName;
+                    pose.Value = paramCount;
+                    pose.Index = paramIndex;
+                    paramCount++;
+                    paramIndex++;
                 }
             }
-            Guid = System.Guid.NewGuid ().ToString ("N").Substring (0, 8);
             return this;
         }
 
@@ -133,21 +132,37 @@ namespace com.hhotatea.avatar_pose_library.model {
                     apd.enableDeepSync = d.enableDeepSync;
                     apd.enablePoseSpace = d.enablePoseSpace;
                     apd.writeDefaultType = d.writeDefaultType;
+                    apd.enableUseCache = d.enableUseCache;
                 }
 
                 if (apd.categories.Count > 0) {
-                    apd.UpdateParameter (true);
+                    apd.UpdateParameter ();
                     result.Add (apd);
                 }
             }
 
             foreach (var apd in data) {
                 if (apd.target == null) continue;
-                apd.UpdateParameter (true);
+                apd.UpdateParameter ();
                 result.Add (apd);
             }
 
             return result;
+        }
+
+        public string ToHash()
+        {
+            string json;
+#if UNITY_EDITOR
+            json = UnityEditor.EditorJsonUtility.ToJson(this, false);
+#else
+            json = JsonUtility.ToJson(this, false);
+#endif
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(json ?? ""));
+            var sb = new StringBuilder(bytes.Length * 2);
+            foreach (var b in bytes) sb.AppendFormat("{0:x2}", b);
+            return sb.ToString ().Substring (0, ConstVariables.HashLong);
         }
     }
 
