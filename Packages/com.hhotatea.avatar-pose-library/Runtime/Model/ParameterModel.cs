@@ -132,6 +132,7 @@ namespace com.hhotatea.avatar_pose_library.model {
                     apd.enableDeepSync = d.enableDeepSync;
                     apd.enablePoseSpace = d.enablePoseSpace;
                     apd.writeDefaultType = d.writeDefaultType;
+                    apd.enableUseCache = d.enableUseCache;
                 }
 
                 if (apd.categories.Count > 0) {

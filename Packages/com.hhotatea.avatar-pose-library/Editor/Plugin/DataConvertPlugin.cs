@@ -46,7 +46,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
         void BuildRuntimeAnimator (GameObject obj, AvatarPoseData data) {
             var result = new GameObject ();
             AnimatorController locomotionLayer, paramLayer, trackingLayer;
-            GetAnimatorController(data, true, out locomotionLayer, out paramLayer, out trackingLayer);
+            GetAnimatorController(data, out locomotionLayer, out paramLayer, out trackingLayer);
             bool matchAvatarWriteDefaults = (data.writeDefaultType == WriteDefaultType.MatchAvatar);
 
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator> ();
@@ -80,36 +80,35 @@ namespace com.hhotatea.avatar_pose_library.editor {
             result.transform.SetParent (obj.transform);
         }
 
-        void GetAnimatorController(AvatarPoseData data, bool useCache,
+        void GetAnimatorController(AvatarPoseData data,
             out AnimatorController locomotionLayer,
             out AnimatorController paramLayer,
             out AnimatorController trackingLayer)
         {
             bool overrideWriteDefault = (data.writeDefaultType == WriteDefaultType.OverrideTrue);
 
-            if (useCache)
+            if (data.enableUseCache)
             {
                 var cache = new CacheSave(data.ToHash());
-                locomotionLayer = cache.LoadAsset<AnimatorController>("locomotionLayer");
-                paramLayer = cache.LoadAsset<AnimatorController>("paramLayer");
-                trackingLayer = cache.LoadAsset<AnimatorController>("trackingLayer");
-
-                if (locomotionLayer == null)
+                var asset = cache.LoadAsset();
+                if (asset)
+                {
+                    locomotionLayer = asset.locomotionLayer;
+                    paramLayer = asset.paramLayer;
+                    trackingLayer = asset.trackingLayer;
+                }
+                else
                 {
                     locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data, overrideWriteDefault);
-                    cache.SaveAsset("locomotionLayer", locomotionLayer);
-                }
-
-                if (paramLayer == null)
-                {
                     paramLayer = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault);
-                    cache.SaveAsset("paramLayer", paramLayer);
-                }
-
-                if (trackingLayer == null)
-                {
                     trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data, overrideWriteDefault);
-                    cache.SaveAsset("trackingLayer", trackingLayer);
+                    asset = new CacheModel()
+                    {
+                        locomotionLayer = locomotionLayer,
+                        paramLayer = paramLayer,
+                        trackingLayer = trackingLayer
+                    };
+                    cache.SaveAsset(asset);
                 }
             }
             else

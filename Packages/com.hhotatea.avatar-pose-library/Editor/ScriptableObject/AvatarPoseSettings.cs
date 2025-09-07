@@ -85,11 +85,13 @@ namespace com.hhotatea.avatar_pose_library.component
         /// AnimatorLayerに使うアセット群
         /// </summary>
         public AnimationClip defaultAnimation;
-        
+
         /// <summary>
         /// Menuの項目
         /// </summary>
         public bool poseSpaceMenu = true;
+
+        public string cachePath = "Assets/_APLCache";
     }
 
     [Serializable]

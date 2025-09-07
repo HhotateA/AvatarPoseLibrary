@@ -2,23 +2,22 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using UnityEditor.Animations;
+using com.hhotatea.avatar_pose_library.component;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
     public class CacheSave
     {
-        const string folderPath = "Assets/_APLCache";
+        string folderPath => DynamicVariables.Settings.cachePath;
         string fileName;
         string filePath;
-        ScriptableObject mainAsset;
-        Object[] assets;
+        CacheModel cacheAsset;
 
         public CacheSave(string guid)
         {
             fileName = Path.ChangeExtension(guid, "asset");
             filePath = EnsureFilePath(fileName);
-            mainAsset = EnsureMainAsset(filePath);
-            assets = EnsureAssets(filePath);
+            cacheAsset = AssetDatabase.LoadAssetAtPath<CacheModel>(filePath);
         }
 
         public void Deleate()
@@ -26,56 +25,56 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (string.IsNullOrEmpty(filePath)) return;
             if (AssetDatabase.DeleteAsset(filePath))
             {
+                Debug.Log($"AssetPoseLibrary.CacheSave: Deleate cache at {filePath}");
                 AssetDatabase.Refresh();
             }
             else
             {
-                Debug.LogWarning($"Failed to delete asset at {filePath}");
+                Debug.LogWarning($"AssetPoseLibrary.CacheSave: Failed to delete cache at {filePath}");
             }
+            cacheAsset = null;
         }
 
-        public T LoadAsset<T>(string name) where T : Object
+        void Create(CacheModel asset)
         {
-            foreach (var obj in assets)
-            {
-                if (obj.name == name)
-                {
-                    Debug.Log($"AssetPoseLibrary.CacheSave: Get Cache {fileName} _ {name}");
-                    return obj as T;
-                }
-            }
-            return null;
+            asset.name = Path.GetFileNameWithoutExtension(filePath);
+            AssetDatabase.CreateAsset(asset, filePath);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"AssetPoseLibrary.CacheSave: Create cache at {filePath}");
+            cacheAsset = asset;
         }
 
-        public bool SaveAsset(string name, Object asset)
+        public CacheModel LoadAsset()
+        {
+            return cacheAsset;
+        }
+
+        public bool SaveAsset(CacheModel asset)
         {
             if (asset == null)
             {
-                Debug.LogError("AvatarPoseLibrary.CacheSave: Asset is Null");
+                Debug.LogError($"AvatarPoseLibrary.CacheSave: Asset is null {asset.name}");
                 return false;
             }
-            var obj = LoadAsset<Object>(name);
-            if (obj)
-            {
-                Undo.DestroyObjectImmediate(obj);
-            }
-            asset.name = name;
-            AddAsset(asset, filePath);
 
-            if (asset is AnimatorController ac)
-            {
-                SaveAnimator(ac,filePath);
-            }
+            Deleate();
+            Create(asset);
 
-            EditorUtility.SetDirty(mainAsset);
+            SaveAnimator(asset.locomotionLayer,filePath);
+            SaveAnimator(asset.paramLayer,filePath);
+            SaveAnimator(asset.trackingLayer,filePath);
+
+            EditorUtility.SetDirty(asset);
             AssetDatabase.SaveAssets();
             AssetDatabase.ImportAsset(filePath);
+            Debug.Log($"AvatarPoseLibrary.CacheSave: Save cache to {fileName}");
             return true;
         }
 
         static void SaveAnimator(AnimatorController ac, string path)
         {
             if (ac == null) return;
+            AddAsset(ac, path);
             foreach (var l in ac.layers)
             {
                 SaveStateMachine(l.stateMachine, path);
@@ -161,27 +160,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                 Directory.CreateDirectory(folderPath);
             }
             return Path.Combine(folderPath, fileName);
-        }
-
-        static ScriptableObject EnsureMainAsset(string filePath)
-        {
-            var asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(filePath);
-
-            if (asset == null)
-            {
-                var root = ScriptableObject.CreateInstance<ScriptableObject>();
-                root.name = Path.GetFileNameWithoutExtension(filePath);
-                AssetDatabase.CreateAsset(root, filePath);
-                AssetDatabase.SaveAssets();
-                asset = root;
-            }
-            return asset;
-        }
-
-        static Object[] EnsureAssets(string filePath)
-        {
-            var objs = AssetDatabase.LoadAllAssetsAtPath(filePath);
-            return System.Array.ConvertAll(objs, o => (Object)o);
         }
     }
 }
