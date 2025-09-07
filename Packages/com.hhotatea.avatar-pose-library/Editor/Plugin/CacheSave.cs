@@ -8,7 +8,6 @@ namespace com.hhotatea.avatar_pose_library.editor
 {
     public class CacheSave
     {
-        string folderPath => DynamicVariables.Settings.cachePath;
         string fileName;
         string filePath;
         CacheModel cacheAsset;
@@ -71,7 +70,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             return true;
         }
 
-        static void SaveAnimator(AnimatorController ac, string path)
+        void SaveAnimator(AnimatorController ac, string path)
         {
             if (ac == null) return;
             AddAsset(ac, path);
@@ -81,7 +80,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
-        static void SaveStateMachine(AnimatorStateMachine st, string path)
+        void SaveStateMachine(AnimatorStateMachine st, string path)
         {
             if (st == null) return;
             AddAsset(st, path);
@@ -115,7 +114,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
-        static void SaveState(AnimatorState st, string path)
+        void SaveState(AnimatorState st, string path)
         {
             if (st == null) return;
             AddAsset(st, path);
@@ -130,7 +129,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             SaveMotion(st.motion, path);
         }
 
-        static void SaveMotion(Motion mt, string path)
+        void SaveMotion(Motion mt, string path)
         {
             if (mt == null) return;
             AddAsset(mt, path);
@@ -143,7 +142,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
-        static void AddAsset(Object o, string path)
+        void AddAsset(Object o, string path)
         {
             if (o == null) return;
             var existingPath = AssetDatabase.GetAssetPath(o);
@@ -153,8 +152,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             EditorUtility.SetDirty(o);
         }
 
-        static string EnsureFilePath(string fileName)
+        string EnsureFilePath(string fileName)
         {
+            var folderPath = DynamicVariables.Settings.cachePath;
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
