@@ -66,7 +66,7 @@ namespace com.hhotatea.avatar_pose_library.model {
         public bool enableFxParam = false;
         public bool enableDeepSync = true;
         public bool enablePoseSpace = false;
-        public bool enableUseCache = true;
+        public bool enableUseCache = false;
         public VRCExpressionsMenu target = null;
         public VRCExpressionsMenu settings = null;
         public WriteDefaultType writeDefaultType = WriteDefaultType.MatchAvatar;

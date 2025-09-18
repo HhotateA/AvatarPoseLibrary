@@ -19,6 +19,14 @@ namespace com.hhotatea.avatar_pose_library.editor
             fileName = guid;
             filePath = EnsureFilePath(Path.ChangeExtension(guid, "asset"));
             cacheAsset = AssetDatabase.LoadAssetAtPath<CacheModel>(filePath);
+            if (cacheAsset == null)
+            {
+                Debug.Log($"AssetPoseLibrary.CacheSave: Load cache failed at {filePath}");
+            }
+            else
+            {
+                Debug.Log($"AssetPoseLibrary.CacheSave: Load cache success at {filePath}");
+            }
         }
 
         public void Deleate()
