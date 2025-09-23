@@ -213,7 +213,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                 i.armTrackingOption,
                 i.fingerTrackingOption,
                 i.footTrackingOption,
-                i.locomotionTrackingOption
+                i.locomotionTrackingOption,
+                i.fxTrackingOption
             };
         }
 
@@ -567,6 +568,13 @@ namespace com.hhotatea.avatar_pose_library.editor
                             poses.All(p=>p.tracking.locomotion == enabled))
                     },
                     new {
+                        Label = DynamicVariables.Settings.Inspector.fxTrackingOption,
+                        Setter = new Action<PoseEntry, bool>((pose, enabled) =>
+                            pose.tracking.fx = enabled),
+                        Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
+                            poses.All(p=>p.tracking.fx == enabled))
+                    },
+                    new {
                         Label = DynamicVariables.Settings.Inspector.isLoopLabel,
                         Setter = new Action<PoseEntry, bool>((pose, enabled) =>
                             pose.tracking.loop = enabled),
@@ -858,6 +866,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             tr.FindPropertyRelative("foot").boolValue = true;
             tr.FindPropertyRelative("finger").boolValue = true;
             tr.FindPropertyRelative("locomotion").boolValue = false;
+            tr.FindPropertyRelative("fx").boolValue = true;
             
             if (i > 0)
             {
@@ -870,6 +879,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 tr.FindPropertyRelative("foot").boolValue = trm.FindPropertyRelative("foot").boolValue;
                 tr.FindPropertyRelative("finger").boolValue = trm.FindPropertyRelative("finger").boolValue;
                 tr.FindPropertyRelative("locomotion").boolValue = trm.FindPropertyRelative("locomotion").boolValue;
+                tr.FindPropertyRelative("fx").boolValue = trm.FindPropertyRelative("fx").boolValue;
             }
 
             if (clip)
@@ -922,9 +932,14 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private static int FlagsFromTracking(SerializedProperty t)
         {
-            int f=0; if(t.FindPropertyRelative("head").boolValue) f|=1<<0; if(t.FindPropertyRelative("arm").boolValue) f|=1<<1;
-            if(t.FindPropertyRelative("finger").boolValue) f|=1<<2; if(t.FindPropertyRelative("foot").boolValue) f|=1<<3;
-            if(t.FindPropertyRelative("locomotion").boolValue) f|=1<<4; return f;
+            int f=0;
+            if (t.FindPropertyRelative("head").boolValue) f |= 1 << 0;
+            if (t.FindPropertyRelative("arm").boolValue) f |= 1 << 1;
+            if (t.FindPropertyRelative("finger").boolValue) f|=1<<2;
+            if (t.FindPropertyRelative("foot").boolValue) f |= 1 << 3;
+            if (t.FindPropertyRelative("locomotion").boolValue) f|=1<<4;
+            if (t.FindPropertyRelative("fx").boolValue) f|=1<<5;
+            return f;
         }
         private static void FlagsToTracking(int f, SerializedProperty t)
         {
@@ -933,6 +948,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             t.FindPropertyRelative("finger").boolValue    =(f&(1<<2))!=0;
             t.FindPropertyRelative("foot").boolValue      =(f&(1<<3))!=0;
             t.FindPropertyRelative("locomotion").boolValue=(f&(1<<4))!=0;
+            t.FindPropertyRelative("fx").boolValue        =(f&(1<<5))!=0;
         }
         private static string GetInstancePath(Transform t)=> t.parent? GetInstancePath(t.parent)+"/"+t.gameObject.GetInstanceID(): t.gameObject.GetInstanceID().ToString();
         
