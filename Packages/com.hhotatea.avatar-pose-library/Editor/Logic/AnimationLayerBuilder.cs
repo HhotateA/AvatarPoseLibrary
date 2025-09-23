@@ -135,71 +135,114 @@ namespace com.hhotatea.avatar_pose_library.logic {
             Space
         }
 
-        public AnimatorControllerLayer TrackingLayer (
-            TrackingType type, string param, 
-            Action<AnimatorStateTransition,AnimatorStateTransition,AnimatorState,AnimatorState> onSetTrasitions = null) {
+        public AnimatorControllerLayer ActiveTrackingLayer(TrackingType type, string param, string playParam)
+        {
+            return TrackingLayer(type,param,
+                (onTo,offTo,onState,offState) => {
+                    var off_1 = offTo;
+                    var off_2 = DuplicateTransition(offTo,onState);
+                    onTo.conditions = new AnimatorCondition[] {
+                        new AnimatorCondition {
+                            mode = AnimatorConditionMode.If,
+                            parameter = param
+                        },
+                        new AnimatorCondition {
+                            mode = AnimatorConditionMode.If,
+                            parameter = playParam
+                        }
+                    };
+                    off_1.conditions = new AnimatorCondition[] {
+                        new AnimatorCondition {
+                            mode = AnimatorConditionMode.IfNot,
+                            parameter = param
+                        }
+                    };
+                    off_2.conditions = new AnimatorCondition[] {
+                        new AnimatorCondition {
+                            mode = AnimatorConditionMode.IfNot,
+                            parameter = playParam
+                        }
+                    };
+                });
+        }
+
+        public AnimatorControllerLayer ConstantTrackingLayer(TrackingType type, string param)
+        {
+            return TrackingLayer(type,param,null);
+        }
+
+        private AnimatorControllerLayer TrackingLayer(
+            TrackingType type, string param,
+            Action<AnimatorStateTransition, AnimatorStateTransition, AnimatorState, AnimatorState> onSetTrasitions)
+        {
             // レイヤー作成
-            AnimatorControllerLayer layer = new AnimatorControllerLayer {
+            AnimatorControllerLayer layer = new AnimatorControllerLayer
+            {
                 name = param,
                 defaultWeight = 0f,
-                stateMachine = new AnimatorStateMachine (),
+                stateMachine = new AnimatorStateMachine(),
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
 
-            var noneClip = MotionBuilder.CreateFrameAnimation (0.3f);
+            var noneClip = MotionBuilder.CreateFrameAnimation(0.3f);
 
             // ステートの初期化
-            var offIdleState = layer.stateMachine.AddState ("OffIdle");
+            var offIdleState = layer.stateMachine.AddState("OffIdle");
             offIdleState.writeDefaultValues = writeDefault_;
             offIdleState.motion = noneClip;
 
-            var offConState = layer.stateMachine.AddState ("OffConState");
+            var offConState = layer.stateMachine.AddState("OffConState");
             offConState.writeDefaultValues = writeDefault_;
             offConState.motion = noneClip;
 
-            var onIdleState = layer.stateMachine.AddState ("OnIdle");
+            var onIdleState = layer.stateMachine.AddState("OnIdle");
             onIdleState.writeDefaultValues = writeDefault_;
             onIdleState.motion = noneClip;
 
-            var onConState = layer.stateMachine.AddState ("OnConState");
+            var onConState = layer.stateMachine.AddState("OnConState");
             onConState.writeDefaultValues = writeDefault_;
             onConState.motion = noneClip;
 
             // コンポーネント
-            switch (type) {
+            switch (type)
+            {
                 case TrackingType.Base:
-                    var locoOn = offConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl> ();
+                    var locoOn = offConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl>();
                     locoOn.disableLocomotion = false;
-                    var locoOff = onConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl> ();
+                    var locoOff = onConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl>();
                     locoOff.disableLocomotion = true;
                     break;
 
                 case TrackingType.Head:
-                    ApplyTrackingLayer (offConState, onConState,
+                    ApplyTrackingLayer(offConState, onConState,
                         off => off.trackingHead = VRC_AnimatorTrackingControl.TrackingType.Tracking,
                         on => on.trackingHead = VRC_AnimatorTrackingControl.TrackingType.Animation);
                     break;
 
                 case TrackingType.Arm:
-                    ApplyTrackingLayer (offConState, onConState,
-                        off => {
+                    ApplyTrackingLayer(offConState, onConState,
+                        off =>
+                        {
                             off.trackingLeftHand = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                             off.trackingRightHand = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                         },
-                        on => {
+                        on =>
+                        {
                             on.trackingLeftHand = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingRightHand = VRC_AnimatorTrackingControl.TrackingType.Animation;
                         });
                     break;
 
                 case TrackingType.Foot:
-                    ApplyTrackingLayer (offConState, onConState,
-                        off => {
+                    ApplyTrackingLayer(offConState, onConState,
+                        off =>
+                        {
                             off.trackingLeftFoot = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                             off.trackingRightFoot = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                             off.trackingHip = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                         },
-                        on => {
+                        on =>
+                        {
                             on.trackingLeftFoot = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingRightFoot = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingHip = VRC_AnimatorTrackingControl.TrackingType.Animation;
@@ -207,59 +250,61 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     break;
 
                 case TrackingType.Finger:
-                    var gestureOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                    var gestureOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     gestureOff.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
                     gestureOff.goalWeight = 1f;
-                    var gestureOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                    var gestureOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     gestureOn.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
                     gestureOn.goalWeight = 0f;
-                    ApplyTrackingLayer (offConState, onConState,
-                        off => {
+                    ApplyTrackingLayer(offConState, onConState,
+                        off =>
+                        {
                             off.trackingLeftFingers = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                             off.trackingRightFingers = VRC_AnimatorTrackingControl.TrackingType.Tracking;
                         },
-                        on => {
+                        on =>
+                        {
                             on.trackingLeftFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                             on.trackingRightFingers = VRC_AnimatorTrackingControl.TrackingType.Animation;
                         });
                     break;
 
                 case TrackingType.Face:
-                    var fxOff = offConState.AddStateMachineBehaviour<VRCAnimatorLayerControl> ();
+                    var fxOff = offConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
                     fxOff.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
                     fxOff.layer = 1;
                     fxOff.goalWeight = 0f;
-                    var fxOn = onConState.AddStateMachineBehaviour<VRCAnimatorLayerControl> ();
+                    var fxOn = onConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
                     fxOn.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
                     fxOn.layer = 1;
                     fxOn.goalWeight = 1f;
                     break;
 
                 case TrackingType.Action:
-                    var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                    var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                     additiveOff.goalWeight = 1f;
-                    var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                    var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                     additiveOn.goalWeight = 0f;
 
-                    var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                    var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                     actionOff.goalWeight = 0f;
 
                     break;
 
                 case TrackingType.Space:
-                    var spaceEnter = onConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace> ();
+                    var spaceEnter = onConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace>();
                     spaceEnter.enterPoseSpace = true;
-                    var spaceExit = offConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace> ();
+                    var spaceExit = offConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace>();
                     spaceExit.enterPoseSpace = false;
 
                     break;
             }
 
             // 遷移の設定
-            var fromOffToOn = offIdleState.AddTransition (onConState);
+            var fromOffToOn = offIdleState.AddTransition(onConState);
             fromOffToOn.canTransitionToSelf = false;
             fromOffToOn.hasExitTime = true;
             fromOffToOn.exitTime = 0f;
@@ -272,14 +317,14 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 }
             };
 
-            var fromOnToOn = onConState.AddTransition (onIdleState);
+            var fromOnToOn = onConState.AddTransition(onIdleState);
             fromOnToOn.canTransitionToSelf = false;
             fromOnToOn.hasExitTime = true;
             fromOnToOn.exitTime = 0f;
             fromOnToOn.hasFixedDuration = true;
             fromOnToOn.duration = 0.0f;
 
-            var fromOnToOff = onIdleState.AddTransition (offConState);
+            var fromOnToOff = onIdleState.AddTransition(offConState);
             fromOnToOff.canTransitionToSelf = false;
             fromOnToOff.hasExitTime = true;
             fromOnToOff.exitTime = 0f;
@@ -292,7 +337,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 }
             };
 
-            var fromOffToOff = offConState.AddTransition (offIdleState);
+            var fromOffToOff = offConState.AddTransition(offIdleState);
             fromOffToOff.canTransitionToSelf = false;
             fromOffToOff.hasExitTime = true;
             fromOffToOff.exitTime = 0f;
@@ -300,10 +345,10 @@ namespace com.hhotatea.avatar_pose_library.logic {
             fromOffToOff.duration = 0.0f;
 
             // PoseSpaceの設定用（Loopより優先するためにここで挿し込む）
-            onSetTrasitions?.Invoke(fromOffToOn,fromOnToOff,onIdleState,offIdleState);
+            onSetTrasitions?.Invoke(fromOffToOn, fromOnToOff, onIdleState, offIdleState);
 
             // Off設定を維持する
-            var loopTransition = onIdleState.AddTransition (onConState);
+            var loopTransition = onIdleState.AddTransition(onConState);
             loopTransition.canTransitionToSelf = false;
             loopTransition.hasExitTime = true;
             loopTransition.exitTime = 0f;
@@ -780,6 +825,27 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
 
             return blendTree;
+        }
+
+        public static AnimatorStateTransition DuplicateTransition(AnimatorStateTransition source, AnimatorState state)
+        {
+            var dest = state.AddTransition(source.destinationState);
+            dest.hasExitTime = source.hasExitTime;
+            dest.exitTime = source.exitTime;
+            dest.hasFixedDuration = source.hasFixedDuration;
+            dest.duration = source.duration;
+            dest.offset = source.offset;
+            dest.interruptionSource = source.interruptionSource;
+            dest.orderedInterruption = source.orderedInterruption;
+            dest.canTransitionToSelf = source.canTransitionToSelf;
+
+            // 条件のコピー
+            foreach (var condition in source.conditions)
+            {
+                dest.AddCondition(condition.mode, condition.threshold, condition.parameter);
+            }
+
+            return dest;
         }
 
     }
