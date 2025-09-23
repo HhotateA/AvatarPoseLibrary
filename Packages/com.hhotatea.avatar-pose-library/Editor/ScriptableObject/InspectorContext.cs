@@ -99,6 +99,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public string fingerTrackingOption = "Finger Lock";
         public string footTrackingOption = "Foot Lock";
         public string locomotionTrackingOption = "Move Lock";
+        public string fxTrackingOption = "Fx Active";
 
     }
 }
