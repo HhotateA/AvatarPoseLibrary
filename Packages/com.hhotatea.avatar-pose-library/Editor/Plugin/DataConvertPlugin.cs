@@ -121,8 +121,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// <param name="obj"></param>
         /// <param name="assets"></param>
         void BuildRuntimeMenu (GameObject obj, CacheModel assets, Transform root) {
-            var result = GameObject.Instantiate(assets.menuObject);
-            result.name = assets.menuObject.name;
+            var result = assets.menuObject;
             foreach (var installer in result.GetComponentsInChildren<ModularAvatarMenuInstaller>())
             {
                 installer.transform.SetParent(obj.transform);
@@ -180,8 +179,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// <param name="obj"></param>
         /// <param name="assets"></param>
         void BuildRuntimeParameter (GameObject obj, CacheModel assets) {
-            var result = GameObject.Instantiate(assets.paramObject);
-            result.name = assets.paramObject.name;
+            var result = assets.paramObject;
             result.transform.SetParent (obj.transform);
         }
     }

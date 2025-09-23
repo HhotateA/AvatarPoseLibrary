@@ -68,14 +68,14 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         public CacheModel LoadAsset()
         {
-            if (cacheAsset?.menuObject)
-            {
-                cacheAsset.menuObject.name = cacheAsset.libraryName;
-            }
-            if (cacheAsset?.paramObject)
-            {
-                cacheAsset.paramObject.name = cacheAsset.libraryName;
-            }
+            CacheModel asset = new CacheModel();
+            asset.locomotionLayer = Object.Instantiate(cacheAsset.locomotionLayer);
+            asset.paramLayer = Object.Instantiate(cacheAsset.paramLayer);
+            asset.trackingLayer = Object.Instantiate(cacheAsset.trackingLayer);
+            asset.menuObject = GameObject.Instantiate(cacheAsset.menuObject);
+            asset.menuObject.name = cacheAsset.menuObject.name;
+            asset.paramObject = GameObject.Instantiate(cacheAsset.paramObject);
+            asset.paramObject.name = cacheAsset.paramObject.name;
             return cacheAsset;
         }
 
