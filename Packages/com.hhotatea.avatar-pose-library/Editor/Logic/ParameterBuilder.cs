@@ -108,9 +108,9 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 nameOrPrefix = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
-                localOnly = !poseLibrary.enableFxParam,
-                defaultValue = 1,
-                saved = true,
+                localOnly = !poseLibrary.enableDeepSync,
+                defaultValue = 0,
+                saved = false,
             });
 
             mResult.parameters.Add(new ParameterConfig

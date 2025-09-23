@@ -90,7 +90,11 @@ namespace com.hhotatea.avatar_pose_library.component
         /// Menuの項目
         /// </summary>
         public bool poseSpaceMenu = true;
+        public bool fxAnimationMenu = true;
 
+        /// <summary>
+        /// キャッシュ用のパス
+        /// </summary>
         public string cachePath = "Assets/_APLCache";
     }
 
