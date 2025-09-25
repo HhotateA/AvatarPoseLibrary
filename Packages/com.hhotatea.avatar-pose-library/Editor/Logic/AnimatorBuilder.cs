@@ -236,9 +236,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Arm, $"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Foot, $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Finger, $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}"));
+            result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Face, $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}", $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"));
+            result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Space, $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}", $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.ResetLayer ($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
-            result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Face, $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",$"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"));
-            result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Space, $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",$"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"));
 
             return result;
         }
