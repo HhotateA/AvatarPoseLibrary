@@ -91,7 +91,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             asset.menuObject.name = cacheAsset.menuObject.name;
             asset.paramObject = GameObject.Instantiate(cacheAsset.paramObject);
             asset.paramObject.name = cacheAsset.paramObject.name;
-            return cacheAsset;
+            return asset;
         }
 
         public bool SaveAsset(CacheModel asset)
