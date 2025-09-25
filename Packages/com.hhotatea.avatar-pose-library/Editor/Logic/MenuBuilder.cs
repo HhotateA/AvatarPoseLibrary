@@ -107,7 +107,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
 
-            if(DynamicVariables.Settings.poseSpaceMenu)
+            if(poseLibrary.enablePoseSpace)
             {
                 CreateToggleMenu(
                     parent,
@@ -151,7 +151,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         static void TrackingMenu(Transform parent, AvatarPoseData poseLibrary)
         {
-            if (DynamicVariables.Settings.fxAnimationMenu)
+            if (poseLibrary.enableFxParam)
             {
                 CreateToggleMenu(
                     parent,

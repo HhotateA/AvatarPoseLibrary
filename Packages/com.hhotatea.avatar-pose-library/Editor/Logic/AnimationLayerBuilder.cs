@@ -62,7 +62,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
                 name = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
-                value = DynamicVariables.Settings.poseSpaceMenu ? 1 : 0,
+                value = 0,
             });
             foreach (var parameter in new String[] {
                     ConstVariables.SpeedParamPrefix,
