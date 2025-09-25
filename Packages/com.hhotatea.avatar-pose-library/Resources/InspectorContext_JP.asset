@@ -101,3 +101,4 @@ MonoBehaviour:
   fingerTrackingOption: "\u6307\u56FA\u5B9A"
   footTrackingOption: "\u811A\u56FA\u5B9A"
   locomotionTrackingOption: "\u79FB\u52D5\u7121\u52B9"
+  fxTrackingOption: "\u8868\u60C5\u5236\u5FA1"

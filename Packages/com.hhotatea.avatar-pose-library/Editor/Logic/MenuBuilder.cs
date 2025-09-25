@@ -107,7 +107,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
 
-            if(DynamicVariables.Settings.poseSpaceMenu)
+            if(poseLibrary.enablePoseSpace)
             {
                 CreateToggleMenu(
                     parent,

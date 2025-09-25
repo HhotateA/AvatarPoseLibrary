@@ -14,6 +14,7 @@ namespace com.hhotatea.avatar_pose_library.model {
         public bool foot = true;
         public bool finger = true;
         public bool locomotion = true;
+        public bool fx = true;
         public float motionSpeed = 1f;
         public bool loop = true;
     }

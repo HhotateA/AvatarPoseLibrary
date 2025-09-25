@@ -51,6 +51,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     ConstVariables.BaseParamPrefix,
                     ConstVariables.MirrorParamPrefix,
                     ConstVariables.ActionParamPrefix,
+                    ConstVariables.FaceParamPrefix,
                 }) {
                 paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
@@ -61,7 +62,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
                 name = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
-                value = DynamicVariables.Settings.poseSpaceMenu ? 1 : 0,
+                value = 0,
             });
             foreach (var parameter in new String[] {
                     ConstVariables.SpeedParamPrefix,
@@ -73,11 +74,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     value = 0.5f,
                 });
             }
-            paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
-                type = VRC_AvatarParameterDriver.ChangeType.Set,
-                name = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
-                value = 1,
-            });
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
                 name = param,
@@ -540,7 +536,8 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 (pose.tracking.arm, ConstVariables.ArmParamPrefix),
                 (pose.tracking.foot, ConstVariables.FootParamPrefix),
                 (pose.tracking.finger, ConstVariables.FingerParamPrefix),
-                (pose.tracking.locomotion, ConstVariables.BaseParamPrefix)
+                (pose.tracking.locomotion, ConstVariables.BaseParamPrefix),
+                (pose.tracking.fx, ConstVariables.FaceParamPrefix)
             };
 
             // メインステートの作成

@@ -66,8 +66,23 @@ namespace com.hhotatea.avatar_pose_library.editor
             cacheAsset = asset;
         }
 
+        bool IsEnableCache()
+        {
+            if (!cacheAsset) return false;
+            if (!cacheAsset.locomotionLayer) return false;
+            if (!cacheAsset.paramLayer) return false;
+            if (!cacheAsset.trackingLayer) return false;
+            if (!cacheAsset.menuObject) return false;
+            if (!cacheAsset.paramObject) return false;
+            return true;
+        }
+
         public CacheModel LoadAsset()
         {
+            if (!IsEnableCache())
+            {
+                return null;
+            }
             CacheModel asset = new CacheModel();
             asset.locomotionLayer = Object.Instantiate(cacheAsset.locomotionLayer);
             asset.paramLayer = Object.Instantiate(cacheAsset.paramLayer);
@@ -76,7 +91,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             asset.menuObject.name = cacheAsset.menuObject.name;
             asset.paramObject = GameObject.Instantiate(cacheAsset.paramObject);
             asset.paramObject.name = cacheAsset.paramObject.name;
-            return cacheAsset;
+            return asset;
         }
 
         public bool SaveAsset(CacheModel asset)

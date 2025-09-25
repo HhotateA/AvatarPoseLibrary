@@ -87,10 +87,8 @@ namespace com.hhotatea.avatar_pose_library.component
         public AnimationClip defaultAnimation;
 
         /// <summary>
-        /// Menuの項目
+        /// キャッシュ用のパス
         /// </summary>
-        public bool poseSpaceMenu = true;
-
         public string cachePath = "Assets/_APLCache";
     }
 

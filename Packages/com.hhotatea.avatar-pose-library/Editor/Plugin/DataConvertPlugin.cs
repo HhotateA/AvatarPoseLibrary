@@ -49,11 +49,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
 
             var cache = new CacheSave(data.ToHash());
             var asset = cache.LoadAsset();
-            if (asset?.locomotionLayer != null &&
-                asset?.paramLayer != null &&
-                asset?.trackingLayer != null &&
-                asset?.menuObject != null &&
-                asset?.paramObject != null)
+            if (asset)
             {
                 return asset;
             }

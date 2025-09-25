@@ -109,8 +109,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 nameOrPrefix = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = !poseLibrary.enableFxParam,
-                defaultValue = 1,
-                saved = true,
+                defaultValue = 0,
+                saved = false,
             });
 
             mResult.parameters.Add(new ParameterConfig
@@ -143,14 +143,17 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
             }
 
-            mResult.parameters.Add(new ParameterConfig
+            if (poseLibrary.enablePoseSpace)
             {
-                nameOrPrefix = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = true,
-                defaultValue = poseLibrary.enablePoseSpace ? 1 : 0,
-                saved = true,
-            });
+                mResult.parameters.Add(new ParameterConfig
+                {
+                    nameOrPrefix = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
+                    syncType = ParameterSyncType.Bool,
+                    localOnly = true,
+                    defaultValue =  1,
+                    saved = true,
+                });
+            }
 
             mResult.parameters.Add(new ParameterConfig
             {
