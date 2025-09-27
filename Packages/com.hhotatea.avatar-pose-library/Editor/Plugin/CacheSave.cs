@@ -88,9 +88,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             asset.paramLayer = Object.Instantiate(cacheAsset.paramLayer);
             asset.trackingLayer = Object.Instantiate(cacheAsset.trackingLayer);
             asset.menuObject = GameObject.Instantiate(cacheAsset.menuObject);
-            asset.menuObject.name = cacheAsset.menuObject.name;
+            asset.menuObject.name = cacheAsset.libraryName;
             asset.paramObject = GameObject.Instantiate(cacheAsset.paramObject);
-            asset.paramObject.name = cacheAsset.paramObject.name;
             return asset;
         }
 
