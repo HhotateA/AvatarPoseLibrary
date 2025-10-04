@@ -69,7 +69,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer {
                     name = $"{ConstVariables.ParamAnimatorPrefix}_{poseLibrary.Guid}",
-                    defaultWeight = 1f,
+                    defaultWeight = 0f,
                     stateMachine = new AnimatorStateMachine (),
                     blendingMode = AnimatorLayerBlendingMode.Override
                 };
