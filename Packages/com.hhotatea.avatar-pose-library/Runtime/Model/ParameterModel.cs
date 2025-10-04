@@ -64,7 +64,7 @@ namespace com.hhotatea.avatar_pose_library.model {
         public bool enableSpeedParam = true;
         public bool enableMirrorParam = true;
         public bool enableTrackingParam = true;
-        public bool enableFxParam = false;
+        public bool enableFxParam = true;
         public bool enableDeepSync = true;
         public bool enablePoseSpace = false;
         public bool enableUseCache = false;
