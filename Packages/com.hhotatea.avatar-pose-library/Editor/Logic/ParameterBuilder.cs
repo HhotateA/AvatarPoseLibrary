@@ -159,7 +159,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 nameOrPrefix = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
-                localOnly = true,
+                localOnly = !poseLibrary.enableDeepSync,
                 defaultValue = 0,
                 saved = false,
             });
