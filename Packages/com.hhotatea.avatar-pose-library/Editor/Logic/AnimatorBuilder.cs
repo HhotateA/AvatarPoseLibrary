@@ -23,38 +23,41 @@ namespace com.hhotatea.avatar_pose_library.logic {
             var builder = new AnimationLayerBuilder (writeDefault);
 
             // レイヤー作成
-            AnimatorControllerLayer layer = new AnimatorControllerLayer {
-                name = $"{ConstVariables.MotionAnimatorPrefix}_{poseLibrary.Guid}",
-                defaultWeight = 1f,
-                stateMachine = new AnimatorStateMachine (),
-                blendingMode = AnimatorLayerBlendingMode.Override,
-            };
-            result.AddLayer (layer);
+            if (poseLibrary.animationType != AnimationType.FxOnly)
+            {
+                AnimatorControllerLayer layer = new AnimatorControllerLayer {
+                    name = $"{ConstVariables.MotionAnimatorPrefix}_{poseLibrary.Guid}",
+                    defaultWeight = 1f,
+                    stateMachine = new AnimatorStateMachine (),
+                    blendingMode = AnimatorLayerBlendingMode.Override,
+                };
+                result.AddLayer (layer);
 
-            // 空のステート（default）
-            var defaultState = layer.stateMachine.AddState ("Default");
-            defaultState.writeDefaultValues = writeDefault;
-            defaultState.motion = MotionBuilder.NoneAnimation;
+                // 空のステート（default）
+                var defaultState = layer.stateMachine.AddState ("Default");
+                defaultState.writeDefaultValues = writeDefault;
+                defaultState.motion = MotionBuilder.NoneAnimation;
 
-            // リセットへの遷移
-            var resetTransition = layer.stateMachine.AddAnyStateTransition (defaultState);
-            resetTransition.canTransitionToSelf = false;
-            resetTransition.hasExitTime = false;
-            resetTransition.hasFixedDuration = true;
-            resetTransition.duration = 0.1f;
-            resetTransition.conditions = new AnimatorCondition[] {
-                new AnimatorCondition () {
-                mode = AnimatorConditionMode.If,
-                parameter = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
-                }
-            };
+                // リセットへの遷移
+                var resetTransition = layer.stateMachine.AddAnyStateTransition (defaultState);
+                resetTransition.canTransitionToSelf = false;
+                resetTransition.hasExitTime = false;
+                resetTransition.hasFixedDuration = true;
+                resetTransition.duration = 0.1f;
+                resetTransition.conditions = new AnimatorCondition[] {
+                    new AnimatorCondition () {
+                    mode = AnimatorConditionMode.If,
+                    parameter = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
+                    }
+                };
 
-            // ポーズのレイヤー追加
-            foreach (var category in poseLibrary.categories) {
-                foreach (var pose in category.poses) {
-                    builder.AddLocomotionLayer (pose, layer, defaultState,
-                        poseLibrary.enableHeightParam, poseLibrary.enableSpeedParam, poseLibrary.enableMirrorParam,
-                        poseLibrary.Guid);
+                // ポーズのレイヤー追加
+                foreach (var category in poseLibrary.categories) {
+                    foreach (var pose in category.poses) {
+                        builder.AddLocomotionLayer (pose, layer, defaultState,
+                            poseLibrary.enableHeightParam, poseLibrary.enableSpeedParam, poseLibrary.enableMirrorParam,
+                            poseLibrary.Guid);
+                    }
                 }
             }
 
