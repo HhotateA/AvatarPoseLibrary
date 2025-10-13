@@ -74,6 +74,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (!cacheAsset.trackingLayer) return false;
             if (!cacheAsset.menuObject) return false;
             if (!cacheAsset.paramObject) return false;
+            if (cacheAsset.version != DynamicVariables.CurrentVersion.ToString()) return false;
             return true;
         }
 
@@ -84,9 +85,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 return null;
             }
             CacheModel asset = new CacheModel();
-            asset.locomotionLayer = Object.Instantiate(cacheAsset.locomotionLayer);
-            asset.paramLayer = Object.Instantiate(cacheAsset.paramLayer);
-            asset.trackingLayer = Object.Instantiate(cacheAsset.trackingLayer);
+            asset.locomotionLayer = cacheAsset.locomotionLayer;
+            asset.paramLayer = cacheAsset.paramLayer;
+            asset.trackingLayer = cacheAsset.trackingLayer;
             asset.menuObject = GameObject.Instantiate(cacheAsset.menuObject);
             asset.menuObject.name = cacheAsset.libraryName;
             asset.paramObject = GameObject.Instantiate(cacheAsset.paramObject);
@@ -104,6 +105,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             Deleate();
             Create(asset);
 
+            asset.version = DynamicVariables.CurrentVersion.ToString();
             asset.libraryName = asset.menuObject.name;
             SaveAnimator(asset.locomotionLayer,filePath);
             SaveAnimator(asset.paramLayer,filePath);

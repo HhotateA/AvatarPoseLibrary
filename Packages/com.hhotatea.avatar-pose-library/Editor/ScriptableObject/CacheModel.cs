@@ -6,6 +6,7 @@ namespace com.hhotatea.avatar_pose_library.component
 {
     public class CacheModel : ScriptableObject
     {
+        public string version;
         public string libraryName;
         public AnimatorController locomotionLayer;
         public AnimatorController paramLayer;
