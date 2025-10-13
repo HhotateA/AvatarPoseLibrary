@@ -5,6 +5,8 @@ using UnityEditor.Animations;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.model;
 using Object = UnityEngine.Object;
+using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
@@ -75,8 +77,50 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (!cacheAsset.menuObject) return false;
             if (!cacheAsset.paramObject) return false;
             if (cacheAsset.version != DynamicVariables.CurrentVersion.ToString()) return false;
+            if (CheckAnimatorError(cacheAsset.paramLayer)) return false;
             return true;
         }
+
+        /// <summary>
+        /// アニメーターの改竄をチェックする。
+        /// 本来は必要ないが、他ツールによってTrackingControlが無効化される場合があり、その対策。
+        /// </summary>
+        /// <param name="fxAnim"></param>
+        /// <returns></returns>
+        static bool CheckAnimatorError(AnimatorController fxAnim)
+        {
+            foreach (var layer in fxAnim.layers)
+            {
+                if (!layer.name.Contains(ConstVariables.HeadParamPrefix))
+                {
+                    continue;
+                }
+                bool isError = true;
+                foreach(var s in layer.stateMachine.states)
+                {
+                    foreach (var beh in s.state.behaviours)
+                    {
+                        if (beh is VRCAnimatorTrackingControl ctrl)
+                        {
+                            Debug.LogWarning(layer.name);
+                            if (ctrl.trackingHead == VRC_AnimatorTrackingControl.TrackingType.NoChange)
+                            {
+                                // TrackingがNoChangeになっていたら異常
+                                Debug.Log($"AssetPoseLibrary.CacheSave: Ditect animator's error");
+                                return true;
+                            }
+                            else
+                            {
+                                // 一つでも見つけないと異常なので、ここで代入
+                                isError = false;
+                            }
+                        }
+                    }
+                }
+                return isError;
+            }
+            return true;
+        } 
 
         public CacheModel LoadAsset()
         {
