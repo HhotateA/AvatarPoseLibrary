@@ -108,7 +108,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 nameOrPrefix = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
-                localOnly = !poseLibrary.enableFxParam,
+                localOnly = poseLibrary.animationType == AnimationType.LocomotionOnly,
                 defaultValue = 0,
                 saved = false,
             });

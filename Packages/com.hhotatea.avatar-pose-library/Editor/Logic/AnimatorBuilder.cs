@@ -159,6 +159,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
 
             // レイヤー作成
+            if (poseLibrary.animationType != AnimationType.LocomotionOnly)
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer {
                     name = $"{ConstVariables.FxAnimatorPrefix}_{poseLibrary.Guid}",
