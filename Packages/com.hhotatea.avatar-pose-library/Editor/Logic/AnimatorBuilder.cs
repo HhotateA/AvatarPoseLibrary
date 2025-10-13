@@ -23,55 +23,13 @@ namespace com.hhotatea.avatar_pose_library.logic {
             var builder = new AnimationLayerBuilder (writeDefault);
 
             // レイヤー作成
-            AnimatorControllerLayer layer = new AnimatorControllerLayer {
-                name = $"{ConstVariables.MotionAnimatorPrefix}_{poseLibrary.Guid}",
-                defaultWeight = 1f,
-                stateMachine = new AnimatorStateMachine (),
-                blendingMode = AnimatorLayerBlendingMode.Override,
-            };
-            result.AddLayer (layer);
-
-            // 空のステート（default）
-            var defaultState = layer.stateMachine.AddState ("Default");
-            defaultState.writeDefaultValues = writeDefault;
-            defaultState.motion = MotionBuilder.NoneAnimation;
-
-            // リセットへの遷移
-            var resetTransition = layer.stateMachine.AddAnyStateTransition (defaultState);
-            resetTransition.canTransitionToSelf = false;
-            resetTransition.hasExitTime = false;
-            resetTransition.hasFixedDuration = true;
-            resetTransition.duration = 0.1f;
-            resetTransition.conditions = new AnimatorCondition[] {
-                new AnimatorCondition () {
-                mode = AnimatorConditionMode.If,
-                parameter = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
-                }
-            };
-
-            // ポーズのレイヤー追加
-            foreach (var category in poseLibrary.categories) {
-                foreach (var pose in category.poses) {
-                    builder.AddLocomotionLayer (pose, layer, defaultState,
-                        poseLibrary.enableHeightParam, poseLibrary.enableSpeedParam, poseLibrary.enableMirrorParam,
-                        poseLibrary.Guid);
-                }
-            }
-
-            return result;
-        }
-
-        public static AnimatorController BuildFxAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
-            var result = BaseAnimator (poseLibrary, writeDefault);
-            var builder = new AnimationLayerBuilder (writeDefault);
-
-            // レイヤー作成
+            if (poseLibrary.animationType != AnimationType.FxOnly)
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer {
-                    name = $"{ConstVariables.ParamAnimatorPrefix}_{poseLibrary.Guid}",
-                    defaultWeight = 0f,
+                    name = $"{ConstVariables.MotionAnimatorPrefix}_{poseLibrary.Guid}",
+                    defaultWeight = 1f,
                     stateMachine = new AnimatorStateMachine (),
-                    blendingMode = AnimatorLayerBlendingMode.Override
+                    blendingMode = AnimatorLayerBlendingMode.Override,
                 };
                 result.AddLayer (layer);
 
@@ -79,61 +37,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 var defaultState = layer.stateMachine.AddState ("Default");
                 defaultState.writeDefaultValues = writeDefault;
                 defaultState.motion = MotionBuilder.NoneAnimation;
-
-                // トラッキングリセット用のステート
-                var resetState = layer.stateMachine.AddState ("Reset");
-                resetState.writeDefaultValues = writeDefault;
-                resetState.motion = MotionBuilder.FrameAnimation; 
-                {
-                    var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> (); 
-                    for (int i = 0; i < ConstVariables.PoseFlagCount; i++) {
-                        trackingOffParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter () {
-                            type = VRC_AvatarParameterDriver.ChangeType.Set,
-                            name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
-                            value = 0
-                        });
-                    }
-                    trackingOffParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
-                        type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
-                        value = 0f,
-                    });
-                    trackingOffParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
-                        type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
-                        value = 0f,
-                    });
-                }
-                // デフォルトへの遷移
-                var defaultTransition = resetState.AddTransition (defaultState);
-                defaultTransition.canTransitionToSelf = false;
-                defaultTransition.hasExitTime = true;
-                defaultTransition.hasFixedDuration = true;
-                defaultTransition.duration = 0.0f;
-
-                Dictionary<string, AnimatorState> preResets = new ();
-                foreach (var param in poseLibrary.Parameters) {
-                    // 変数リセット用のステート
-                    var preResetState = layer.stateMachine.AddState ("PreReset" + param);
-                    preResetState.writeDefaultValues = writeDefault;
-                    preResetState.motion = MotionBuilder.FrameAnimation;
-                    {
-                        var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
-                        resetParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
-                            type = VRC_AvatarParameterDriver.ChangeType.Set,
-                            name = param,
-                            value = 0,
-                        });
-                    }
-                    // Preからリセットへの遷移
-                    var bypassTransition = preResetState.AddTransition (resetState);
-                    bypassTransition.canTransitionToSelf = false;
-                    bypassTransition.hasExitTime = true;
-                    bypassTransition.hasFixedDuration = true;
-                    bypassTransition.duration = 0.0f;
-                    // Dictionaryに登録
-                    preResets.Add (param, preResetState);
-                }
 
                 // リセットへの遷移
                 var resetTransition = layer.stateMachine.AddAnyStateTransition (defaultState);
@@ -151,7 +54,116 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 // ポーズのレイヤー追加
                 foreach (var category in poseLibrary.categories) {
                     foreach (var pose in category.poses) {
-                        builder.AddParamLayer (
+                        builder.AddLocomotionLayer (pose, layer, defaultState,
+                            poseLibrary.enableHeightParam, poseLibrary.enableSpeedParam, poseLibrary.enableMirrorParam,
+                            poseLibrary.Guid);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public static AnimatorController BuildFxAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
+            var result = BaseAnimator (poseLibrary, writeDefault);
+            var builder = new AnimationLayerBuilder (writeDefault);
+
+            // レイヤー作成
+            {
+                AnimatorControllerLayer layer = new AnimatorControllerLayer
+                {
+                    name = $"{ConstVariables.ParamAnimatorPrefix}_{poseLibrary.Guid}",
+                    defaultWeight = 0f,
+                    stateMachine = new AnimatorStateMachine(),
+                    blendingMode = AnimatorLayerBlendingMode.Override
+                };
+                result.AddLayer(layer);
+
+                // 空のステート（default）
+                var defaultState = layer.stateMachine.AddState("Default");
+                defaultState.writeDefaultValues = writeDefault;
+                defaultState.motion = MotionBuilder.NoneAnimation;
+
+                // トラッキングリセット用のステート
+                var resetState = layer.stateMachine.AddState("Reset");
+                resetState.writeDefaultValues = writeDefault;
+                resetState.motion = MotionBuilder.FrameAnimation;
+                {
+                    var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                    for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
+                    {
+                        trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
+                        {
+                            type = VRC_AvatarParameterDriver.ChangeType.Set,
+                            name = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
+                            value = 0
+                        });
+                    }
+                    trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
+                        value = 0f,
+                    });
+                    trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
+                        value = 0f,
+                    });
+                }
+                // デフォルトへの遷移
+                var defaultTransition = resetState.AddTransition(defaultState);
+                defaultTransition.canTransitionToSelf = false;
+                defaultTransition.hasExitTime = true;
+                defaultTransition.hasFixedDuration = true;
+                defaultTransition.duration = 0.0f;
+
+                Dictionary<string, AnimatorState> preResets = new();
+                foreach (var param in poseLibrary.Parameters)
+                {
+                    // 変数リセット用のステート
+                    var preResetState = layer.stateMachine.AddState("PreReset" + param);
+                    preResetState.writeDefaultValues = writeDefault;
+                    preResetState.motion = MotionBuilder.FrameAnimation;
+                    {
+                        var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                        resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                        {
+                            type = VRC_AvatarParameterDriver.ChangeType.Set,
+                            name = param,
+                            value = 0,
+                        });
+                    }
+                    // Preからリセットへの遷移
+                    var bypassTransition = preResetState.AddTransition(resetState);
+                    bypassTransition.canTransitionToSelf = false;
+                    bypassTransition.hasExitTime = true;
+                    bypassTransition.hasFixedDuration = true;
+                    bypassTransition.duration = 0.0f;
+                    // Dictionaryに登録
+                    preResets.Add(param, preResetState);
+                }
+
+                // リセットへの遷移
+                var resetTransition = layer.stateMachine.AddAnyStateTransition(defaultState);
+                resetTransition.canTransitionToSelf = false;
+                resetTransition.hasExitTime = false;
+                resetTransition.hasFixedDuration = true;
+                resetTransition.duration = 0.1f;
+                resetTransition.conditions = new AnimatorCondition[] {
+                    new AnimatorCondition () {
+                    mode = AnimatorConditionMode.If,
+                    parameter = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
+                    }
+                };
+
+                // ポーズのレイヤー追加
+                foreach (var category in poseLibrary.categories)
+                {
+                    foreach (var pose in category.poses)
+                    {
+                        builder.AddParamLayer(
                             layer, pose, poseLibrary.Parameters, poseLibrary.Guid,
                             defaultState, resetState, preResets[pose.Parameter]);
                     }
@@ -159,6 +171,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
 
             // レイヤー作成
+            if (poseLibrary.animationType != AnimationType.LocomotionOnly)
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer {
                     name = $"{ConstVariables.FxAnimatorPrefix}_{poseLibrary.Guid}",

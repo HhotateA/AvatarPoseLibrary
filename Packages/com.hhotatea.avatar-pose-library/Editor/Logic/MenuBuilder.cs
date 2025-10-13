@@ -151,7 +151,9 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         static void TrackingMenu(Transform parent, AvatarPoseData poseLibrary)
         {
-            if (poseLibrary.enableFxParam)
+            // --- トグルメニューを追加 ---
+
+            if (poseLibrary.animationType != AnimationType.LocomotionOnly)
             {
                 CreateToggleMenu(
                     parent,
@@ -161,41 +163,43 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
             
-            // --- トグルメニューを追加 ---
-            CreateToggleMenu(
-                parent,
-                DynamicVariables.Settings.Menu.head.title,
-                DynamicVariables.Settings.Menu.head.thumbnail,
-                $"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}"
-            );
+            if (poseLibrary.animationType != AnimationType.FxOnly)
+            {
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.head.title,
+                    DynamicVariables.Settings.Menu.head.thumbnail,
+                    $"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}"
+                );
 
-            CreateToggleMenu(
-                parent,
-                DynamicVariables.Settings.Menu.arm.title,
-                DynamicVariables.Settings.Menu.arm.thumbnail,
-                $"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}"
-            );
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.arm.title,
+                    DynamicVariables.Settings.Menu.arm.thumbnail,
+                    $"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}"
+                );
 
-            CreateToggleMenu(
-                parent,
-                DynamicVariables.Settings.Menu.finger.title,
-                DynamicVariables.Settings.Menu.finger.thumbnail,
-                $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}"
-            );
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.finger.title,
+                    DynamicVariables.Settings.Menu.finger.thumbnail,
+                    $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}"
+                );
 
-            CreateToggleMenu(
-                parent,
-                DynamicVariables.Settings.Menu.foot.title,
-                DynamicVariables.Settings.Menu.foot.thumbnail,
-                $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"
-            );
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.foot.title,
+                    DynamicVariables.Settings.Menu.foot.thumbnail,
+                    $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"
+                );
 
-            CreateToggleMenu(
-                parent,
-                DynamicVariables.Settings.Menu.locomotion.title,
-                DynamicVariables.Settings.Menu.locomotion.thumbnail,
-                $"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}"
-            );
+                CreateToggleMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.locomotion.title,
+                    DynamicVariables.Settings.Menu.locomotion.thumbnail,
+                    $"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}"
+                );
+            }
         }
 
         /// <summary>

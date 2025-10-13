@@ -5,6 +5,8 @@ using UnityEditor.Animations;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.model;
 using Object = UnityEngine.Object;
+using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
@@ -74,8 +76,51 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (!cacheAsset.trackingLayer) return false;
             if (!cacheAsset.menuObject) return false;
             if (!cacheAsset.paramObject) return false;
+            if (cacheAsset.version != DynamicVariables.CurrentVersion.ToString()) return false;
+            if (CheckAnimatorError(cacheAsset.paramLayer)) return false;
             return true;
         }
+
+        /// <summary>
+        /// アニメーターの改竄をチェックする。
+        /// 本来は必要ないが、他ツールによってTrackingControlが無効化される場合があり、その対策。
+        /// </summary>
+        /// <param name="fxAnim"></param>
+        /// <returns></returns>
+        static bool CheckAnimatorError(AnimatorController fxAnim)
+        {
+            foreach (var layer in fxAnim.layers)
+            {
+                if (!layer.name.Contains(ConstVariables.HeadParamPrefix))
+                {
+                    continue;
+                }
+                bool isError = true;
+                foreach(var s in layer.stateMachine.states)
+                {
+                    foreach (var beh in s.state.behaviours)
+                    {
+                        if (beh is VRCAnimatorTrackingControl ctrl)
+                        {
+                            Debug.LogWarning(layer.name);
+                            if (ctrl.trackingHead == VRC_AnimatorTrackingControl.TrackingType.NoChange)
+                            {
+                                // TrackingがNoChangeになっていたら異常
+                                Debug.Log($"AssetPoseLibrary.CacheSave: Ditect animator's error");
+                                return true;
+                            }
+                            else
+                            {
+                                // 一つでも見つけないと異常なので、ここで代入
+                                isError = false;
+                            }
+                        }
+                    }
+                }
+                return isError;
+            }
+            return true;
+        } 
 
         public CacheModel LoadAsset()
         {
@@ -84,9 +129,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 return null;
             }
             CacheModel asset = new CacheModel();
-            asset.locomotionLayer = Object.Instantiate(cacheAsset.locomotionLayer);
-            asset.paramLayer = Object.Instantiate(cacheAsset.paramLayer);
-            asset.trackingLayer = Object.Instantiate(cacheAsset.trackingLayer);
+            asset.locomotionLayer = cacheAsset.locomotionLayer;
+            asset.paramLayer = cacheAsset.paramLayer;
+            asset.trackingLayer = cacheAsset.trackingLayer;
             asset.menuObject = GameObject.Instantiate(cacheAsset.menuObject);
             asset.menuObject.name = cacheAsset.libraryName;
             asset.paramObject = GameObject.Instantiate(cacheAsset.paramObject);
@@ -104,6 +149,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             Deleate();
             Create(asset);
 
+            asset.version = DynamicVariables.CurrentVersion.ToString();
             asset.libraryName = asset.menuObject.name;
             SaveAnimator(asset.locomotionLayer,filePath);
             SaveAnimator(asset.paramLayer,filePath);

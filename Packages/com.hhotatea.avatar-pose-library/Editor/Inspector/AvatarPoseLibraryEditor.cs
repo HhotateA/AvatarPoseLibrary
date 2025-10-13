@@ -297,7 +297,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             bool height    = Data.enableHeightParam;
             bool speed     = Data.enableSpeedParam;
             bool mirror    = Data.enableMirrorParam;
-            bool fxLayer   = Data.enableFxParam;
             bool poseSpace = Data.enablePoseSpace;
             bool useCache  = Data.enableUseCache;
             
@@ -305,12 +304,10 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 height = EditorGUILayout.ToggleLeft(_enableHeightLabel, height, GUILayout.MaxWidth(TextBoxWidth / 2));
                 useCache  = EditorGUILayout.ToggleLeft(_enableUseCache, useCache, GUILayout.MaxWidth(TextBoxWidth/2));
-                //fxLayer = EditorGUILayout.ToggleLeft(_enableFxLabel, fxLayer, GUILayout.MaxWidth(TextBoxWidth / 2));
             }
             using (new GUILayout.HorizontalScope())
             {
                 speed     = EditorGUILayout.ToggleLeft(_enableSpeedLabel,  speed, GUILayout.MaxWidth(TextBoxWidth/2));
-                //poseSpace = EditorGUILayout.ToggleLeft(_enablePoseSpace, poseSpace, GUILayout.MaxWidth(TextBoxWidth/2));
             }
             using (new GUILayout.HorizontalScope())
             {
@@ -335,7 +332,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (height == Data.enableHeightParam &&
                 speed == Data.enableSpeedParam &&
                 mirror == Data.enableMirrorParam &&
-                fxLayer == Data.enableFxParam &&
                 poseSpace == Data.enablePoseSpace &&
                 useCache == Data.enableUseCache) return;
 
@@ -347,7 +343,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     so.FindProperty("data.enableHeightParam").boolValue = height;
                     so.FindProperty("data.enableSpeedParam").boolValue  = speed;
                     so.FindProperty("data.enableMirrorParam").boolValue = mirror;
-                    so.FindProperty("data.enableFxParam").boolValue     = fxLayer;
                     so.FindProperty("data.enablePoseSpace").boolValue   = poseSpace;
                     so.FindProperty("data.enableUseCache").boolValue    = useCache;
                     so.ApplyModifiedProperties();
@@ -375,7 +370,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (comp.data.enableHeightParam   != Data.enableHeightParam ||
                 comp.data.enableSpeedParam    != Data.enableSpeedParam ||
                 comp.data.enableMirrorParam   != Data.enableMirrorParam ||
-                comp.data.enableFxParam       != Data.enableFxParam ||
                 comp.data.enablePoseSpace     != Data.enablePoseSpace ||
                 comp.data.enableUseCache      != Data.enableUseCache)
             {
@@ -384,7 +378,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     FindData("enableHeightParam").boolValue = comp.data.enableHeightParam;
                     FindData("enableSpeedParam").boolValue  = comp.data.enableSpeedParam;
                     FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
-                    FindData("enableFxParam").boolValue     = comp.data.enableFxParam;
                     FindData("enablePoseSpace").boolValue   = comp.data.enablePoseSpace;
                     FindData("enableUseCache").boolValue    = comp.data.enableUseCache;
                 });
