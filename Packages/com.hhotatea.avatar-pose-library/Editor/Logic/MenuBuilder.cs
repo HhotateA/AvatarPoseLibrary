@@ -41,42 +41,42 @@ namespace com.hhotatea.avatar_pose_library.logic
 
 
             // メニューの構造を作る
-                foreach (var category in poseLibrary.categories)
+            foreach (var category in poseLibrary.categories)
+            {
+                var folder = new GameObject(category.name);
+                folder.transform.SetParent(result.transform);
+                if (category.target != null)
                 {
-                    var folder = new GameObject(category.name);
-                    folder.transform.SetParent(result.transform);
-                    if (category.target != null)
-                    {
-                        var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
-                        installer.installTargetMenu = category.target;
-                    }
-
-                    var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
-                    mFolder.MenuSource = SubmenuSource.Children;
-                    mFolder.Control.icon = category.thumbnail;
-                    mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-
-                    // 各ポーズステート
-                    foreach (var pose in category.poses)
-                    {
-                        var item = new GameObject(pose.name);
-                        item.transform.SetParent(folder.transform);
-                        if (pose.target != null)
-                        {
-                            var installer = item.AddComponent<ModularAvatarMenuInstaller>();
-                            installer.installTargetMenu = pose.target;
-                        }
-
-                        var mItem = item.AddComponent<ModularAvatarMenuItem>();
-                        mItem.Control.icon = pose.thumbnail;
-                        mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
-                        mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
-                        {
-                            name = pose.Parameter
-                        };
-                        mItem.Control.value = pose.Value;
-                    }
+                    var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
+                    installer.installTargetMenu = category.target;
                 }
+
+                var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
+                mFolder.MenuSource = SubmenuSource.Children;
+                mFolder.Control.icon = category.thumbnail;
+                mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
+
+                // 各ポーズステート
+                foreach (var pose in category.poses)
+                {
+                    var item = new GameObject(pose.name);
+                    item.transform.SetParent(folder.transform);
+                    if (pose.target != null)
+                    {
+                        var installer = item.AddComponent<ModularAvatarMenuInstaller>();
+                        installer.installTargetMenu = pose.target;
+                    }
+
+                    var mItem = item.AddComponent<ModularAvatarMenuItem>();
+                    mItem.Control.icon = pose.thumbnail;
+                    mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
+                    mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
+                    {
+                        name = pose.Parameter
+                    };
+                    mItem.Control.value = pose.Value;
+                }
+            }
 
             return result;
         }
@@ -153,7 +153,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             // --- トグルメニューを追加 ---
 
-            if (poseLibrary.animationType != AnimationType.LocomotionOnly)
+            if (!poseLibrary.enableFxAnimator)
             {
                 CreateToggleMenu(
                     parent,
@@ -163,7 +163,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
             
-            if (poseLibrary.animationType != AnimationType.FxOnly)
+            if (!poseLibrary.enableLocomotionAnimator)
             {
                 CreateToggleMenu(
                     parent,

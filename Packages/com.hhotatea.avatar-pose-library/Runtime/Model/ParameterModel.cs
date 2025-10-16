@@ -68,10 +68,11 @@ namespace com.hhotatea.avatar_pose_library.model {
         public bool enablePoseSpace = true; // 視線追従の機能を有効にする
         public bool enableUseCache = false; // キャッシュを使用してビルド時間を短縮する
 
-        public VRCExpressionsMenu target = null;
-        public VRCExpressionsMenu settings = null;
+        public VRCExpressionsMenu target = null; // メニューの登録先を上書きする
+        public VRCExpressionsMenu settings = null; // 設定メニューのみ分離する
         public WriteDefaultType writeDefaultType = WriteDefaultType.MatchAvatar;
-        public AnimationType animationType = AnimationType.Both;
+        public bool enableLocomotionAnimator;
+        public bool enableFxAnimator;
 
         // システムが使用
         public string Guid { get; set; }
@@ -122,19 +123,22 @@ namespace com.hhotatea.avatar_pose_library.model {
                 foreach (var d in data) {
                     if (d.name != apd.name) continue;
                     if (d.target != null) continue;
-                    apd.categories.AddRange (d.categories);
-                    apd.thumbnail = d.thumbnail;
-
-                    // とりあえず、値を代入し続ける。（Index最下位の者が採用）
-                    apd.enableHeightParam = d.enableHeightParam;
-                    apd.enableSpeedParam = d.enableSpeedParam;
-                    apd.enableMirrorParam = d.enableMirrorParam;
-                    apd.enableTrackingParam = d.enableTrackingParam;
-                    apd.enableDeepSync = d.enableDeepSync;
-                    apd.enablePoseSpace = d.enablePoseSpace;
-                    apd.enableUseCache = d.enableUseCache;
-                    apd.writeDefaultType = d.writeDefaultType;
-                    apd.animationType = d.animationType;
+                    if(!apd.thumbnail)
+                    {
+                        // 変数の同期
+                        apd.thumbnail = d.thumbnail;
+                        apd.enableHeightParam = d.enableHeightParam;
+                        apd.enableSpeedParam = d.enableSpeedParam;
+                        apd.enableMirrorParam = d.enableMirrorParam;
+                        apd.enableTrackingParam = d.enableTrackingParam;
+                        apd.enableDeepSync = d.enableDeepSync;
+                        apd.enablePoseSpace = d.enablePoseSpace;
+                        apd.enableUseCache = d.enableUseCache;
+                        apd.writeDefaultType = d.writeDefaultType;
+                        apd.enableLocomotionAnimator = d.enableLocomotionAnimator;
+                        apd.enableFxAnimator = d.enableFxAnimator;
+                    }
+                    apd.categories.AddRange(d.categories);
                 }
 
                 if (apd.categories.Count > 0) {
@@ -172,11 +176,5 @@ namespace com.hhotatea.avatar_pose_library.model {
         MatchAvatar,
         OverrideTrue,
         OverrideFalse
-    }
-
-    public enum AnimationType {
-        Both,
-        FxOnly,
-        LocomotionOnly
     }
 }

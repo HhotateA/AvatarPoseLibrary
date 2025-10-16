@@ -23,7 +23,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             var builder = new AnimationLayerBuilder (writeDefault);
 
             // レイヤー作成
-            if (poseLibrary.animationType != AnimationType.FxOnly)
+            if (poseLibrary.enableLocomotionAnimator)
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer {
                     name = $"{ConstVariables.MotionAnimatorPrefix}_{poseLibrary.Guid}",
@@ -171,7 +171,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
 
             // レイヤー作成
-            if (poseLibrary.animationType != AnimationType.LocomotionOnly)
+            if (poseLibrary.enableFxAnimator)
             {
                 AnimatorControllerLayer layer = new AnimatorControllerLayer {
                     name = $"{ConstVariables.FxAnimatorPrefix}_{poseLibrary.Guid}",
