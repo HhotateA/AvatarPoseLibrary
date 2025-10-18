@@ -27,6 +27,7 @@ namespace com.hhotatea.avatar_pose_library.model {
         public AnimationClip beforeAnimationClip;
         public AnimationClip afterAnimationClip;
         public AnimationClip animationClip;
+        public AudioClip audioClip;
         public VRCExpressionsMenu target = null;
 
         // 固定するパラメーターの選択
@@ -81,7 +82,11 @@ namespace com.hhotatea.avatar_pose_library.model {
                 return c.poses.Select (p => p.Parameter);
             }).Distinct ().ToList ();
 
-        public int PoseCount => categories.Sum (cat => cat.poses.Count);
+        public int PoseCount => categories.Sum(cat => cat.poses.Count);
+        public bool EnableAudioMode =>
+            categories.Any(
+                e => e.poses.Any(
+                    e => e.audioClip != null));
 
         /// <summary>
         /// パラメーターの最適化

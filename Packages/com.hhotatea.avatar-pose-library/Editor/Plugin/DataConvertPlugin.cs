@@ -35,7 +35,11 @@ namespace com.hhotatea.avatar_pose_library.editor {
                         var assets = GetAssetCache(d, d.enableUseCache);
                         BuildRuntimeAnimator (go, assets, d);
                         BuildRuntimeMenu (go, assets, root?.transform);
-                        BuildRuntimeParameter (go, assets);
+                        BuildRuntimeParameter(go, assets);
+                        if(d.EnableAudioMode)
+                        {
+                            BuildAudioSource(ctx.AvatarRootObject.transform,d);
+                        }
                     }
                 });
         }
@@ -116,7 +120,8 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="assets"></param>
-        void BuildRuntimeMenu (GameObject obj, CacheModel assets, Transform root) {
+        void BuildRuntimeMenu(GameObject obj, CacheModel assets, Transform root)
+        {
             var result = assets.menuObject;
             foreach (var installer in result.GetComponentsInChildren<ModularAvatarMenuInstaller>())
             {
@@ -135,6 +140,25 @@ namespace com.hhotatea.avatar_pose_library.editor {
                 result.AddComponent<ModularAvatarMenuInstaller>();
                 result.transform.SetParent(obj.transform);
             }
+        }
+        
+        /// <summary>
+        /// AudioSourceを作成
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="assets"></param>
+        void BuildAudioSource (Transform root, AvatarPoseData data) 
+        {
+            var result = new GameObject($"{ConstVariables.AudioParamPrefix}_{data.Guid}");
+            result.transform.SetParent(root);
+            var audio = result.AddComponent<AudioSource>();
+            audio.playOnAwake = false;
+            audio.mute = false;
+            audio.rolloffMode = DynamicVariables.Settings.audioRolloffMode;
+            audio.minDistance = DynamicVariables.Settings.audioMinDistance;
+            audio.maxDistance = DynamicVariables.Settings.audioMaxDistance;
+            audio.volume = DynamicVariables.Settings.audioVolume;
+            audio.pitch = DynamicVariables.Settings.audioPitch;
         }
 
         bool IsItenRoot(Transform root)

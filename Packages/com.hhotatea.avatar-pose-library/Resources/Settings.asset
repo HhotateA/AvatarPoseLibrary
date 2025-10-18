@@ -59,5 +59,10 @@ MonoBehaviour:
     cameraDistance: 0.8
     cameraOffset: {x: 0, y: 0.1, z: 0}
     cameraTarget: {x: 0, y: 0.1, z: 0}
+  audioRolloffMode: 0
+  audioMinDistance: 0.3
+  audioMaxDistance: 3.3
+  audioVolume: 0.05
+  audioPitch: 1
   defaultAnimation: {fileID: 7400000, guid: 24648a73074cb054f99273b4c9f44b43, type: 2}
   cachePath: Assets/~APLCache

@@ -102,6 +102,15 @@ namespace com.hhotatea.avatar_pose_library.component
         public CameraSettings cameraLocomotion;
 
         /// <summary>
+        /// オーディオの設定
+        /// </summary>
+        public AudioRolloffMode audioRolloffMode = AudioRolloffMode.Logarithmic;
+        public float audioMinDistance = 0.3f;
+        public float audioMaxDistance = 3.3f;
+        public float audioVolume = 0.15f;
+        public float audioPitch = 1.0f;
+
+        /// <summary>
         /// AnimatorLayerに使うアセット群
         /// </summary>
         public AnimationClip defaultAnimation;
