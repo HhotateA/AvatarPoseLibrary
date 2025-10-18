@@ -22,6 +22,11 @@ namespace com.hhotatea.avatar_pose_library.logic
             mResult.Control.icon = poseLibrary.thumbnail;
             mResult.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
 
+            if (poseLibrary.enableHeightParam ||
+                poseLibrary.enableSpeedParam ||
+                poseLibrary.enableMirrorParam ||
+                poseLibrary.enablePoseSpace ||
+                poseLibrary.enableTrackingParam)
             {
                 // 設定メニュー
                 var settings = new GameObject(DynamicVariables.Settings.Menu.setting.title);
@@ -36,7 +41,19 @@ namespace com.hhotatea.avatar_pose_library.logic
                 mSettings.MenuSource = SubmenuSource.Children;
                 mSettings.Control.icon = DynamicVariables.Settings.Menu.setting.thumbnail;
                 mSettings.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-                SettingsMenu(mSettings.transform, poseLibrary);
+
+                    SettingsMenu(mSettings.transform, poseLibrary);
+            }
+            else
+            {
+                // 設定メニューが必要ない場合
+                // リセットだけは作る
+                CreateToggleMenu(
+                    result.transform,
+                    DynamicVariables.Settings.Menu.reset.title,
+                    DynamicVariables.Settings.Menu.reset.thumbnail,
+                    $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}"
+                );
             }
 
 
@@ -153,7 +170,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             // --- トグルメニューを追加 ---
 
-            if (!poseLibrary.enableFxAnimator)
+            if (poseLibrary.enableFxAnimator)
             {
                 CreateToggleMenu(
                     parent,
@@ -163,7 +180,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
             
-            if (!poseLibrary.enableLocomotionAnimator)
+            if (poseLibrary.enableLocomotionAnimator)
             {
                 CreateToggleMenu(
                     parent,

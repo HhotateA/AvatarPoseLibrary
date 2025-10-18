@@ -53,6 +53,27 @@ namespace com.hhotatea.avatar_pose_library.component
         [SerializeField]
         LocalFile[] localContexts;
 
+        [SerializeField]
+        APLSettingsPreset[] settingsPresets;
+        public APLSettingsPreset[] SettingsPresets
+        {
+            get
+            {
+                for(int i = 0; i<settingsPresets.Length; i++)
+                {
+                    if (i < Inspector.presetNames.Length)
+                    {
+                        settingsPresets[i].name = Inspector.presetNames[i];
+                    }
+                    else
+                    {
+                        settingsPresets[i].name = settingsPresets[i].defaultName;
+                    }
+                }
+                return settingsPresets;
+            }
+        }
+
         /// <summary>
         /// サムネイル撮影用のレイヤー
         /// </summary>

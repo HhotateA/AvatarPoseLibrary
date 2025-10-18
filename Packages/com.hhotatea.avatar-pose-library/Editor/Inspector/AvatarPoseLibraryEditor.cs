@@ -297,21 +297,27 @@ namespace com.hhotatea.avatar_pose_library.editor
             bool height    = Data.enableHeightParam;
             bool speed     = Data.enableSpeedParam;
             bool mirror    = Data.enableMirrorParam;
+            bool tracking  = Data.enableTrackingParam;
+            bool deepSync  = Data.enableDeepSync;
             bool poseSpace = Data.enablePoseSpace;
             bool useCache  = Data.enableUseCache;
+            bool locoAnim  = Data.enableLocomotionAnimator;
+            bool fxAnim    = Data.enableFxAnimator;
+            bool presetApply = false;
             
             using (new GUILayout.HorizontalScope())
             {
                 height = EditorGUILayout.ToggleLeft(_enableHeightLabel, height, GUILayout.MaxWidth(TextBoxWidth / 2));
-                useCache  = EditorGUILayout.ToggleLeft(_enableUseCache, useCache, GUILayout.MaxWidth(TextBoxWidth/2));
+                useCache  = EditorGUILayout.ToggleLeft(_enableUseCache, useCache, GUILayout.MaxWidth(TextBoxWidth / 2));
             }
             using (new GUILayout.HorizontalScope())
             {
-                speed     = EditorGUILayout.ToggleLeft(_enableSpeedLabel,  speed, GUILayout.MaxWidth(TextBoxWidth/2));
+                speed     = EditorGUILayout.ToggleLeft(_enableSpeedLabel,  speed, GUILayout.MaxWidth(TextBoxWidth / 2));
             }
             using (new GUILayout.HorizontalScope())
             {
-                mirror    = EditorGUILayout.ToggleLeft(_enableMirrorLabel, mirror, GUILayout.MaxWidth(TextBoxWidth/2));
+                mirror = EditorGUILayout.ToggleLeft(_enableMirrorLabel, mirror, GUILayout.MaxWidth(TextBoxWidth / 2));
+                presetApply = PresetMenu(GUILayout.MaxWidth(TextBoxWidth / 2));
             }
 
             if (Data.enableUseCache == true && useCache == false)
@@ -320,31 +326,52 @@ namespace com.hhotatea.avatar_pose_library.editor
                 var member = _library.GetComponentMember();
                 var combine = AvatarPoseData.Combine(member.Select(e => e.data).ToArray());
 
-                if (combine.Count != 1) return;
-
-                var hash = combine[0].ToHash();
-                Debug.Log($"AssetPoseLibrary.Editor: Deleate Cache {hash}");
-                var cache = new CacheSave(hash);
-                cache.Deleate();
+                if (combine.Count == 1)
+                {
+                    var hash = combine[0].ToHash();
+                    Debug.Log($"AssetPoseLibrary.Editor: Deleate Cache {hash}");
+                    var cache = new CacheSave(hash);
+                    cache.Deleate();
+                }
             }
 
-
+            if (presetApply)
+            {
+                height = Data.enableHeightParam;
+                speed = Data.enableSpeedParam;
+                mirror = Data.enableMirrorParam;
+                tracking = Data.enableTrackingParam;
+                deepSync = Data.enableDeepSync;
+                poseSpace = Data.enablePoseSpace;
+                useCache = Data.enableUseCache;
+                locoAnim = Data.enableLocomotionAnimator;
+                fxAnim = Data.enableFxAnimator;
+            }
+            
             if (height == Data.enableHeightParam &&
                 speed == Data.enableSpeedParam &&
                 mirror == Data.enableMirrorParam &&
+                tracking == Data.enableTrackingParam &&
+                deepSync == Data.enableDeepSync &&
                 poseSpace == Data.enablePoseSpace &&
-                useCache == Data.enableUseCache) return;
-
+                useCache == Data.enableUseCache &&
+                locoAnim == Data.enableLocomotionAnimator &&
+                fxAnim == Data.enableFxAnimator &&
+                !presetApply) return;
             Apply("Toggle Global Flags", () =>
             {
                 foreach (var lib in _library.GetComponentMember())
                 {
                     var so = new SerializedObject(lib);
                     so.FindProperty("data.enableHeightParam").boolValue = height;
-                    so.FindProperty("data.enableSpeedParam").boolValue  = speed;
+                    so.FindProperty("data.enableSpeedParam").boolValue = speed;
                     so.FindProperty("data.enableMirrorParam").boolValue = mirror;
-                    so.FindProperty("data.enablePoseSpace").boolValue   = poseSpace;
-                    so.FindProperty("data.enableUseCache").boolValue    = useCache;
+                    so.FindProperty("data.enableTrackingParam").boolValue = tracking;
+                    so.FindProperty("data.enableDeepSync").boolValue = deepSync;
+                    so.FindProperty("data.enablePoseSpace").boolValue = poseSpace;
+                    so.FindProperty("data.enableUseCache").boolValue = useCache;
+                    so.FindProperty("data.enableLocomotionAnimator").boolValue = locoAnim;
+                    so.FindProperty("data.enableFxAnimator").boolValue = fxAnim;
                     so.ApplyModifiedProperties();
                 }
             });
@@ -360,28 +387,52 @@ namespace com.hhotatea.avatar_pose_library.editor
                     FindData("name").stringValue = tag;
                 });
             }
-            
-            // フラグの整合性を取る。
+
+            // フラグの整合性を取る。（自分以外の同名コンポーネントを参照）
             var comp = _library
                 .GetComponentMember()
                 .FirstOrDefault(e =>
                     e.data != Data);
             if (!comp) return;
-            if (comp.data.enableHeightParam   != Data.enableHeightParam ||
-                comp.data.enableSpeedParam    != Data.enableSpeedParam ||
-                comp.data.enableMirrorParam   != Data.enableMirrorParam ||
-                comp.data.enablePoseSpace     != Data.enablePoseSpace ||
-                comp.data.enableUseCache      != Data.enableUseCache)
+            Apply("Sync APL Param", () =>
+            {
+                FindData("enableHeightParam").boolValue = comp.data.enableHeightParam;
+                FindData("enableSpeedParam").boolValue = comp.data.enableSpeedParam;
+                FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
+                FindData("enableTrackingParam").boolValue = comp.data.enableTrackingParam;
+                FindData("enableDeepSync").boolValue = comp.data.enableDeepSync;
+                FindData("enablePoseSpace").boolValue = comp.data.enablePoseSpace;
+                FindData("enableUseCache").boolValue = comp.data.enableUseCache;
+                FindData("enableLocomotionAnimator").boolValue = comp.data.enableLocomotionAnimator;
+                FindData("enableFxAnimator").boolValue = comp.data.enableFxAnimator;
+            });
+        }
+        
+        private bool PresetMenu(GUILayoutOption layout)
+        {
+            int index = -1;
+            var presets = DynamicVariables.Settings.SettingsPresets;
+            for(int i = 0; i<presets.Length; i++)
+            {
+                if(presets[i].Is(Data))
+                {
+                    index = i;
+                    break;
+                }
+            }
+            var a = DynamicVariables.Settings.SettingsPresets.Select(
+                e => new UnityEngine.GUIContent(e.name)).ToArray();
+            var select = UnityEditor.EditorGUILayout.Popup(new UnityEngine.GUIContent(""), index, a, layout);
+
+            if (select != index)
             {
                 Apply("Sync APL Param", () =>
                 {
-                    FindData("enableHeightParam").boolValue = comp.data.enableHeightParam;
-                    FindData("enableSpeedParam").boolValue  = comp.data.enableSpeedParam;
-                    FindData("enableMirrorParam").boolValue = comp.data.enableMirrorParam;
-                    FindData("enablePoseSpace").boolValue   = comp.data.enablePoseSpace;
-                    FindData("enableUseCache").boolValue    = comp.data.enableUseCache;
+                    presets[select].Apply(Data);
                 });
+                return true;
             }
+            return false;
         }
 
         
