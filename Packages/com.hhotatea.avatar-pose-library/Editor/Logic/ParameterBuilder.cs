@@ -150,7 +150,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     nameOrPrefix = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
                     syncType = ParameterSyncType.Bool,
                     localOnly = true,
-                    defaultValue =  1,
+                    defaultValue =  0,
                     saved = true,
                 });
             }
