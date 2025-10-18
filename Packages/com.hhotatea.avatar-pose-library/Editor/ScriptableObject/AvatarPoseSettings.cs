@@ -97,10 +97,9 @@ namespace com.hhotatea.avatar_pose_library.component
         /// <summary>
         /// サムネ撮影の設定
         /// </summary>
-        public float lookAtFace = 0f;
-        public float fieldOfView = 30f;
-        public float cameraDistance = 1f;
-        public Vector3 cameraOffset = Vector3.zero;
+        public CameraSettings cameraBoth;
+        public CameraSettings cameraFx;
+        public CameraSettings cameraLocomotion;
 
         /// <summary>
         /// AnimatorLayerに使うアセット群
@@ -119,5 +118,16 @@ namespace com.hhotatea.avatar_pose_library.component
         public SystemLanguage language;
         public MenuContext menuContext;
         public InspectorContext inspectorContext;
+    }
+
+    [Serializable]
+    public class CameraSettings
+    {
+        public float lookAtFace = 0f;
+        public float posAvatarToHead = 0.5f;
+        public float fieldOfView = 30f;
+        public float cameraDistance = 1f;
+        public Vector3 cameraOffset = Vector3.zero;
+        public Vector3 cameraTarget = Vector3.zero;
     }
 }

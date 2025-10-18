@@ -38,9 +38,26 @@ MonoBehaviour:
   motionDuration: 0.5
   motionNoiseScale: 0.6
   minMaxHeight: 1.5
-  lookAtFace: 0.8
-  fieldOfView: 30
-  cameraDistance: 0.8
-  cameraOffset: {x: 0, y: 0.1, z: 0}
+  cameraBoth:
+    lookAtFace: 0.8
+    posAvatarToHead: 0.5
+    fieldOfView: 30
+    cameraDistance: 0.8
+    cameraOffset: {x: 0, y: 0.1, z: 0}
+    cameraTarget: {x: 0, y: 0.1, z: 0}
+  cameraFx:
+    lookAtFace: 0.8
+    posAvatarToHead: 1
+    fieldOfView: 10
+    cameraDistance: 0.5
+    cameraOffset: {x: 0, y: 0, z: 0}
+    cameraTarget: {x: 0, y: 0.05, z: 0}
+  cameraLocomotion:
+    lookAtFace: 0.8
+    posAvatarToHead: 0.5
+    fieldOfView: 30
+    cameraDistance: 0.8
+    cameraOffset: {x: 0, y: 0.1, z: 0}
+    cameraTarget: {x: 0, y: 0.1, z: 0}
   defaultAnimation: {fileID: 7400000, guid: 24648a73074cb054f99273b4c9f44b43, type: 2}
   cachePath: Assets/~APLCache

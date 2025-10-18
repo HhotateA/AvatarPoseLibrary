@@ -24,6 +24,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
                     foreach (var setting in settings)
                     {
+                        var cameraSettings = DynamicVariables.GetCameraSettings(setting.data);
                         using (var capture = new ThumbnailGenerator(ctx.AvatarRootObject))
                         {
                             foreach (var category in setting.data.categories)
@@ -36,7 +37,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                                     {
                                         continue;
                                     }
-                                    c.icon = capture.Capture(pose.animationClip);
+                                    c.icon = capture.Capture(pose.animationClip,cameraSettings);
                                 }
                             }
                         }

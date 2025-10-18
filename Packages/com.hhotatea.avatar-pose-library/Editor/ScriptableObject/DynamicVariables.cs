@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using com.hhotatea.avatar_pose_library.component;
+using com.hhotatea.avatar_pose_library.model;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -120,6 +121,23 @@ namespace com.hhotatea.avatar_pose_library.editor
                     latestVersion = CurrentVersion;
                 }
             }
+        }
+        
+        public static CameraSettings GetCameraSettings(AvatarPoseData poseLibrary)
+        {
+            if(poseLibrary.enableFxAnimator && poseLibrary.enableLocomotionAnimator)
+            {
+                return Settings.cameraBoth;  
+            }
+            if(poseLibrary.enableFxAnimator && !poseLibrary.enableLocomotionAnimator)
+            {
+                return Settings.cameraFx;
+            }
+            if (!poseLibrary.enableFxAnimator && poseLibrary.enableLocomotionAnimator)
+            {
+                return Settings.cameraLocomotion;
+            }
+            return new CameraSettings();
         }
 
         class AnalyticsResponse

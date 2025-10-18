@@ -968,10 +968,17 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private Texture2D GenerateThumbnail(GameObject obj, AnimationClip clip)
         {
-            var avatar=obj.GetComponentInParent<VRCAvatarDescriptor>(); if(!avatar) return null;
-            var clone=Object.Instantiate(avatar.gameObject); Texture2D tex;
-            using(var cap=new ThumbnailGenerator(clone)) tex=cap.Capture(clip);
-            Object.DestroyImmediate(clone); return tex;
+            var avatar = obj.GetComponentInParent<VRCAvatarDescriptor>(); 
+            if(!avatar) return null;
+            var clone = Object.Instantiate(avatar.gameObject); 
+            Texture2D tex;
+            using (var cap = new ThumbnailGenerator(clone))
+            {
+                var cs = DynamicVariables.GetCameraSettings(Data);
+                tex = cap.Capture(clip,cs);
+            }
+            Object.DestroyImmediate(clone); 
+            return tex;
         }
 
         private static int FlagsFromTracking(SerializedProperty t)
