@@ -93,10 +93,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                 AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0f);
             }
             AnimationMode.EndSampling();
-
+            
             // 頭にカメラを合わせる
             ApplyCameraPos(cameraSettings);
-
             camera.Render();
 
             RenderTexture currentActiveRT = RenderTexture.active;
@@ -117,7 +116,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var aPos = avatarGO.transform.position;
             var hPos = headTransform.position;
 
-            var distance = AvatarHeight / (2f * Mathf.Tan(camera.fieldOfView * 0.5f * Mathf.Deg2Rad));
+            var distance = AvatarHeight / (2f * Mathf.Tan(cameraSettings.fieldOfView * 0.5f * Mathf.Deg2Rad));
             distance = distance * cameraSettings.cameraDistance;
             var headFoward = headTransform.rotation * headInverse * Vector3.forward;
             var center = Vector3.Lerp( aPos, hPos, cameraSettings.posAvatarToHead);

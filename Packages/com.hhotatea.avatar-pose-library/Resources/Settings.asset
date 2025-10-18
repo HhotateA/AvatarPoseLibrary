@@ -48,8 +48,8 @@ MonoBehaviour:
   cameraFx:
     lookAtFace: 0.8
     posAvatarToHead: 1
-    fieldOfView: 10
-    cameraDistance: 0.5
+    fieldOfView: 15
+    cameraDistance: 0.2
     cameraOffset: {x: 0, y: 0, z: 0}
     cameraTarget: {x: 0, y: 0.05, z: 0}
   cameraLocomotion:
