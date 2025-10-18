@@ -554,12 +554,35 @@ namespace com.hhotatea.avatar_pose_library.logic {
                         value = enabled ? 1f : 0f,
                 });
             }
-            if (isMove) {
+            if (isMove)
+            {
                 // スピードを制御可能にする
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
             }
+            if (pose.audioClip)
+            {
+                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
+                vapa.SourcePath = $"{ConstVariables.AudioParamPrefix}_{guid}";
+                vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+                vapa.Clips = new AudioClip[] { pose.audioClip };
+                vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+                vapa.Loop = pose.tracking.loop;
+                vapa.PlayOnEnter = true;
+                vapa.StopOnEnter = false;
+                vapa.PlayOnExit = false;
+                vapa.StopOnExit = true;
+            }
+
+            var inTransition = flags.Select((flag, i) => new AnimatorCondition
+            {
+                mode = AnimatorConditionMode.Equals,
+                parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                threshold = flag,
+            }).ToList();
 
             // 侵入経路
             if (pose.beforeAnimationClip) {
@@ -576,12 +599,8 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 joinTransition.hasExitTime = false;
                 joinTransition.hasFixedDuration = true;
                 joinTransition.duration = 0.0f;
-                joinTransition.conditions = flags.Select ((flag, i) => new AnimatorCondition {
-                        mode = AnimatorConditionMode.Equals,
-                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                            threshold = flag,
-                    })
-                    .ToArray ();
+                joinTransition.conditions = inTransition.ToArray ();
+                    
 
                 // バイパスの作成
                 var bypassTransition = beforeState.AddTransition (poseState);
@@ -601,12 +620,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 joinTransition.hasExitTime = false;
                 joinTransition.hasFixedDuration = true;
                 joinTransition.duration = 0.0f;
-                joinTransition.conditions = flags.Select ((flag, i) => new AnimatorCondition {
-                        mode = AnimatorConditionMode.Equals,
-                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                            threshold = flag,
-                    })
-                    .ToArray ();
+                joinTransition.conditions = inTransition.ToArray ();
 
                 // レイヤーの設定
                 var additiveOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();

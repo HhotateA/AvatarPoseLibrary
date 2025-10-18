@@ -20,6 +20,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string MirrorParamPrefix = "AnimPoseMirror";
         public const string FlagParamPrefix = "AnimPoseFlag";
         public const string PoseSpaceParamPrefix = "AnimPoseSpace";
+        public const string AudioParamPrefix = "AnimPoseAudio";
         // public const string BlockIdleParamPrefix = "AnimPoseBlock"; // 動的アニメーションかどうかのフラグ
         
         public const string MotionAnimatorPrefix = "AnimPoseMotion";
