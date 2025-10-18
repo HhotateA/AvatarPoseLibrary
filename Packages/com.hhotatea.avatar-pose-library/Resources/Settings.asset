@@ -27,16 +27,37 @@ MonoBehaviour:
   - language: 40
     menuContext: {fileID: 11400000, guid: ee34de5c05769784bb0812dabb5c1db3, type: 2}
     inspectorContext: {fileID: 11400000, guid: 74a5bf1b51430ec48897f7a9651964cd, type: 2}
+  settingsPresets:
+  - {fileID: 11400000, guid: 46ece0e5e51a0a647a50c98ec4afa8c6, type: 2}
+  - {fileID: 11400000, guid: e329b840299172343be6f1ea7f29dce2, type: 2}
+  - {fileID: 11400000, guid: 4faafecf464cdde41b329cc311c6accc, type: 2}
+  - {fileID: 11400000, guid: c516ae6d3868ce441a73ddce1a03567e, type: 2}
   thumbnailLayer: 4
   texSize: 64
   motionLong: 15
   motionDuration: 0.5
   motionNoiseScale: 0.6
   minMaxHeight: 1.5
-  lookAtFace: 0.8
-  fieldOfView: 30
-  cameraDistance: 0.8
-  cameraOffset: {x: 0, y: 0.1, z: 0}
+  cameraBoth:
+    lookAtFace: 0.8
+    posAvatarToHead: 0.5
+    fieldOfView: 30
+    cameraDistance: 0.8
+    cameraOffset: {x: 0, y: 0.1, z: 0}
+    cameraTarget: {x: 0, y: 0.1, z: 0}
+  cameraFx:
+    lookAtFace: 0.8
+    posAvatarToHead: 1
+    fieldOfView: 15
+    cameraDistance: 0.2
+    cameraOffset: {x: 0, y: 0, z: 0}
+    cameraTarget: {x: 0, y: 0.05, z: 0}
+  cameraLocomotion:
+    lookAtFace: 0.8
+    posAvatarToHead: 0.5
+    fieldOfView: 30
+    cameraDistance: 0.8
+    cameraOffset: {x: 0, y: 0.1, z: 0}
+    cameraTarget: {x: 0, y: 0.1, z: 0}
   defaultAnimation: {fileID: 7400000, guid: 24648a73074cb054f99273b4c9f44b43, type: 2}
-  poseSpaceMenu: 1
   cachePath: Assets/~APLCache

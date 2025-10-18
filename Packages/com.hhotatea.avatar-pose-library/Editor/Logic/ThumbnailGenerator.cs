@@ -4,6 +4,8 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 using com.hhotatea.avatar_pose_library.editor;
+using com.hhotatea.avatar_pose_library.model;
+using com.hhotatea.avatar_pose_library.component;
 using Object = UnityEngine.Object;
 
 namespace com.hhotatea.avatar_pose_library.logic
@@ -16,7 +18,6 @@ namespace com.hhotatea.avatar_pose_library.logic
         private GameObject cameraGO;
         private Transform headTransform;
         private Quaternion headInverse;
-        private float distance;
         
         private Dictionary<GameObject,int> currentLayers = new Dictionary<GameObject, int>();
         
@@ -31,7 +32,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 Debug.LogWarning("VRCAvatarDescriptor が見つかりません。");
                 return;
             }
-            
+
             var animator = descriptor.GetComponent<Animator>();
             if (animator)
             {
@@ -49,7 +50,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             // アバターのセッティング
             avatarGO = contextObject;
             // avatarGO.transform.position = avatarGO.transform.position + ConstVariables.ThumbnailOffset;
-            
+
             SetLayerRecursively(avatarGO, DynamicVariables.Settings.thumbnailLayer);
 
             // カメラ生成
@@ -60,18 +61,10 @@ namespace com.hhotatea.avatar_pose_library.logic
             camera.backgroundColor = Color.clear;
             camera.cullingMask = 1 << DynamicVariables.Settings.thumbnailLayer;
             camera.orthographic = false;
-            camera.fieldOfView = DynamicVariables.Settings.fieldOfView;
 
             // カメラ位置調整
-            Vector3 center = avatarGO.transform.position + new Vector3(0, AvatarHeight / 2f, 0);
-            distance = AvatarHeight / (2f * Mathf.Tan(camera.fieldOfView * 0.5f * Mathf.Deg2Rad));
-            distance = Math.Max(distance * DynamicVariables.Settings.cameraDistance, AvatarHeight * 0.6f);
-            camera.transform.position = center + new Vector3(0f, 0f, distance) + DynamicVariables.Settings.cameraOffset * AvatarHeight;
-            camera.transform.LookAt(center);
-
-            // カリング設定
-            camera.nearClipPlane = distance * 0.01f;
-            camera.farClipPlane = distance * 2.5f;
+            var cameraSettings = new CameraSettings();
+            ApplyCameraPos(cameraSettings);
 
             // RenderTexture
             renderTexture = new RenderTexture(DynamicVariables.Settings.texSize, DynamicVariables.Settings.texSize, 24);
@@ -82,12 +75,12 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <summary>
         /// 指定したアニメーションポーズを適用し、サムネイルを生成します。
         /// </summary>
-        public Texture2D Capture(AnimationClip poseClip)
+        public Texture2D Capture(AnimationClip poseClip, CameraSettings cameraSettings)
         {
             if (poseClip == null) return null;
             avatarGO.SetActive(true);
             AnimationMode.StartAnimationMode();
-            
+
             // 撮影の開始
             AnimationMode.BeginSampling();
             if (MotionBuilder.IsMoveAnimation(poseClip))
@@ -100,21 +93,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                 AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0f);
             }
             AnimationMode.EndSampling();
-
-            // 頭にカメラを合わせる
-            if (headTransform)
-            {
-                // カメラ位置調整
-                var aPos = avatarGO.transform.position;
-                var hPos = headTransform.position;
-                var headFoward = headTransform.rotation * headInverse * Vector3.forward;
-                Vector3 center = (aPos + hPos) * 0.5f;
-                cameraGO.transform.position = center 
-                                              + distance * Vector3.Lerp(Vector3.forward, headFoward, DynamicVariables.Settings.lookAtFace).normalized
-                                              + DynamicVariables.Settings.cameraOffset * AvatarHeight;
-                cameraGO.transform.LookAt((center + hPos) * 0.5f);
-            }
             
+            // 頭にカメラを合わせる
+            ApplyCameraPos(cameraSettings);
             camera.Render();
 
             RenderTexture currentActiveRT = RenderTexture.active;
@@ -127,6 +108,36 @@ namespace com.hhotatea.avatar_pose_library.logic
             AnimationMode.StopAnimationMode();
             avatarGO.SetActive(false);
             return tex;
+        }
+        
+        void ApplyCameraPos(CameraSettings cameraSettings)
+        {
+            if (!headTransform) return;
+            var aPos = avatarGO.transform.position;
+            var hPos = headTransform.position;
+
+            var distance = AvatarHeight / (2f * Mathf.Tan(cameraSettings.fieldOfView * 0.5f * Mathf.Deg2Rad));
+            distance = distance * cameraSettings.cameraDistance;
+            var headFoward = headTransform.rotation * headInverse * Vector3.forward;
+            var center = Vector3.Lerp( aPos, hPos, cameraSettings.posAvatarToHead);
+            var target = Vector3.Lerp( aPos, hPos, cameraSettings.posAvatarToHead);
+
+            // カリング設定
+            camera.nearClipPlane = distance * 0.01f;
+            camera.farClipPlane = distance * 2.5f;
+            camera.fieldOfView = cameraSettings.fieldOfView;
+
+            cameraGO.transform.position = center
+                + distance * Vector3.Lerp(Vector3.forward, headFoward, cameraSettings.lookAtFace).normalized
+                + cameraSettings.cameraOffset * AvatarHeight;
+            cameraGO.transform.LookAt(target 
+                + cameraSettings.cameraTarget * AvatarHeight);
+        }
+
+        public Texture2D Capture(AnimationClip poseClip)
+        {
+            var cameraSettings = DynamicVariables.Settings.cameraBoth;
+            return Capture(poseClip,cameraSettings);
         }
 
         public void Dispose()

@@ -53,6 +53,27 @@ namespace com.hhotatea.avatar_pose_library.component
         [SerializeField]
         LocalFile[] localContexts;
 
+        [SerializeField]
+        APLSettingsPreset[] settingsPresets;
+        public APLSettingsPreset[] SettingsPresets
+        {
+            get
+            {
+                for(int i = 0; i<settingsPresets.Length; i++)
+                {
+                    if (i < Inspector.presetNames.Length)
+                    {
+                        settingsPresets[i].name = Inspector.presetNames[i];
+                    }
+                    else
+                    {
+                        settingsPresets[i].name = settingsPresets[i].defaultName;
+                    }
+                }
+                return settingsPresets;
+            }
+        }
+
         /// <summary>
         /// サムネイル撮影用のレイヤー
         /// </summary>
@@ -76,10 +97,9 @@ namespace com.hhotatea.avatar_pose_library.component
         /// <summary>
         /// サムネ撮影の設定
         /// </summary>
-        public float lookAtFace = 0f;
-        public float fieldOfView = 30f;
-        public float cameraDistance = 1f;
-        public Vector3 cameraOffset = Vector3.zero;
+        public CameraSettings cameraBoth;
+        public CameraSettings cameraFx;
+        public CameraSettings cameraLocomotion;
 
         /// <summary>
         /// AnimatorLayerに使うアセット群
@@ -98,5 +118,16 @@ namespace com.hhotatea.avatar_pose_library.component
         public SystemLanguage language;
         public MenuContext menuContext;
         public InspectorContext inspectorContext;
+    }
+
+    [Serializable]
+    public class CameraSettings
+    {
+        public float lookAtFace = 0f;
+        public float posAvatarToHead = 0.5f;
+        public float fieldOfView = 30f;
+        public float cameraDistance = 1f;
+        public Vector3 cameraOffset = Vector3.zero;
+        public Vector3 cameraTarget = Vector3.zero;
     }
 }

@@ -88,6 +88,8 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string disableMenuTooltip = "一括で有効化。";
         public string enableMenuLabel = "Enable All Pose";
         [Multiline] public string enableMenuTooltip = "一括で無効化。";
+
+        public string[] presetNames;
         
         
         [Multiline] public string updateMessage = "最新版アップデートがあります。VCCを確認してください。";
