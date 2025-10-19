@@ -136,9 +136,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
             Space
         }
 
-        public AnimatorControllerLayer ActiveTrackingLayer(TrackingType type, string param, string playParam)
+        public AnimatorControllerLayer ActiveTrackingLayer(TrackingType type, string param, string guid)
         {
-            return TrackingLayer(type,param,
+            return TrackingLayer(type,param,guid,
                 (onTo,offTo,onState,offState) => {
                     var off_1 = offTo;
                     var off_2 = DuplicateTransition(offTo,onState);
@@ -149,7 +149,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                         },
                         new AnimatorCondition {
                             mode = AnimatorConditionMode.If,
-                            parameter = playParam
+                            parameter = $"{ConstVariables.OnPlayParamPrefix}_{guid}"
                         }
                     };
                     off_1.conditions = new AnimatorCondition[] {
@@ -161,19 +161,19 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     off_2.conditions = new AnimatorCondition[] {
                         new AnimatorCondition {
                             mode = AnimatorConditionMode.IfNot,
-                            parameter = playParam
+                            parameter = $"{ConstVariables.OnPlayParamPrefix}_{guid}"
                         }
                     };
                 });
         }
 
-        public AnimatorControllerLayer ConstantTrackingLayer(TrackingType type, string param)
+        public AnimatorControllerLayer ConstantTrackingLayer(TrackingType type, string param, string guid)
         {
-            return TrackingLayer(type,param,null);
+            return TrackingLayer(type,param,guid,null);
         }
 
         private AnimatorControllerLayer TrackingLayer(
-            TrackingType type, string param,
+            TrackingType type, string param, string guid,
             Action<AnimatorStateTransition, AnimatorStateTransition, AnimatorState, AnimatorState> onSetTrasitions)
         {
             // レイヤー作成
@@ -190,19 +190,19 @@ namespace com.hhotatea.avatar_pose_library.logic {
             // ステートの初期化
             var offIdleState = layer.stateMachine.AddState("OffIdle");
             offIdleState.writeDefaultValues = writeDefault_;
-            offIdleState.motion = noneClip;
+            offIdleState.motion = null;
 
             var offConState = layer.stateMachine.AddState("OffConState");
             offConState.writeDefaultValues = writeDefault_;
-            offConState.motion = noneClip;
+            offConState.motion = null;
 
-            var onIdleState = layer.stateMachine.AddState("OnIdle");
-            onIdleState.writeDefaultValues = writeDefault_;
-            onIdleState.motion = noneClip;
+            // var onIdleState = layer.stateMachine.AddState("OnIdle");
+            // onIdleState.writeDefaultValues = writeDefault_;
+            // onIdleState.motion = noneClip;
 
             var onConState = layer.stateMachine.AddState("OnConState");
             onConState.writeDefaultValues = writeDefault_;
-            onConState.motion = noneClip;
+            onConState.motion = null;
 
             // コンポーネント
             switch (type)
@@ -307,7 +307,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             // 遷移の設定
             var fromOffToOn = offIdleState.AddTransition(onConState);
             fromOffToOn.canTransitionToSelf = false;
-            fromOffToOn.hasExitTime = true;
+            fromOffToOn.hasExitTime = false;
             fromOffToOn.exitTime = 0f;
             fromOffToOn.hasFixedDuration = true;
             fromOffToOn.duration = 0.0f;
@@ -318,16 +318,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 }
             };
 
-            var fromOnToOn = onConState.AddTransition(onIdleState);
-            fromOnToOn.canTransitionToSelf = false;
-            fromOnToOn.hasExitTime = true;
-            fromOnToOn.exitTime = 0f;
-            fromOnToOn.hasFixedDuration = true;
-            fromOnToOn.duration = 0.0f;
-
-            var fromOnToOff = onIdleState.AddTransition(offConState);
+            var fromOnToOff = onConState.AddTransition(offConState);
             fromOnToOff.canTransitionToSelf = false;
-            fromOnToOff.hasExitTime = true;
+            fromOnToOff.hasExitTime = false;
             fromOnToOff.exitTime = 0f;
             fromOnToOff.hasFixedDuration = true;
             fromOnToOff.duration = 0.0f;
@@ -340,21 +333,35 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
             var fromOffToOff = offConState.AddTransition(offIdleState);
             fromOffToOff.canTransitionToSelf = false;
-            fromOffToOff.hasExitTime = true;
+            fromOffToOff.hasExitTime = false;
             fromOffToOff.exitTime = 0f;
             fromOffToOff.hasFixedDuration = true;
             fromOffToOff.duration = 0.0f;
+            fromOffToOff.conditions = new AnimatorCondition[] {
+                new AnimatorCondition {
+                mode = AnimatorConditionMode.IfNot,
+                parameter = $"{ConstVariables.DummyParamPrefix}_{guid}",
+                }
+            };
 
             // PoseSpaceの設定用（Loopより優先するためにここで挿し込む）
-            onSetTrasitions?.Invoke(fromOffToOn, fromOnToOff, onIdleState, offIdleState);
+            onSetTrasitions?.Invoke(fromOffToOn, fromOnToOff, onConState, offIdleState);
 
             // Off設定を維持する
-            var loopTransition = onIdleState.AddTransition(onConState);
+            var loopTransition = onConState.AddTransition(onConState);
             loopTransition.canTransitionToSelf = false;
-            loopTransition.hasExitTime = true;
+            loopTransition.hasExitTime = false;
             loopTransition.exitTime = 0f;
             loopTransition.hasFixedDuration = true;
             loopTransition.duration = 0.0f;
+            loopTransition.conditions = new AnimatorCondition[] {
+                new AnimatorCondition {
+                mode = AnimatorConditionMode.IfNot,
+                parameter = $"{ConstVariables.DummyParamPrefix}_{guid}",
+                }
+            };
+            loopTransition.canTransitionToSelf = true;
+
             return layer;
         }
 
