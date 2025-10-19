@@ -93,6 +93,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public float motionNoiseScale = 0.6f;
 
         public float minMaxHeight = 1f;
+        public float paramRate = 0f;
 
         /// <summary>
         /// サムネ撮影の設定

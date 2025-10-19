@@ -180,7 +180,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
 
-            var noneClip = MotionBuilder.CreateFrameAnimation(0.3f);
+            var noneClip = MotionBuilder.CreateFrameAnimation(DynamicVariables.Settings.paramRate);
 
             // ステートの初期化
             var offIdleState = layer.stateMachine.AddState("OffIdle");
