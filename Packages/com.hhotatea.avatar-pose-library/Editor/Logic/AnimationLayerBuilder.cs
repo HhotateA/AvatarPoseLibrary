@@ -421,6 +421,21 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
             }
+            if (pose.audioClip)
+            {
+                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
+                vapa.SourcePath = $"{ConstVariables.AudioParamPrefix}_{guid}";
+                vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+                vapa.Clips = new AudioClip[] { pose.audioClip };
+                vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+                vapa.Loop = pose.tracking.loop;
+                vapa.PlayOnEnter = true;
+                vapa.StopOnEnter = false;
+                vapa.PlayOnExit = false;
+                vapa.StopOnExit = true;
+            }
 
             // 遷移を作成
             var joinTransition = defaultState.AddTransition (reserveState);
@@ -560,21 +575,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-            }
-            if (pose.audioClip)
-            {
-                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
-                vapa.SourcePath = $"{ConstVariables.AudioParamPrefix}_{guid}";
-                vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
-                vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
-                vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
-                vapa.Clips = new AudioClip[] { pose.audioClip };
-                vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
-                vapa.Loop = pose.tracking.loop;
-                vapa.PlayOnEnter = true;
-                vapa.StopOnEnter = false;
-                vapa.PlayOnExit = false;
-                vapa.StopOnExit = true;
             }
 
             var inTransition = flags.Select((flag, i) => new AnimatorCondition
