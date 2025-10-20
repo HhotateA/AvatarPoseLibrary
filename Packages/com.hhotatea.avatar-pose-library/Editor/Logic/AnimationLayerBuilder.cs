@@ -76,6 +76,11 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
+                name = $"{ConstVariables.VolumeParamPrefix}_{poseLibrary.Guid}",
+                value = 1f,
+            });
+            paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
+                type = VRC_AvatarParameterDriver.ChangeType.Set,
                 name = param,
                 value = 0,
             });
@@ -180,7 +185,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
 
-            var noneClip = MotionBuilder.CreateFrameAnimation(0.3f);
+            var noneClip = MotionBuilder.CreateFrameAnimation(DynamicVariables.Settings.paramRate);
 
             // ステートの初期化
             var offIdleState = layer.stateMachine.AddState("OffIdle");
@@ -421,6 +426,21 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
             }
+            if (pose.audioClip)
+            {
+                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
+                vapa.SourcePath = $"{ConstVariables.AudioParamPrefix}_{guid}";
+                vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+                vapa.Clips = new AudioClip[] { pose.audioClip };
+                vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+                vapa.Loop = pose.tracking.loop;
+                vapa.PlayOnEnter = true;
+                vapa.StopOnEnter = false;
+                vapa.PlayOnExit = false;
+                vapa.StopOnExit = true;
+            }
 
             // 遷移を作成
             var joinTransition = defaultState.AddTransition (reserveState);
@@ -514,6 +534,106 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
         }
 
+        public AnimatorControllerLayer AudioVolumeLayer(string param,string obj,float volume)
+        {
+            // レイヤー作成
+            AnimatorControllerLayer layer = new AnimatorControllerLayer
+            {
+                name = param,
+                defaultWeight = 0f,
+                stateMachine = new AnimatorStateMachine(),
+                blendingMode = AnimatorLayerBlendingMode.Override
+            };
+
+            // ステートの初期化
+            var defaultState = layer.stateMachine.AddState ("Default");
+            defaultState.writeDefaultValues = writeDefault_;
+            defaultState.motion = MotionBuilder.FrameAnimation;
+            var noneClip = MotionBuilder.CreateFrameAnimation(DynamicVariables.Settings.paramRate);
+
+            var count = 100;
+            var step = 1f / (float)count;
+            for (int i = -1; i < count + 1; i++)
+            {
+                float v = (float)(i) / (float)count;
+                // メインステートの作成
+                var poseState = layer.stateMachine.AddState("Volume_" + i.ToString());
+                poseState.writeDefaultValues = writeDefault_;
+                poseState.motion = noneClip;
+
+                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
+                vapa.SourcePath = obj;
+                vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+                vapa.Volume = new Vector2(v * volume, v * volume);
+                vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.PlayOnEnter = true;
+                vapa.StopOnEnter = false;
+                vapa.PlayOnExit = false;
+                vapa.StopOnExit = false;
+
+                var joinTransition = defaultState.AddTransition(poseState);
+                joinTransition.canTransitionToSelf = false;
+                joinTransition.hasExitTime = false;
+                joinTransition.hasFixedDuration = true;
+                joinTransition.duration = 0.0f;
+                joinTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.Greater,
+                        parameter = param,
+                        threshold = v,
+                    },
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.Less,
+                        parameter = param,
+                        threshold = v + step,
+                    }
+                };
+
+                // var leftTransition = poseState.AddTransition(defaultState);
+                // leftTransition.canTransitionToSelf = false;
+                // leftTransition.hasExitTime = true;
+                // leftTransition.hasFixedDuration = true;
+                // leftTransition.duration = 0.0f;
+
+                var leftTransition_1 = poseState.AddTransition(defaultState);
+                leftTransition_1.canTransitionToSelf = false;
+                leftTransition_1.hasExitTime = false;
+                leftTransition_1.hasFixedDuration = true;
+                leftTransition_1.duration = 0.0f;
+                leftTransition_1.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.Less,
+                        parameter = param,
+                        threshold = v,
+                    }
+                };
+
+                var leftTransition_2 = poseState.AddTransition(defaultState);
+                leftTransition_2.canTransitionToSelf = false;
+                leftTransition_2.hasExitTime = false;
+                leftTransition_2.hasFixedDuration = true;
+                leftTransition_2.duration = 0.0f;
+                leftTransition_2.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.Greater,
+                        parameter = param,
+                        threshold = v + step,
+                    }
+                };
+            }
+
+            return layer;
+        }
+
         public void AddFxLayer (
             PoseEntry pose,
             AnimatorControllerLayer layer,
@@ -561,21 +681,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
             }
-            if (pose.audioClip)
-            {
-                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
-                vapa.SourcePath = $"{ConstVariables.AudioParamPrefix}_{guid}";
-                vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
-                vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
-                vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
-                vapa.Clips = new AudioClip[] { pose.audioClip };
-                vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
-                vapa.Loop = pose.tracking.loop;
-                vapa.PlayOnEnter = true;
-                vapa.StopOnEnter = false;
-                vapa.PlayOnExit = false;
-                vapa.StopOnExit = true;
-            }
 
             var inTransition = flags.Select((flag, i) => new AnimatorCondition
             {
@@ -600,7 +705,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 joinTransition.hasFixedDuration = true;
                 joinTransition.duration = 0.0f;
                 joinTransition.conditions = inTransition.ToArray ();
-                    
 
                 // バイパスの作成
                 var bypassTransition = beforeState.AddTransition (poseState);

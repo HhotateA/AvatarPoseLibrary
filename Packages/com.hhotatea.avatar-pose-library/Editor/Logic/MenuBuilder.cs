@@ -154,6 +154,16 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
 
+            if(poseLibrary.EnableAudioMode)
+            {
+                CreateRadialMenu(
+                    parent,
+                    DynamicVariables.Settings.Menu.volume.title,
+                    DynamicVariables.Settings.Menu.volume.thumbnail,
+                    $"{ConstVariables.VolumeParamPrefix}_{poseLibrary.Guid}"
+                );
+            }
+
             if (poseLibrary.enableTrackingParam)
             {
                 var tracking = new GameObject(DynamicVariables.Settings.Menu.tracking.title);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.model;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -250,8 +251,13 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Foot, $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Finger, $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}"));
             result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Face, $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}", $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"));
-            result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Space, $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}", $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"));
-            result.AddLayer (builder.ResetLayer ($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
+            result.AddLayer(builder.ActiveTrackingLayer(TrackingType.Space, $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}", $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}"));
+            result.AddLayer(builder.ResetLayer($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
+            
+            if(poseLibrary.EnableAudioMode)
+            {
+                result.AddLayer (builder.AudioVolumeLayer ($"{ConstVariables.VolumeParamPrefix}_{poseLibrary.Guid}", $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}", DynamicVariables.Settings.audioVolume));
+            }
 
             return result;
         }
@@ -278,6 +284,13 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 defaultFloat = 0.5f,
             };
             result.AddParameter (speedParam);
+
+            var volumeParam = new AnimatorControllerParameter {
+                name = $"{ConstVariables.VolumeParamPrefix}_{poseLibrary.Guid}",
+                type = AnimatorControllerParameterType.Float,
+                defaultFloat = 1.0f,
+            };
+            result.AddParameter (volumeParam);
 
             var mirrorParam = new AnimatorControllerParameter {
                 name = $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.Guid}",
