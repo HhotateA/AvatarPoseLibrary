@@ -321,15 +321,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
             {
                 result.AddParameter($"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}", AnimatorControllerParameterType.Int);
             }
-            
-            AnimatorControllerLayer layer = new AnimatorControllerLayer
-            {
-                name = $"{ConstVariables.BaseName}_{poseLibrary.Guid}",
-                defaultWeight = 0f,
-                stateMachine = new AnimatorStateMachine(),
-                blendingMode = AnimatorLayerBlendingMode.Override
-            };
-            result.AddLayer(layer);
 
             return result;
         }
