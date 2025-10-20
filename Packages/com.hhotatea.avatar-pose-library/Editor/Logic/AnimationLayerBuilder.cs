@@ -558,6 +558,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
             var count = 100;
             var step = 1f / (float)count;
+            var shift = 1f / 333f;
             for (int i = -1; i < count + 1; i++)
             {
                 float v = (float)(i) / (float)count;
@@ -589,13 +590,13 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     {
                         mode = AnimatorConditionMode.Greater,
                         parameter = param,
-                        threshold = v,
+                        threshold = v - shift,
                     },
                     new AnimatorCondition()
                     {
                         mode = AnimatorConditionMode.Less,
                         parameter = param,
-                        threshold = v + step,
+                        threshold = v + step + shift,
                     }
                 };
 
@@ -616,7 +617,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     {
                         mode = AnimatorConditionMode.Less,
                         parameter = param,
-                        threshold = v,
+                        threshold = v - shift,
                     }
                 };
 
@@ -631,7 +632,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     {
                         mode = AnimatorConditionMode.Greater,
                         parameter = param,
-                        threshold = v + step,
+                        threshold = v + step + shift,
                     }
                 };
             }
