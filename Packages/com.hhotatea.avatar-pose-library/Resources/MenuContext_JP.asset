@@ -60,3 +60,6 @@ MonoBehaviour:
   poseSpace:
     title: "\u8996\u7DDA\u8FFD\u5F93"
     thumbnail: {fileID: 2800000, guid: 2a78f551d4dcbdf4cb7aa6567dd6b12d, type: 3}
+  volume:
+    title: "\u97F3\u91CF"
+    thumbnail: {fileID: 0}

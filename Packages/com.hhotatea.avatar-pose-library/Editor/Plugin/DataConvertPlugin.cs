@@ -33,13 +33,10 @@ namespace com.hhotatea.avatar_pose_library.editor {
                         go.transform.SetParent (root?.transform ?? ctx.AvatarRootObject.transform);
 
                         var assets = GetAssetCache(d, d.enableUseCache);
+                        if(d.EnableAudioMode) BuildAudioSource(ctx.AvatarRootObject.transform,d);
                         BuildRuntimeAnimator (go, assets, d);
                         BuildRuntimeMenu (go, assets, root?.transform);
                         BuildRuntimeParameter(go, assets);
-                        if(d.EnableAudioMode)
-                        {
-                            BuildAudioSource(ctx.AvatarRootObject.transform,d);
-                        }
                     }
                 });
         }
