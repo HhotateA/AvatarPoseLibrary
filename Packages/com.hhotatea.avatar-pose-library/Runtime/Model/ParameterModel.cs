@@ -100,7 +100,7 @@ namespace com.hhotatea.avatar_pose_library.model {
             foreach (var category in categories) {
                 foreach (var pose in category.poses) {
                     if (paramCount > ConstVariables.MaxAnimationState) {
-                        paramName = $"AnimPose_{Guid}_from{paramIndex}";
+                        paramName = $"AnimPose_{Guid}_{paramIndex}";
                         paramCount = 1;
                     }
 

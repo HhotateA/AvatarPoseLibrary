@@ -185,24 +185,22 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 blendingMode = AnimatorLayerBlendingMode.Override
             };
 
-            var noneClip = MotionBuilder.CreateFrameAnimation(DynamicVariables.Settings.paramRate);
-
             // ステートの初期化
             var offIdleState = layer.stateMachine.AddState("OffIdle");
             offIdleState.writeDefaultValues = writeDefault_;
-            offIdleState.motion = null;
+            offIdleState.motion = MotionBuilder.NoneAnimation;
 
-            var offConState = layer.stateMachine.AddState("OffConState");
+            var offConState = layer.stateMachine.AddState("OnToOff");
             offConState.writeDefaultValues = writeDefault_;
-            offConState.motion = null;
+            offConState.motion = MotionBuilder.NoneAnimation;
 
             // var onIdleState = layer.stateMachine.AddState("OnIdle");
             // onIdleState.writeDefaultValues = writeDefault_;
             // onIdleState.motion = noneClip;
 
-            var onConState = layer.stateMachine.AddState("OnConState");
+            var onConState = layer.stateMachine.AddState("OnIdle");
             onConState.writeDefaultValues = writeDefault_;
-            onConState.motion = null;
+            onConState.motion = MotionBuilder.NoneAnimation;
 
             // コンポーネント
             switch (type)

@@ -2,6 +2,7 @@ namespace com.hhotatea.avatar_pose_library.model
 {
     public static class ConstVariables
     {
+        public const string BaseName = "AvatarPoseLibrary";
         public const string OnPlayParamPrefix = "AnimPosePlay";
         
         /// <summary>
