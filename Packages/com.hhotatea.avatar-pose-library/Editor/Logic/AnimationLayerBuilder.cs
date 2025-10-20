@@ -558,7 +558,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
             var count = 100;
             var step = 1f / (float)count;
-            var shift = 1f / 333f;
+            var shift = 1f / 512f;
             for (int i = -1; i < count + 1; i++)
             {
                 float v = (float)(i) / (float)count;
