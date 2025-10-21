@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using com.hhotatea.avatar_pose_library.editor;
-using com.hhotatea.avatar_pose_library.model;
 using UnityEditor.Animations;
 using UnityEngine;
-using VRC.SDK3.Avatars.Components;
 using VRC.SDKBase;
+using VRC.SDK3.Avatars.Components;
+using com.hhotatea.avatar_pose_library.editor;
+using com.hhotatea.avatar_pose_library.model;
 
 namespace com.hhotatea.avatar_pose_library.logic {
     public class AnimationLayerBuilder {
@@ -34,7 +34,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             resetState.writeDefaultValues = writeDefault_;
             resetState.motion = MotionBuilder.FrameAnimation;
 
-            var paramReset = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+            var paramReset = resetState.AddSafeParameterDriver ();
             foreach (var parameter in poseLibrary.Parameters) {
                 paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
@@ -141,7 +141,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             return TrackingLayer(type,param,guid,
                 (onTo,offTo,onState,offState) => {
                     var off_1 = offTo;
-                    var off_2 = DuplicateTransition(offTo,onState);
+                    var off_2 = onState.DuplicateTransition(offTo);
                     onTo.conditions = new AnimatorCondition[] {
                         new AnimatorCondition {
                             mode = AnimatorConditionMode.If,
@@ -393,7 +393,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             reserveState.motion = MotionBuilder.FrameAnimation;
             reserveState.writeDefaultValues = writeDefault_; 
             {
-                var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver> (); 
+                var trackingOnParam = reserveState.AddSafeParameterDriver ();
                 trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                         name = $"{ConstVariables.SpeedParamPrefix}_{guid}",
@@ -672,7 +672,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             poseState.mirrorParameterActive = true;
             poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
             poseState.motion = MakeFxAnim (anim, pose.tracking.loop);
-            var trackingOnParam = poseState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+            var trackingOnParam = poseState.AddSafeParameterDriver ();
             foreach (var (enabled, prefix) in trackingMap) {
                 trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
@@ -947,27 +947,5 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
             return blendTree;
         }
-
-        public static AnimatorStateTransition DuplicateTransition(AnimatorStateTransition source, AnimatorState state)
-        {
-            var dest = state.AddTransition(source.destinationState);
-            dest.hasExitTime = source.hasExitTime;
-            dest.exitTime = source.exitTime;
-            dest.hasFixedDuration = source.hasFixedDuration;
-            dest.duration = source.duration;
-            dest.offset = source.offset;
-            dest.interruptionSource = source.interruptionSource;
-            dest.orderedInterruption = source.orderedInterruption;
-            dest.canTransitionToSelf = source.canTransitionToSelf;
-
-            // 条件のコピー
-            foreach (var condition in source.conditions)
-            {
-                dest.AddCondition(condition.mode, condition.threshold, condition.parameter);
-            }
-
-            return dest;
-        }
-
     }
 }

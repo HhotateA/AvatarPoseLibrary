@@ -90,7 +90,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 resetState.writeDefaultValues = writeDefault;
                 resetState.motion = MotionBuilder.FrameAnimation;
                 {
-                    var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                    var trackingOffParam = resetState.AddSafeParameterDriver();
                     for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
                     {
                         trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
@@ -128,7 +128,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     preResetState.writeDefaultValues = writeDefault;
                     preResetState.motion = MotionBuilder.FrameAnimation;
                     {
-                        var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                        var resetParam = preResetState.AddSafeParameterDriver();
                         resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                         {
                             type = VRC_AvatarParameterDriver.ChangeType.Set,
@@ -191,7 +191,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 var resetState = layer.stateMachine.AddState ("Reset");
                 resetState.writeDefaultValues = writeDefault;
                 resetState.motion = MotionBuilder.FrameAnimation;
-                var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+                var trackingOffParam = resetState.AddSafeParameterDriver ();
                 foreach (var prefix in new [] {
                         ConstVariables.HeadParamPrefix,
                             ConstVariables.ArmParamPrefix,
