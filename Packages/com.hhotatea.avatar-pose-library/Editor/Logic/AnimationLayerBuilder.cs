@@ -35,6 +35,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             resetState.motion = MotionBuilder.FrameAnimation;
 
             var paramReset = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+            EnsureParameterListInitialized(paramReset);
             foreach (var parameter in poseLibrary.Parameters) {
                 paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
@@ -393,7 +394,8 @@ namespace com.hhotatea.avatar_pose_library.logic {
             reserveState.motion = MotionBuilder.FrameAnimation;
             reserveState.writeDefaultValues = writeDefault_; 
             {
-                var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver> (); 
+                var trackingOnParam = reserveState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+                EnsureParameterListInitialized(trackingOnParam);
                 trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                         name = $"{ConstVariables.SpeedParamPrefix}_{guid}",
@@ -673,6 +675,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             poseState.mirrorParameter = $"{ConstVariables.MirrorParamPrefix}_{guid}";
             poseState.motion = MakeFxAnim (anim, pose.tracking.loop);
             var trackingOnParam = poseState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+            EnsureParameterListInitialized(trackingOnParam);
             foreach (var (enabled, prefix) in trackingMap) {
                 trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
@@ -967,6 +970,14 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
 
             return dest;
+        }
+
+        static void EnsureParameterListInitialized(VRCAvatarParameterDriver driver)
+        {
+            if (driver.parameters == null)
+            {
+                driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
+            }
         }
 
     }

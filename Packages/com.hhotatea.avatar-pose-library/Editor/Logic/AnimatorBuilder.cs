@@ -91,6 +91,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 resetState.motion = MotionBuilder.FrameAnimation;
                 {
                     var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                    EnsureParameterListInitialized(trackingOffParam);
                     for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
                     {
                         trackingOffParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
@@ -129,6 +130,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     preResetState.motion = MotionBuilder.FrameAnimation;
                     {
                         var resetParam = preResetState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                        EnsureParameterListInitialized(resetParam);
                         resetParam.parameters.Add(new VRC_AvatarParameterDriver.Parameter
                         {
                             type = VRC_AvatarParameterDriver.ChangeType.Set,
@@ -192,6 +194,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 resetState.writeDefaultValues = writeDefault;
                 resetState.motion = MotionBuilder.FrameAnimation;
                 var trackingOffParam = resetState.AddStateMachineBehaviour<VRCAvatarParameterDriver> ();
+                EnsureParameterListInitialized(trackingOffParam);
                 foreach (var prefix in new [] {
                         ConstVariables.HeadParamPrefix,
                             ConstVariables.ArmParamPrefix,
@@ -260,6 +263,14 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
 
             return result;
+        }
+
+        static void EnsureParameterListInitialized(VRCAvatarParameterDriver driver)
+        {
+            if (driver.parameters == null)
+            {
+                driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
+            }
         }
 
         static AnimatorController BaseAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
