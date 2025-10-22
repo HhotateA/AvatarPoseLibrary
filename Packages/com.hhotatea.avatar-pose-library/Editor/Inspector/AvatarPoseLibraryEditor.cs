@@ -308,11 +308,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             using (new GUILayout.HorizontalScope())
             {
                 height = EditorGUILayout.ToggleLeft(_enableHeightLabel, height, GUILayout.MaxWidth(TextBoxWidth / 2));
-                useCache  = EditorGUILayout.ToggleLeft(_enableUseCache, useCache, GUILayout.MaxWidth(TextBoxWidth / 2));
+                poseSpace  = EditorGUILayout.ToggleLeft(_enablePoseSpace, poseSpace, GUILayout.MaxWidth(TextBoxWidth / 2));
             }
             using (new GUILayout.HorizontalScope())
             {
                 speed     = EditorGUILayout.ToggleLeft(_enableSpeedLabel,  speed, GUILayout.MaxWidth(TextBoxWidth / 2));
+                useCache  = EditorGUILayout.ToggleLeft(_enableUseCache, useCache, GUILayout.MaxWidth(TextBoxWidth / 2));
             }
             using (new GUILayout.HorizontalScope())
             {
