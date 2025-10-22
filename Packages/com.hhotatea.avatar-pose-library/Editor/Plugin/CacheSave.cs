@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 using System.IO;
 using UnityEditor.Animations;
 using com.hhotatea.avatar_pose_library.component;
@@ -146,22 +147,31 @@ namespace com.hhotatea.avatar_pose_library.editor
                 return false;
             }
 
-            Deleate();
-            Create(asset);
+            try
+            {
+                Deleate();
+                Create(asset);
 
-            asset.version = DynamicVariables.CurrentVersion.ToString();
-            asset.libraryName = asset.menuObject.name;
-            SaveAnimator(asset.locomotionLayer,filePath);
-            SaveAnimator(asset.paramLayer,filePath);
-            SaveAnimator(asset.trackingLayer,filePath);
-            asset.menuObject = SaveGameObject(asset.menuObject,filePath);
-            asset.paramObject = SaveGameObject(asset.paramObject,filePath);
+                asset.version = DynamicVariables.CurrentVersion.ToString();
+                asset.libraryName = asset.menuObject.name;
+                SaveAnimator(asset.locomotionLayer,filePath);
+                SaveAnimator(asset.paramLayer,filePath);
+                SaveAnimator(asset.trackingLayer,filePath);
+                asset.menuObject = SaveGameObject(asset.menuObject,filePath);
+                asset.paramObject = SaveGameObject(asset.paramObject,filePath);
 
-            EditorUtility.SetDirty(asset);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(filePath);
-            Debug.Log($"AvatarPoseLibrary.CacheSave: Save cache to {fileName}");
-            return true;
+                EditorUtility.SetDirty(asset);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.ImportAsset(filePath);
+                Debug.Log($"AvatarPoseLibrary.CacheSave: Save cache to {fileName}");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"AvatarPoseLibrary.GetAssetCache: Save cache error \n {e}");
+                return false;
+            }
+
         }
 
         GameObject SaveGameObject(GameObject go, string path)

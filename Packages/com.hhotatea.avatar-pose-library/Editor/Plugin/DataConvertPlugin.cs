@@ -54,9 +54,11 @@ namespace com.hhotatea.avatar_pose_library.editor {
             {
                 return asset;
             }
+
             asset = CreateAssets(data);
             cache.SaveAsset(asset);
-            return cache.LoadAsset();
+            
+            return asset;
         }
 
         CacheModel CreateAssets(AvatarPoseData data)
