@@ -256,7 +256,11 @@ namespace com.hhotatea.avatar_pose_library.logic {
             
             if(poseLibrary.EnableAudioMode)
             {
-                result.AddLayer (builder.AudioVolumeLayer ($"{ConstVariables.VolumeParamPrefix}_{poseLibrary.Guid}", $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}", DynamicVariables.Settings.audioVolume));
+                result.AddLayer (
+                    builder.AudioVolumeLayer(
+                        $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
+                        $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
+                        DynamicVariables.Settings.audioVolume));
             }
 
             return result;
@@ -286,7 +290,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddParameter (speedParam);
 
             var volumeParam = new AnimatorControllerParameter {
-                name = $"{ConstVariables.VolumeParamPrefix}_{poseLibrary.Guid}",
+                name = $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
                 type = AnimatorControllerParameterType.Float,
                 defaultFloat = 1.0f,
             };

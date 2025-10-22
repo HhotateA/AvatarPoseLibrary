@@ -160,7 +160,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.volume.title,
                     DynamicVariables.Settings.Menu.volume.thumbnail,
-                    $"{ConstVariables.VolumeParamPrefix}_{poseLibrary.Guid}"
+                    $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}"
                 );
             }
 

@@ -76,7 +76,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
-                name = $"{ConstVariables.VolumeParamPrefix}_{poseLibrary.Guid}",
+                name = $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
                 value = 1f,
             });
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {

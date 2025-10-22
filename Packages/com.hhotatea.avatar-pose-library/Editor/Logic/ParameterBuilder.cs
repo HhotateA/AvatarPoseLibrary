@@ -171,7 +171,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     nameOrPrefix = $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
                     syncType = ParameterSyncType.Float,
                     localOnly = false,
-                    defaultValue = 0,
+                    defaultValue = 1,
                     saved = true,
                 });
             }
