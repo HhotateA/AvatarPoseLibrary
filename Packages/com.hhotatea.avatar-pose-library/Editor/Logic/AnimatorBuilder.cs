@@ -308,7 +308,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddParameter ($"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.DummyParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
-            result.AddParameter ($"{ConstVariables.PoseReloadParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter ($"{ConstVariables.HeightUpdateParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
 
             for (int i = 0; i < ConstVariables.PoseFlagCount; i++)

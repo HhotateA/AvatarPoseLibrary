@@ -133,16 +133,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 (layer, offToOn, onToOff, onState, offState) =>
                 {
                     AnimatorUtility.CreateActiveTransition(onState, offToOn, onToOff, param, $"{ConstVariables.OnPlayParamPrefix}_{guid}");
-                    
-                    
-                    var pose_reload = onState.AddSafeParameterDriver();
-                    pose_reload.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
-                    {
-                        type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.PoseReloadParamPrefix}_{guid}",
-                        value = 0
-                    });
-                    AnimatorUtility.CreateLoopTransition(onState, $"{ConstVariables.PoseReloadParamPrefix}_{guid}", false);
 
                     var onLoopState = layer.stateMachine.AddState("OnLoop");
                     onLoopState.writeDefaultValues = onState.writeDefaultValues;
@@ -154,13 +144,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
                         name = $"{ConstVariables.HeightUpdateParamPrefix}_{guid}",
                         value = 1
                     });
-                    height_reload.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
-                    {
-                        type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.PoseReloadParamPrefix}_{guid}",
-                        value = 1
-                    });
-
                     var loop_enter = onState.MakeTransition(onLoopState,false);
                     loop_enter.conditions = new AnimatorCondition[] {
                         new AnimatorCondition {
@@ -172,7 +155,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     loop_exit.conditions = new AnimatorCondition[] {
                         new AnimatorCondition {
                         mode = AnimatorConditionMode.If,
-                        parameter = $"{ConstVariables.PoseReloadParamPrefix}_{guid}",
+                        parameter = $"{ConstVariables.HeightUpdateParamPrefix}_{guid}",
                         }
                     };
 
@@ -410,11 +393,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                     type = VRC_AvatarParameterDriver.ChangeType.Set,
                     name = $"{ConstVariables.OnPlayParamPrefix}_{guid}",
-                    value = 1f,
-                });
-                trackingOnParam.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
-                    type = VRC_AvatarParameterDriver.ChangeType.Set,
-                    name = $"{ConstVariables.PoseReloadParamPrefix}_{guid}",
                     value = 1f,
                 });
                 var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();

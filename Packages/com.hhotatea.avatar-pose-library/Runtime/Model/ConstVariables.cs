@@ -24,7 +24,6 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string PoseSpaceParamPrefix = "AnimPoseSpace";
 
         // これらの値は、PoseSpaceの制御用 ↓
-        public const string PoseReloadParamPrefix = "AnimPoseReload";
         public const string HeightUpdateParamPrefix = "AnimHeightUpdate";
 
         public const string DummyParamPrefix = "AnimPoseDummy";
