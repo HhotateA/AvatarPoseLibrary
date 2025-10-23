@@ -176,18 +176,22 @@ namespace com.hhotatea.avatar_pose_library.logic
                 defaultValue = 0,
                 saved = false,
             });
-
-            if(poseLibrary.EnableAudioMode)
+            mResult.parameters.Add(new ParameterConfig
             {
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
-                    syncType = ParameterSyncType.Float,
-                    localOnly = false,
-                    defaultValue = 1,
-                    saved = true,
-                });
-            }
+                nameOrPrefix = $"{ConstVariables.PoseReloadParamPrefix}_{poseLibrary.Guid}",
+                syncType = ParameterSyncType.Bool,
+                localOnly = true,
+                defaultValue =  0,
+                saved = false,
+            });
+            mResult.parameters.Add(new ParameterConfig
+            {
+                nameOrPrefix = $"{ConstVariables.HeightUpdateParamPrefix}_{poseLibrary.Guid}",
+                syncType = ParameterSyncType.Bool,
+                localOnly = true,
+                defaultValue =  0,
+                saved = false,
+            });
 
             return result;
         }

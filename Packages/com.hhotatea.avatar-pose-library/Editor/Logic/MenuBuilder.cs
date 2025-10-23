@@ -120,7 +120,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.height.title,
                     DynamicVariables.Settings.Menu.height.thumbnail,
-                    $"{ConstVariables.HeightParamPrefix}_{poseLibrary.Guid}"
+                    $"{ConstVariables.HeightParamPrefix}_{poseLibrary.Guid}",
+                    $"{ConstVariables.HeightUpdateParamPrefix}_{poseLibrary.Guid}"
                 );
             }
 
@@ -232,7 +233,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <summary>
         /// Radial型のメニュー項目を作成します（例: 身長、速度）
         /// </summary>
-        static void CreateRadialMenu(Transform parent, string name, Texture2D icon, string parameterName)
+        static void CreateRadialMenu(Transform parent, string name, Texture2D icon, string subParameterName, string parameterName = "")
         {
             var obj = new GameObject(name);
             obj.transform.SetParent(parent);
@@ -240,9 +241,13 @@ namespace com.hhotatea.avatar_pose_library.logic
             var item = obj.AddComponent<ModularAvatarMenuItem>();
             item.Control.icon = icon;
             item.Control.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
+            if(!string.IsNullOrWhiteSpace(parameterName))
+            {
+                item.Control.parameter = new VRCExpressionsMenu.Control.Parameter { name = parameterName };
+            }
             item.Control.subParameters = new VRCExpressionsMenu.Control.Parameter[]
             {
-                new VRCExpressionsMenu.Control.Parameter { name = parameterName }
+                new VRCExpressionsMenu.Control.Parameter { name = subParameterName }
             };
         }
 
