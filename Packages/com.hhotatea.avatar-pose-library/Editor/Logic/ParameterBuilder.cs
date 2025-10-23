@@ -155,6 +155,19 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
             }
 
+            if(poseLibrary.EnableAudioMode)
+            {
+                mResult.parameters.Add(new ParameterConfig
+                {
+                    nameOrPrefix = $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
+                    syncType = ParameterSyncType.Float,
+                    localOnly = false,
+                    defaultValue = 1,
+                    saved = true,
+                });
+            }
+
+            // 特殊変数
             mResult.parameters.Add(new ParameterConfig
             {
                 nameOrPrefix = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
