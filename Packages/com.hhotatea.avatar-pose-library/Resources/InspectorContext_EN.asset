@@ -110,6 +110,7 @@ MonoBehaviour:
   disableMenuTooltip: Disable all items.
   enableMenuLabel: Enable All
   enableMenuTooltip: Enable all items.
+  presetNames: []
   updateMessage: "\u6700\u65B0\u7248\u30A2\u30C3\u30D7\u30C7\u30FC\u30C8\u304C\u3042\u308A\u307E\u3059\u3002VCC\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
   thumbnailBg: {fileID: 2800000, guid: 9c605c794272c614d8cf187acf554b3a, type: 3}
   headTrackingOption: Head Lock
@@ -117,3 +118,4 @@ MonoBehaviour:
   fingerTrackingOption: Finger Lock
   footTrackingOption: Foot Lock
   locomotionTrackingOption: Move Lock
+  fxTrackingOption: Fx Active
