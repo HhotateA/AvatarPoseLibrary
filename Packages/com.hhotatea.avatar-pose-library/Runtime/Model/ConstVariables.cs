@@ -20,8 +20,12 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string ResetParamPrefix = "AnimPoseReset";
         public const string MirrorParamPrefix = "AnimPoseMirror";
         public const string FlagParamPrefix = "AnimPoseFlag";
-        public const string PoseSpaceParamPrefix = "AnimPoseSpace";
         public const string AudioParamPrefix = "AnimPoseAudio";
+        public const string PoseSpaceParamPrefix = "AnimPoseSpace";
+
+        // これらの値は、PoseSpaceの制御用 ↓
+        public const string HeightUpdateParamPrefix = "AnimHeightUpdate";
+
         public const string DummyParamPrefix = "AnimPoseDummy";
         // public const string BlockIdleParamPrefix = "AnimPoseBlock"; // 動的アニメーションかどうかのフラグ
         

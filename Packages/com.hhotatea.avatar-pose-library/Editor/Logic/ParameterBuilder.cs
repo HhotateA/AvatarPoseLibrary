@@ -155,15 +155,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
             }
 
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = !poseLibrary.enableDeepSync,
-                defaultValue = 0,
-                saved = false,
-            });
-
             if(poseLibrary.EnableAudioMode)
             {
                 mResult.parameters.Add(new ParameterConfig
@@ -175,6 +166,24 @@ namespace com.hhotatea.avatar_pose_library.logic
                     saved = true,
                 });
             }
+
+            // 特殊変数
+            mResult.parameters.Add(new ParameterConfig
+            {
+                nameOrPrefix = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
+                syncType = ParameterSyncType.Bool,
+                localOnly = !poseLibrary.enableDeepSync,
+                defaultValue = 0,
+                saved = false,
+            });
+            mResult.parameters.Add(new ParameterConfig
+            {
+                nameOrPrefix = $"{ConstVariables.HeightUpdateParamPrefix}_{poseLibrary.Guid}",
+                syncType = ParameterSyncType.Bool,
+                localOnly = true,
+                defaultValue =  0,
+                saved = false,
+            });
 
             return result;
         }

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a74fa1373aa07a748a89b554733f8826, type: 3}
-  m_Name: PresetLight
+  m_Name: PresetMinimum
   m_EditorClassIdentifier: 
-  defaultName: Light
+  defaultName: Minimum
   heightParam: 0
   speedParam: 0
   mirrorParam: 0
