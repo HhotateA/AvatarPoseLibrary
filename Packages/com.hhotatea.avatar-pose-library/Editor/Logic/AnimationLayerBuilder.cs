@@ -127,23 +127,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
             Space
         }
 
-        public AnimatorControllerLayer PoseTrackingLayer(TrackingType type, string param, string guid)
-        {
-            return TrackingLayer(type, param, guid,
-                (layer, offToOn, onToOff, onState, offState) =>
-                {
-                    AnimatorUtility.CreateActiveTransition(onState, offToOn, onToOff, param, $"{ConstVariables.OnPlayParamPrefix}_{guid}");
-                    AnimatorUtility.CreateLoopTransition(onState, $"{ConstVariables.DummyParamPrefix}_{guid}")
-                        .conditions = new AnimatorCondition[] {
-                            new AnimatorCondition {
-                            mode = AnimatorConditionMode.NotEqual,
-                            parameter = $"{ConstVariables.SpeedParamPrefix}_{guid}",
-                            threshold = 0f
-                        } };
-                    AnimatorUtility.CreateLoopTransition(onState, $"{ConstVariables.HeightUpdateParamPrefix}_{guid}", false);
-                });
-        }
-
         public AnimatorControllerLayer ActiveTrackingLayer(TrackingType type, string param, string guid)
         {
             return TrackingLayer(type,param,guid,
