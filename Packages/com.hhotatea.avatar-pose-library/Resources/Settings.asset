@@ -37,7 +37,7 @@ MonoBehaviour:
   motionLong: 15
   motionDuration: 0.5
   motionNoiseScale: 0.6
-  minMaxHeight: 1.5
+  minMaxHeight: 3
   paramRate: 0.3
   cameraBoth:
     lookAtFace: 0.8

@@ -4,11 +4,13 @@ namespace com.hhotatea.avatar_pose_library.model
     {
         public const string BaseName = "AvatarPoseLibrary";
         public const string OnPlayParamPrefix = "AnimPosePlay";
+        public const string DummyParamPrefix = "AnimPoseDummy";
         
         /// <summary>
         /// パラメーター名
         /// </summary>
         public const string HeightParamPrefix = "AnimPoseHeight";
+        public const string HeightUpdateParamPrefix = "AnimHeightUpdate";
         public const string BaseParamPrefix = "AnimPoseBase";
         public const string HeadParamPrefix = "AnimPoseHead";
         public const string ArmParamPrefix = "AnimPoseArm";
@@ -22,12 +24,6 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string FlagParamPrefix = "AnimPoseFlag";
         public const string AudioParamPrefix = "AnimPoseAudio";
         public const string PoseSpaceParamPrefix = "AnimPoseSpace";
-
-        // これらの値は、PoseSpaceの制御用 ↓
-        public const string HeightUpdateParamPrefix = "AnimHeightUpdate";
-
-        public const string DummyParamPrefix = "AnimPoseDummy";
-        // public const string BlockIdleParamPrefix = "AnimPoseBlock"; // 動的アニメーションかどうかのフラグ
         
         public const string MotionAnimatorPrefix = "AnimPoseMotion";
         public const string FxAnimatorPrefix = "AnimPoseFx";

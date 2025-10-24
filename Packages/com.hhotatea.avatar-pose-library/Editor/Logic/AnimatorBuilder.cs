@@ -15,13 +15,14 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
             // フルトラ以外の場合は、アクションレイヤーを無効化する。
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Action, $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
+            result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Space, $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
 
             return result;
         }
 
         public static AnimatorController BuildLocomotionAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = BaseAnimator (poseLibrary, writeDefault);
-            var builder = new AnimationLayerBuilder (writeDefault);
+            var builder = new AnimationLayerBuilder(writeDefault);
 
             // レイヤー作成
             if (poseLibrary.enableLocomotionAnimator)
@@ -239,7 +240,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Foot, $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Finger, $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
             result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Face, $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
-            result.AddLayer (builder.PoseTrackingLayer(TrackingType.Space, $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
             result.AddLayer (builder.ResetLayer($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
             
             if(poseLibrary.EnableAudioMode)

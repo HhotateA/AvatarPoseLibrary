@@ -85,20 +85,27 @@ namespace com.hhotatea.avatar_pose_library.logic
             return blendTree;
         }
         
-        public static void CreateLoopTransition(AnimatorState state,string param,bool invert)
+        public static AnimatorStateTransition CreateLoopTransition(AnimatorState state,string param,bool invert)
         {
-            var loopTransition = state.AddTransition(state);
-            loopTransition.canTransitionToSelf = true;
-            loopTransition.hasExitTime = false;
-            loopTransition.exitTime = 0f;
-            loopTransition.hasFixedDuration = true;
-            loopTransition.duration = 0.0f;
+            var loopTransition = CreateLoopTransition(state,param);
             loopTransition.conditions = new AnimatorCondition[] {
                 new AnimatorCondition {
                 mode = invert ? AnimatorConditionMode.IfNot : AnimatorConditionMode.If,
                 parameter = param,
                 }
             };
+            return CreateLoopTransition(state,param);
+        }
+        
+        public static AnimatorStateTransition CreateLoopTransition(AnimatorState state,string param)
+        {
+            var loopTransition = state.AddTransition(state);
+            loopTransition.canTransitionToSelf = true;
+            loopTransition.hasExitTime = false;
+            loopTransition.exitTime = 0f;
+            loopTransition.hasFixedDuration = true;
+            loopTransition.duration = 0f;
+            return loopTransition;
         }
         
         public static void CreateActiveTransition(

@@ -127,43 +127,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
             Space
         }
 
-        public AnimatorControllerLayer PoseTrackingLayer(TrackingType type, string param, string guid)
-        {
-            return TrackingLayer(type, param, guid,
-                (layer, offToOn, onToOff, onState, offState) =>
-                {
-                    AnimatorUtility.CreateActiveTransition(onState, offToOn, onToOff, param, $"{ConstVariables.OnPlayParamPrefix}_{guid}");
-
-                    var onLoopState = layer.stateMachine.AddState("OnLoop");
-                    onLoopState.writeDefaultValues = onState.writeDefaultValues;
-                    onLoopState.motion = onState.motion;
-                    var height_reload = onLoopState.AddSafeParameterDriver();
-                    height_reload.parameters.Add(new VRC_AvatarParameterDriver.Parameter()
-                    {
-                        type = VRC_AvatarParameterDriver.ChangeType.Set,
-                        name = $"{ConstVariables.HeightUpdateParamPrefix}_{guid}",
-                        value = 1
-                    });
-                    var loop_enter = onState.MakeTransition(onLoopState,false);
-                    loop_enter.conditions = new AnimatorCondition[] {
-                        new AnimatorCondition {
-                        mode = AnimatorConditionMode.IfNot,
-                        parameter = $"{ConstVariables.HeightUpdateParamPrefix}_{guid}",
-                        }
-                    };
-                    var loop_exit = onLoopState.MakeTransition(onState,false);
-                    loop_exit.conditions = new AnimatorCondition[] {
-                        new AnimatorCondition {
-                        mode = AnimatorConditionMode.If,
-                        parameter = $"{ConstVariables.HeightUpdateParamPrefix}_{guid}",
-                        }
-                    };
-
-                    var spaceEnter = onLoopState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace>();
-                    spaceEnter.enterPoseSpace = false;
-                });
-        }
-
         public AnimatorControllerLayer ActiveTrackingLayer(TrackingType type, string param, string guid)
         {
             return TrackingLayer(type,param,guid,
