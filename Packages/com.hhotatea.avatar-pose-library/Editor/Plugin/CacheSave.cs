@@ -129,7 +129,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 return null;
             }
-            CacheModel asset = new CacheModel();
+            CacheModel asset = ScriptableObject.CreateInstance<CacheModel>();
             asset.locomotionLayer = cacheAsset.locomotionLayer;
             asset.paramLayer = cacheAsset.paramLayer;
             asset.trackingLayer = cacheAsset.trackingLayer;

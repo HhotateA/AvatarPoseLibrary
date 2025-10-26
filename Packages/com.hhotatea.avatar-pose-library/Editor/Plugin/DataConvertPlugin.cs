@@ -70,14 +70,15 @@ namespace com.hhotatea.avatar_pose_library.editor {
         CacheModel CreateAssets(AvatarPoseData data)
         {
             bool overrideWriteDefault = (data.writeDefaultType == WriteDefaultType.OverrideTrue);
-            return new CacheModel()
-            {
-                locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data, overrideWriteDefault),
-                paramLayer = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault),
-                trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data, overrideWriteDefault),
-                menuObject = MenuBuilder.BuildPoseMenu(data),
-                paramObject = ParameterBuilder.BuildPoseParameter(data)
-            };
+
+            var cache = ScriptableObject.CreateInstance<CacheModel>();
+            cache.locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data, overrideWriteDefault);
+            cache.paramLayer = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault);
+            cache.trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data, overrideWriteDefault);
+            cache.menuObject = MenuBuilder.BuildPoseMenu(data);
+            cache.paramObject = ParameterBuilder.BuildPoseParameter(data);
+
+            return cache;
         }
 
         /// <summary>
