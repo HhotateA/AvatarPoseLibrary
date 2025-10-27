@@ -35,7 +35,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
                         var assets = GetAssetCache(d, d.enableUseCache);
                         if(d.EnableAudioMode) BuildAudioSource(ctx.AvatarRootObject.transform,d);
                         BuildRuntimeAnimator (go, assets, d);
-                        BuildRuntimeMenu (go, assets, root?.transform);
+                        BuildRuntimeMenu (go, assets, root?.transform, ctx.AvatarRootObject.transform);
                         BuildRuntimeParameter(go, assets);
                     }
                 });
@@ -126,23 +126,31 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="assets"></param>
-        void BuildRuntimeMenu(GameObject obj, CacheModel assets, Transform root)
+        void BuildRuntimeMenu(GameObject obj, CacheModel assets, Transform main, Transform root)
         {
             var result = assets.menuObject;
             foreach (var installer in result.GetComponentsInChildren<ModularAvatarMenuInstaller>())
             {
-                installer.transform.SetParent(obj.transform);
+                installer.transform.SetParent(root);
+            }
+            if (result.transform.parent != null)
+            {
+                // 既に親オブジェクト処理済みのためスキップ
+                // Targetの機能自体を削除予定
+                return;
             }
 
-            if (IsItenRoot(root))
+            if (IsItenRoot(main))
             {
-                var parent = root.parent;
+                // 親オブジェクトがMAMenuGroup等の場合
+                var parent = main.parent;
                 result.transform.SetParent(parent);
-                int targetIndex = root.GetSiblingIndex();
+                int targetIndex = main.GetSiblingIndex();
                 result.transform.SetSiblingIndex(targetIndex + 1);
             }
             else
             {
+                // Rootにそのまま入れる場合（既存挙動）
                 result.AddComponent<ModularAvatarMenuInstaller>();
                 result.transform.SetParent(obj.transform);
             }
