@@ -9,7 +9,6 @@ using Object = UnityEngine.Object;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.logic;
 using com.hhotatea.avatar_pose_library.model;
-using UnityEditor.AnimatedValues;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
