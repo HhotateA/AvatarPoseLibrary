@@ -9,6 +9,7 @@ using Object = UnityEngine.Object;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.logic;
 using com.hhotatea.avatar_pose_library.model;
+using UnityEditor.AnimatedValues;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
@@ -24,9 +25,9 @@ namespace com.hhotatea.avatar_pose_library.editor
         private AvatarPoseLibrary _library;
         private AvatarPoseData Data => _library.data;
 
-        private const float TextBoxWidth  = 350f;
+        private const float TextBoxWidth = 350f;
         private readonly float _lineHeight = EditorGUIUtility.singleLineHeight;
-        private const float Spacing       = 4f;
+        private const float Spacing = 4f;
 
         private ReorderableList _categoryList;
         private readonly List<ReorderableList> _poseLists = new();
@@ -37,7 +38,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
                            _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
                            _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel, _enablePoseSpace, _enableUseCache,
-                           _createCategoryMenu, _cutCategoryMenu, _deleteCategoryMenu, 
+                           _createCategoryMenu, _cutCategoryMenu, _deleteCategoryMenu,
                            _createPoseMenu, _cutPoseMenu, _deletePoseMenu, _clearPosesMenu,
                            _copyCategoryMenu, _pasteCategoryMenu, _pasteNewCategoryMenu,
                            _copyPoseMenu, _pastePoseMenu, _pasteNewPoseMenu;
@@ -47,12 +48,12 @@ namespace com.hhotatea.avatar_pose_library.editor
         private string _instanceIdPathBuffer = string.Empty;
         private string[] _trackingOptions;
         #endregion
-        
+
         #region ===== Foldout/Cache helpers =====
 
-        private readonly Dictionary<string,Texture2D> _thumbnails = new();
-        private readonly Dictionary<string,AnimationClip> _lastClips  = new();
-        private readonly Dictionary<string,bool> _foldout  = new();
+        private readonly Dictionary<string, Texture2D> _thumbnails = new();
+        private readonly Dictionary<string, AnimationClip> _lastClips = new();
+        private readonly Dictionary<string, bool> _foldout = new();
 
         Texture2D GetThumbnailBuffer(PoseEntry pose)
         {
@@ -61,7 +62,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             return _thumbnails[p];
         }
 
-        void SetThumbnailBuffer(PoseEntry pose,Texture2D value)
+        void SetThumbnailBuffer(PoseEntry pose, Texture2D value)
         {
             var p = GetParameter(pose);
             _thumbnails.TryAdd(p, null);
@@ -75,7 +76,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             return _lastClips[p];
         }
 
-        void SetClipBuffer(PoseEntry pose,AnimationClip value)
+        void SetClipBuffer(PoseEntry pose, AnimationClip value)
         {
             var p = GetParameter(pose);
             _lastClips.TryAdd(p, null);
@@ -89,11 +90,25 @@ namespace com.hhotatea.avatar_pose_library.editor
             return _foldout[p];
         }
 
-        void SetFoldoutBuffer(PoseEntry pose,bool value)
+        void SetFoldoutBuffer(PoseEntry pose, bool value)
         {
             var p = GetParameter(pose);
             _foldout.TryAdd(p, false);
             _foldout[p] = value;
+        }
+
+        bool GetCategoryFoldout(int catIdx)
+        {
+            var key = $"cat_{catIdx}";
+            _foldout.TryAdd(key, true);
+            return _foldout[key];
+        }
+
+        void SetCategoryFoldout(int catIdx, bool value)
+        {
+            var key = $"cat_{catIdx}";
+            _foldout.TryAdd(key, true);
+            _foldout[key] = value;
         }
 
         string GetParameter(PoseEntry pose)
@@ -123,15 +138,15 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             foreach (var p in ps)
             {
-                if(_thumbnails.ContainsKey(p))
+                if (_thumbnails.ContainsKey(p))
                     _thumbnails.Remove(p);
-                if(_lastClips.ContainsKey(p))
+                if (_lastClips.ContainsKey(p))
                     _lastClips.Remove(p);
-                if(_foldout.ContainsKey(p))
+                if (_foldout.ContainsKey(p))
                     _foldout.Remove(p);
             }
         }
-        
+
         #endregion
 
         #region ===== Serialized helpers =====
@@ -161,7 +176,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     pose.Parameter = "";
                 }
             }
-            
+
             // 初期化時に、タグを合わせる
             SyncGlobalToggles(Data.name);
         }
@@ -169,43 +184,43 @@ namespace com.hhotatea.avatar_pose_library.editor
         // BuildGuiContent() 省略なし
         private void BuildGuiContent()
         {
-            var i= DynamicVariables.Settings.Inspector;
-            _libraryLabel       = new(i.libraryMenuLabel, i.libraryMenuTooltip);
-            _categoryListLabel  = new(i.categoriesLabel, i.categoriesTooltip);
-            _categoryIconLabel  = new(i.categoryIconLabel, i.categoryIconTooltip);
-            _categoryTextLabel  = new(i.categoryTextLabel, i.categoryTextTooltip);
-            _openAllLabel       = new(i.openAllLabel, i.openAllTooltip);
-            _closeAllLabel      = new(i.closeAllLabel, i.closeAllTooltip);
-            _poseListLabel      = new(i.poseListLabel, i.poseListTooltip);
-            _openLabel          = new(i.openLabel, i.openTooltip);
-            _closeLabel         = new(i.closeLabel, i.closeTooltip);
+            var i = DynamicVariables.Settings.Inspector;
+            _libraryLabel = new(i.libraryMenuLabel, i.libraryMenuTooltip);
+            _categoryListLabel = new(i.categoriesLabel, i.categoriesTooltip);
+            _categoryIconLabel = new(i.categoryIconLabel, i.categoryIconTooltip);
+            _categoryTextLabel = new(i.categoryTextLabel, i.categoryTextTooltip);
+            _openAllLabel = new(i.openAllLabel, i.openAllTooltip);
+            _closeAllLabel = new(i.closeAllLabel, i.closeAllTooltip);
+            _poseListLabel = new(i.poseListLabel, i.poseListTooltip);
+            _openLabel = new(i.openLabel, i.openTooltip);
+            _closeLabel = new(i.closeLabel, i.closeTooltip);
             _thumbnailAutoLabel = new(i.thumbnailAutoLabel, i.thumbnailAutoTooltip);
             _animationClipLabel = new(i.animationClipLabel, i.animationClipTooltip);
-            _trackingLabel      = new(i.trackingSettingsLabel, i.trackingSettingsTooltip);
-            _isLoopLabel        = new(i.isLoopLabel, i.isLoopTooltip);
-            _motionSpeedLabel   = new(i.motionSpeedLabel, i.motionSpeedTooltip);
-            _dropBoxLabel       = new(i.dropboxLabel, i.dropboxTooltip);
-            _enableHeightLabel  = new(i.enableHeightLabel, i.enableHeightTooltip);
-            _enableSpeedLabel   = new(i.enableSpeedLabel, i.enableSpeedTooltip);
-            _enableMirrorLabel  = new(i.enableMirrorLabel, i.enableMirrorTooltip);
-            _enableFxLabel      = new(i.enableFxLabel, i.enableFxTooltip);
-            _enablePoseSpace    = new(i.enablePoseSpace, i.enablePoseSpaceTooltip);
-            _enableUseCache     = new(i.enableUseCache, i.enableUseCacheTooltip);
-            _poseThumbnailLabel = new("",i.poseThumbnailTooltip);
-            _posePreviewLabel   = new("",i.posePreviewTooltip);
+            _trackingLabel = new(i.trackingSettingsLabel, i.trackingSettingsTooltip);
+            _isLoopLabel = new(i.isLoopLabel, i.isLoopTooltip);
+            _motionSpeedLabel = new(i.motionSpeedLabel, i.motionSpeedTooltip);
+            _dropBoxLabel = new(i.dropboxLabel, i.dropboxTooltip);
+            _enableHeightLabel = new(i.enableHeightLabel, i.enableHeightTooltip);
+            _enableSpeedLabel = new(i.enableSpeedLabel, i.enableSpeedTooltip);
+            _enableMirrorLabel = new(i.enableMirrorLabel, i.enableMirrorTooltip);
+            _enableFxLabel = new(i.enableFxLabel, i.enableFxTooltip);
+            _enablePoseSpace = new(i.enablePoseSpace, i.enablePoseSpaceTooltip);
+            _enableUseCache = new(i.enableUseCache, i.enableUseCacheTooltip);
+            _poseThumbnailLabel = new("", i.poseThumbnailTooltip);
+            _posePreviewLabel = new("", i.posePreviewTooltip);
             _createCategoryMenu = new(i.createCategoryLabel, i.createCategoryTooltip);
             _deleteCategoryMenu = new(i.deleteCategoryLabel, i.deleteCategoryTooltip);
-            _copyCategoryMenu   = new(i.copyCategoryLabel, i.copyCategoryTooltip); 
-            _cutCategoryMenu    = new(i.cutCategoryLabel, i.cutCategoryTooltip); 
-            _pasteCategoryMenu  = new(i.pasteCategoryLabel, i.pasteCategoryTooltip); 
+            _copyCategoryMenu = new(i.copyCategoryLabel, i.copyCategoryTooltip);
+            _cutCategoryMenu = new(i.cutCategoryLabel, i.cutCategoryTooltip);
+            _pasteCategoryMenu = new(i.pasteCategoryLabel, i.pasteCategoryTooltip);
             _pasteNewCategoryMenu = new(i.pasteNewCategoryLabel, i.pasteNewCategoryTooltip);
-            _createPoseMenu     = new(i.createPoseLabel, i.createPoseTooltip);
-            _deletePoseMenu     = new(i.deletePoseLabel, i.deletePoseTooltip);
-            _clearPosesMenu     = new(i.clearPoseLabel, i.clearPoseTooltip);
-            _copyPoseMenu       = new(i.copyPoseLabel, i.copyPoseTooltip); 
-            _cutPoseMenu        = new(i.cutPoseLabel, i.cutPoseTooltip); 
-            _pastePoseMenu      = new(i.pastePoseLabel, i.pastePoseTooltip); 
-            _pasteNewPoseMenu   = new(i.pasteNewPoseLabel, i.pasteNewPoseTooltip);
+            _createPoseMenu = new(i.createPoseLabel, i.createPoseTooltip);
+            _deletePoseMenu = new(i.deletePoseLabel, i.deletePoseTooltip);
+            _clearPosesMenu = new(i.clearPoseLabel, i.clearPoseTooltip);
+            _copyPoseMenu = new(i.copyPoseLabel, i.copyPoseTooltip);
+            _cutPoseMenu = new(i.cutPoseLabel, i.cutPoseTooltip);
+            _pastePoseMenu = new(i.pastePoseLabel, i.pastePoseTooltip);
+            _pasteNewPoseMenu = new(i.pasteNewPoseLabel, i.pasteNewPoseTooltip);
 
             _trackingOptions = new[]
             {
@@ -233,7 +248,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         private void DrawMainHeader()
         {
             string newName = Data.name;
-            int    newIdx  = _libraryTagIndex;
+            int newIdx = _libraryTagIndex;
 
             float texSize = _lineHeight * 8f;
 
@@ -255,7 +270,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     using (new GUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField(_libraryLabel, EditorStyles.label,GUILayout.MaxWidth(TextBoxWidth-texSize));
+                        EditorGUILayout.LabelField(_libraryLabel, EditorStyles.label, GUILayout.MaxWidth(TextBoxWidth - texSize));
 
                         // 同名ルートオブジェクトの表示
                         if (!_library.IsRootComponent())
@@ -294,26 +309,26 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void ApplyGlobalToggles()
         {
-            bool height    = Data.enableHeightParam;
-            bool speed     = Data.enableSpeedParam;
-            bool mirror    = Data.enableMirrorParam;
-            bool tracking  = Data.enableTrackingParam;
-            bool deepSync  = Data.enableDeepSync;
+            bool height = Data.enableHeightParam;
+            bool speed = Data.enableSpeedParam;
+            bool mirror = Data.enableMirrorParam;
+            bool tracking = Data.enableTrackingParam;
+            bool deepSync = Data.enableDeepSync;
             bool poseSpace = Data.enablePoseSpace;
-            bool useCache  = Data.enableUseCache;
-            bool locoAnim  = Data.enableLocomotionAnimator;
-            bool fxAnim    = Data.enableFxAnimator;
+            bool useCache = Data.enableUseCache;
+            bool locoAnim = Data.enableLocomotionAnimator;
+            bool fxAnim = Data.enableFxAnimator;
             bool presetApply = false;
-            
+
             using (new GUILayout.HorizontalScope())
             {
                 height = EditorGUILayout.ToggleLeft(_enableHeightLabel, height, GUILayout.MaxWidth(TextBoxWidth / 2));
-                poseSpace  = EditorGUILayout.ToggleLeft(_enablePoseSpace, poseSpace, GUILayout.MaxWidth(TextBoxWidth / 2));
+                poseSpace = EditorGUILayout.ToggleLeft(_enablePoseSpace, poseSpace, GUILayout.MaxWidth(TextBoxWidth / 2));
             }
             using (new GUILayout.HorizontalScope())
             {
-                speed     = EditorGUILayout.ToggleLeft(_enableSpeedLabel,  speed, GUILayout.MaxWidth(TextBoxWidth / 2));
-                useCache  = EditorGUILayout.ToggleLeft(_enableUseCache, useCache, GUILayout.MaxWidth(TextBoxWidth / 2));
+                speed = EditorGUILayout.ToggleLeft(_enableSpeedLabel, speed, GUILayout.MaxWidth(TextBoxWidth / 2));
+                useCache = EditorGUILayout.ToggleLeft(_enableUseCache, useCache, GUILayout.MaxWidth(TextBoxWidth / 2));
             }
             using (new GUILayout.HorizontalScope())
             {
@@ -348,7 +363,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 locoAnim = Data.enableLocomotionAnimator;
                 fxAnim = Data.enableFxAnimator;
             }
-            
+
             if (height == Data.enableHeightParam &&
                 speed == Data.enableSpeedParam &&
                 mirror == Data.enableMirrorParam &&
@@ -408,14 +423,14 @@ namespace com.hhotatea.avatar_pose_library.editor
                 FindData("enableFxAnimator").boolValue = comp.data.enableFxAnimator;
             });
         }
-        
+
         private bool PresetMenu(GUILayoutOption layout)
         {
             int index = -1;
             var presets = DynamicVariables.Settings.SettingsPresets;
-            for(int i = 0; i<presets.Length; i++)
+            for (int i = 0; i < presets.Length; i++)
             {
-                if(presets[i].Is(Data))
+                if (presets[i].Is(Data))
                 {
                     index = i;
                     break;
@@ -436,7 +451,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             return false;
         }
 
-        
         public override void OnInspectorGUI()
         {
             EnsureGuiLists();
@@ -456,9 +470,9 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             _categoryList = new ReorderableList(serializedObject, catProp, true, true, true, true)
             {
-                drawHeaderCallback    = r => EditorGUI.LabelField(r, _categoryListLabel),
+                drawHeaderCallback = r => EditorGUI.LabelField(r, _categoryListLabel),
                 elementHeightCallback = GetCategoryHeight,
-                drawElementCallback   = DrawCategory,
+                drawElementCallback = DrawCategory,
 
                 onReorderCallbackWithDetails = (l, oldIndex, newIndex) =>
                 {
@@ -470,9 +484,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                     int i = catProp.arraySize;
                     catProp.InsertArrayElementAtIndex(i);
                     var c = catProp.GetArrayElementAtIndex(i);
-                    c.FindPropertyRelative("name").stringValue               = DynamicVariables.Settings.Menu.category.title;
+                    c.FindPropertyRelative("name").stringValue = DynamicVariables.Settings.Menu.category.title;
                     c.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.category.thumbnail;
-                    c.FindPropertyRelative("poses").arraySize                = 0;
+                    c.FindPropertyRelative("poses").arraySize = 0;
                     _poseLists.Insert(i, null);
                 }),
 
@@ -492,11 +506,10 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             if (catIdx < _poseLists.Count && _poseLists[catIdx] != null) return _poseLists[catIdx];
 
-            var list = new ReorderableList(serializedObject, posesProp, true, true, true, true)
+            var list = new ReorderableList(serializedObject, posesProp, true, false, true, true)
             {
-                drawHeaderCallback    = r => EditorGUI.LabelField(r, _poseListLabel),
                 elementHeightCallback = i => GetPoseHeight(catIdx, i),
-                drawElementCallback   = (r, i, a, f) => DrawPose(r, catIdx, i, posesProp.GetArrayElementAtIndex(i)),
+                drawElementCallback = (r, i, a, f) => DrawPose(r, catIdx, i, posesProp.GetArrayElementAtIndex(i)),
 
                 onReorderCallbackWithDetails = (l, oldIndex, newIndex) =>
                 {
@@ -505,7 +518,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                     Data.categories[catIdx].poses[oldIndex].Parameter = b;
                     Data.categories[catIdx].poses[newIndex].Parameter = a;
                 },
-
 
                 onAddCallback = l => Apply("Add Pose", () =>
                 {
@@ -530,7 +542,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         private float GetCategoryHeight(int i)
         {
             var list = EnsurePoseList(i, FindData($"categories.Array.data[{i}].poses"));
-            return _lineHeight + 8f + Mathf.Max(_lineHeight*5, _lineHeight) + list.GetHeight() + 60f;
+            var listHeight = GetCategoryFoldout(i) ? list.GetHeight() : 0f;
+            return _lineHeight + 8f + Mathf.Max(_lineHeight * 5, _lineHeight) + _lineHeight + listHeight + 60f;
         }
 
         void CategorySubmenu(Rect rect, int catIdx)
@@ -559,14 +572,14 @@ namespace com.hhotatea.avatar_pose_library.editor
                     menu.AddDisabledItem(_pasteCategoryMenu);
                     menu.AddDisabledItem(_pasteNewCategoryMenu);
                 }
-                
+
                 menu.AddSeparator("");
 
                 menu.AddItem(_clearPosesMenu, false, () => Apply("Clear Pose", () =>
                 {
                     Data.categories[catIdx].poses = new List<PoseEntry>();
                 }));
-                
+
                 // トラッキング設定定義
                 var trackingSettings = new[]
                 {
@@ -631,7 +644,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                         Setter = new Action<PoseEntry, bool>((pose, enabled) =>
                             pose.tracking.motionSpeed = enabled ? 1f : 0f),
                         Selector = new Func<List<PoseEntry>,bool,bool>((poses, enabled) =>
-                            poses.All(p=> 
+                            poses.All(p=>
                                 Math.Abs(p.tracking.motionSpeed - (enabled ? 1f : 0f)) < 0.001f))
                     },
                 };
@@ -639,24 +652,24 @@ namespace com.hhotatea.avatar_pose_library.editor
                 // 共通メニュー生成ループ
                 foreach (var setting in trackingSettings)
                 {
-                    AddTrackingMenu(menu,Data.categories[catIdx].poses,
+                    AddTrackingMenu(menu, Data.categories[catIdx].poses,
                         setting.Label, DynamicVariables.Settings.Inspector.enableMenuLabel,
                         pose => setting.Setter(pose, true),
-                        poses => setting.Selector(poses,true));
+                        poses => setting.Selector(poses, true));
 
-                    AddTrackingMenu(menu,Data.categories[catIdx].poses,
+                    AddTrackingMenu(menu, Data.categories[catIdx].poses,
                         setting.Label, DynamicVariables.Settings.Inspector.disableMenuLabel,
                         pose => setting.Setter(pose, false),
-                    poses => setting.Selector(poses,false));
+                    poses => setting.Selector(poses, false));
                 }
-                
+
                 menu.AddSeparator("");
-                
+
                 menu.AddItem(_createCategoryMenu, false, () =>
                 {
                     Apply("Add Category", () =>
                     {
-                        Data.categories.Insert(catIdx+1,new PoseCategory
+                        Data.categories.Insert(catIdx + 1, new PoseCategory
                         {
                             name = DynamicVariables.Settings.Menu.category.title,
                             thumbnail = DynamicVariables.Settings.Menu.category.thumbnail,
@@ -664,7 +677,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                         });
                     });
                 });
-                
+
                 menu.AddItem(_deleteCategoryMenu, false, () =>
                 {
                     Apply("Remove Category", () =>
@@ -680,53 +693,74 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void DrawCategory(Rect rect, int index, bool isActive, bool isFocused)
         {
-            SerializedProperty cat   = FindData("categories").GetArrayElementAtIndex(index);
-            SerializedProperty name  = cat.FindPropertyRelative("name");
-            SerializedProperty icon  = cat.FindPropertyRelative("thumbnail");
+            SerializedProperty cat = FindData("categories").GetArrayElementAtIndex(index);
+            SerializedProperty name = cat.FindPropertyRelative("name");
+            SerializedProperty icon = cat.FindPropertyRelative("thumbnail");
             SerializedProperty poses = cat.FindPropertyRelative("poses");
 
-            float y       = rect.y + Spacing;
-            float thumbSz = _lineHeight*5f;
-            float nameArea= rect.width - Spacing;
+            float y = rect.y + Spacing;
+            float thumbSz = _lineHeight * 5f;
+            float nameArea = rect.width - Spacing;
 
-            CategorySubmenu(new Rect(rect.x,rect.y,rect.width,_lineHeight*3f),index);
+            CategorySubmenu(new Rect(rect.x, rect.y, rect.width, _lineHeight * 3f), index);
 
-            var thumbRect = new Rect(rect.x+Spacing, y, thumbSz, thumbSz);
-            var newThumb  = (Texture2D)EditorGUI.ObjectField(thumbRect, _categoryIconLabel, icon.objectReferenceValue, typeof(Texture2D), false);
+            var thumbRect = new Rect(rect.x + Spacing, y, thumbSz, thumbSz);
+            var newThumb = (Texture2D)EditorGUI.ObjectField(thumbRect, _categoryIconLabel, icon.objectReferenceValue, typeof(Texture2D), false);
             if (newThumb != icon.objectReferenceValue) Apply("Edit Category Thumbnail", () => icon.objectReferenceValue = newThumb);
             GUI.Button(thumbRect, _categoryIconLabel, GUIStyle.none);
 
-            GUI.Label(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight, 200, _lineHeight), _categoryTextLabel);
-            string catName = EditorGUI.TextField(new Rect(rect.x+Spacing*2+thumbSz, y+_lineHeight*3,
-                                                           Mathf.Min(TextBoxWidth, nameArea-thumbSz-15f), _lineHeight),
+            GUI.Label(new Rect(rect.x + Spacing * 2 + thumbSz, y + _lineHeight, 200, _lineHeight), _categoryTextLabel);
+            string catName = EditorGUI.TextField(new Rect(rect.x + Spacing * 2 + thumbSz, y + _lineHeight * 3,
+                                                           Mathf.Min(TextBoxWidth, nameArea - thumbSz - 15f), _lineHeight),
                                                            name.stringValue);
             if (catName != name.stringValue) Apply("Rename Category", () => name.stringValue = catName);
 
             // 一括の開閉処理
             y += Mathf.Max(thumbSz, _lineHeight) + Spacing;
-            float btnW = Mathf.Max(GUI.skin.button.CalcSize(_openAllLabel).x, GUI.skin.button.CalcSize(_closeAllLabel).x)+5f;
-            if (GUI.Button(new Rect(rect.x+rect.width-btnW*2-10, y, btnW, _lineHeight), _openAllLabel))
+            float btnW = Mathf.Max(GUI.skin.button.CalcSize(_openAllLabel).x, GUI.skin.button.CalcSize(_closeAllLabel).x) + 5f;
+            if (GUI.Button(new Rect(rect.x + rect.width - btnW * 2 - 10, y, btnW, _lineHeight), _openAllLabel))
                 foreach (var t in Data.categories[index].poses)
-                    SetFoldoutBuffer(t,true);
-            if (GUI.Button(new Rect(rect.x+rect.width-btnW-5, y, btnW, _lineHeight), _closeAllLabel))
+                    SetFoldoutBuffer(t, true);
+            if (GUI.Button(new Rect(rect.x + rect.width - btnW - 5, y, btnW, _lineHeight), _closeAllLabel))
                 foreach (var t in Data.categories[index].poses)
-                    SetFoldoutBuffer(t,false);
-
+                    SetFoldoutBuffer(t, false);
 
             y += _lineHeight + Spacing;
-            var list = EnsurePoseList(index, poses);
-            list.DoList(new Rect(rect.x, y, rect.width, list.GetHeight()));
-            y += list.GetHeight() + Spacing;
+
+            var category = Data.categories[index];
+            var foldoutRect = new Rect(rect.x, y, 200f, _lineHeight);
+            bool isExpanded = GetCategoryFoldout(index);
+            bool newExpanded = EditorGUI.Foldout(foldoutRect, isExpanded, _poseListLabel, true);
+            if (newExpanded != isExpanded)
+            {
+                SetCategoryFoldout(index, newExpanded);
+            }
+
+            var poseCount = category.poses.Count;
+            var countLabel = $"{poseCount}";
+            var badgeStyle = new GUIStyle("Badge");
+            var countSize = badgeStyle.CalcSize(new GUIContent(countLabel));
+            var countRect = new Rect(rect.x + rect.width - countSize.x - 4f, y, countSize.x, _lineHeight);
+
+            GUI.Box(countRect, countLabel, badgeStyle);
+
+            y += _lineHeight + Spacing;
+            if (isExpanded)
+            {
+                var list = EnsurePoseList(index, poses);
+                list.DoList(new Rect(rect.x, y, rect.width, list.GetHeight()));
+                y += list.GetHeight() + Spacing;
+            }
             DrawPoseDropArea(new Rect(rect.x, y, rect.width, 40f), poses, index);
         }
 
         private float GetPoseHeight(int catIdx, int poseIdx)
         {
             // 既知のバグ。Undoで要素を消したときに、ここでエラー発生
-            if (Data.categories.Count-1 < catIdx) return _lineHeight;
-            if (Data.categories[catIdx].poses.Count-1 < poseIdx) return _lineHeight;
-            
-            return GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]) ? _lineHeight*7f : _lineHeight*1.5f;
+            if (Data.categories.Count - 1 < catIdx) return _lineHeight;
+            if (Data.categories[catIdx].poses.Count - 1 < poseIdx) return _lineHeight;
+
+            return GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]) ? _lineHeight * 7f : _lineHeight * 1.5f;
         }
 
         void PoseSubmenu(Rect rect, int catIdx, int poseIdx, SerializedProperty poseProp)
@@ -755,9 +789,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                     menu.AddDisabledItem(_pastePoseMenu);
                     menu.AddDisabledItem(_pasteNewPoseMenu);
                 }
-                
+
                 menu.AddSeparator("");
-                
+
                 menu.AddItem(_createPoseMenu, false, () =>
                 {
                     var newPose = new PoseEntry
@@ -768,13 +802,13 @@ namespace com.hhotatea.avatar_pose_library.editor
                     };
                     Apply("Add Pose", () =>
                     {
-                        Data.categories[catIdx].poses.Insert(poseIdx+1,newPose);
+                        Data.categories[catIdx].poses.Insert(poseIdx + 1, newPose);
                     });
-                    
+
                     // 開いた状態で張り付ける
-                    SetFoldoutBuffer(newPose,true);
+                    SetFoldoutBuffer(newPose, true);
                 });
-                
+
                 menu.AddItem(_deletePoseMenu, false, () =>
                 {
                     Apply("Remove Pose", () =>
@@ -791,97 +825,97 @@ namespace com.hhotatea.avatar_pose_library.editor
         private void DrawPose(Rect rect, int catIdx, int poseIdx, SerializedProperty poseProp)
         {
             // 既知のバグ。Undoで要素を消したときに、ここでエラー発生
-            if (Data.categories.Count-1 < catIdx) return;
-            if (Data.categories[catIdx].poses.Count-1 < poseIdx) return;
+            if (Data.categories.Count - 1 < catIdx) return;
+            if (Data.categories[catIdx].poses.Count - 1 < poseIdx) return;
 
             PoseSubmenu(rect, catIdx, poseIdx, poseProp);
             Rect fullRect = new Rect(rect.x, rect.y, rect.width, _lineHeight);
-            
+
             float y = rect.y + 2f;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_closeLabel).x, GUI.skin.button.CalcSize(_openLabel).x) + 2;
             if (GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]))
             {
-                string newName = GUI.TextField(new Rect(rect.x+10, y, Mathf.Min(TextBoxWidth, rect.width-60), _lineHeight),
+                string newName = GUI.TextField(new Rect(rect.x + 10, y, Mathf.Min(TextBoxWidth, rect.width - 60), _lineHeight),
                                                poseProp.FindPropertyRelative("name").stringValue);
                 if (newName != poseProp.FindPropertyRelative("name").stringValue)
                     Apply("Rename Pose", () => poseProp.FindPropertyRelative("name").stringValue = newName);
-                if (GUI.Button(new Rect(rect.x+rect.width-btnW, y, btnW, 20), _closeLabel))
-                    SetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx],false);
+                if (GUI.Button(new Rect(rect.x + rect.width - btnW, y, btnW, 20), _closeLabel))
+                    SetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx], false);
             }
             else
             {
-                GUI.Label(new Rect(rect.x+10, y, rect.width-60, _lineHeight), poseProp.FindPropertyRelative("name").stringValue);
-                if (GUI.Button(new Rect(rect.x+rect.width-btnW, y, btnW, 20), _openLabel))
-                    SetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx],true);
+                GUI.Label(new Rect(rect.x + 10, y, rect.width - 60, _lineHeight), poseProp.FindPropertyRelative("name").stringValue);
+                if (GUI.Button(new Rect(rect.x + rect.width - btnW, y, btnW, 20), _openLabel))
+                    SetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx], true);
                 return;
             }
             y += _lineHeight + Spacing + 4;
 
-            float thumbnailSize = _lineHeight*4f;
+            float thumbnailSize = _lineHeight * 4f;
             float leftWidth = thumbnailSize + Spacing;
-            float rightWidth = rect.width - leftWidth - Spacing*3;
-            float rightX = rect.x + leftWidth + Spacing*2;
+            float rightWidth = rect.width - leftWidth - Spacing * 3;
+            float rightX = rect.x + leftWidth + Spacing * 2;
 
             var thumbRect = new Rect(rect.x, y, thumbnailSize, thumbnailSize);
             SerializedProperty autoTnProp = poseProp.FindPropertyRelative("autoThumbnail");
-            SerializedProperty thumbProp  = poseProp.FindPropertyRelative("thumbnail");
-            SerializedProperty clipProp   = poseProp.FindPropertyRelative("animationClip");
+            SerializedProperty thumbProp = poseProp.FindPropertyRelative("thumbnail");
+            SerializedProperty clipProp = poseProp.FindPropertyRelative("animationClip");
 
             if (autoTnProp.boolValue && clipProp.objectReferenceValue)
             {
                 var p = Data.categories[catIdx].poses[poseIdx];
                 if (GetClipBuffer(p) != clipProp.objectReferenceValue)
                 {
-                    SetClipBuffer(p,(AnimationClip)clipProp.objectReferenceValue);
-                    SetThumbnailBuffer(p,GenerateThumbnail(_library.gameObject,(AnimationClip)clipProp.objectReferenceValue));
+                    SetClipBuffer(p, (AnimationClip)clipProp.objectReferenceValue);
+                    SetThumbnailBuffer(p, GenerateThumbnail(_library.gameObject, (AnimationClip)clipProp.objectReferenceValue));
                 }
                 if (GetThumbnailBuffer(p))
                 {
-                    GUI.DrawTexture(thumbRect, DynamicVariables.Settings.Inspector.thumbnailBg, ScaleMode.StretchToFill,false);
-                    GUI.DrawTexture(Rect.MinMaxRect(thumbRect.xMin+1,thumbRect.yMin+1,thumbRect.xMax-1,thumbRect.yMax-1), GetThumbnailBuffer(p), ScaleMode.StretchToFill,true);
+                    GUI.DrawTexture(thumbRect, DynamicVariables.Settings.Inspector.thumbnailBg, ScaleMode.StretchToFill, false);
+                    GUI.DrawTexture(Rect.MinMaxRect(thumbRect.xMin + 1, thumbRect.yMin + 1, thumbRect.xMax - 1, thumbRect.yMax - 1), GetThumbnailBuffer(p), ScaleMode.StretchToFill, true);
                     GUI.Button(thumbRect, _posePreviewLabel, GUIStyle.none);
                 }
             }
             else
             {
-                var newTex=(Texture2D)EditorGUI.ObjectField(thumbRect, thumbProp.objectReferenceValue, typeof(Texture2D), false);
-                if(newTex!=thumbProp.objectReferenceValue) Apply("Edit Pose Thumbnail", ()=> thumbProp.objectReferenceValue=newTex);
+                var newTex = (Texture2D)EditorGUI.ObjectField(thumbRect, thumbProp.objectReferenceValue, typeof(Texture2D), false);
+                if (newTex != thumbProp.objectReferenceValue) Apply("Edit Pose Thumbnail", () => thumbProp.objectReferenceValue = newTex);
                 GUI.Button(thumbRect, _poseThumbnailLabel, GUIStyle.none);
             }
 
-            bool auto = EditorGUI.ToggleLeft(new Rect(rect.x, y+thumbnailSize+Spacing, leftWidth, _lineHeight), _thumbnailAutoLabel, autoTnProp.boolValue);
-            if(auto!=autoTnProp.boolValue) Apply("Toggle AutoThumbnail", ()=> autoTnProp.boolValue=auto);
-            GUI.Box(new Rect(rightX-Spacing, y,1, thumbnailSize+_lineHeight), GUIContent.none);
+            bool auto = EditorGUI.ToggleLeft(new Rect(rect.x, y + thumbnailSize + Spacing, leftWidth, _lineHeight), _thumbnailAutoLabel, autoTnProp.boolValue);
+            if (auto != autoTnProp.boolValue) Apply("Toggle AutoThumbnail", () => autoTnProp.boolValue = auto);
+            GUI.Box(new Rect(rightX - Spacing, y, 1, thumbnailSize + _lineHeight), GUIContent.none);
 
             float infoY = rect.y + _lineHeight + Spacing + 4;
             var trProp = poseProp.FindPropertyRelative("tracking");
-            var newClip=(AnimationClip)EditorGUI.ObjectField(new Rect(rightX, infoY, rightWidth-Spacing, _lineHeight), _animationClipLabel, clipProp.objectReferenceValue, typeof(AnimationClip), false);
-            if(newClip!=clipProp.objectReferenceValue) ApplyClipChange(poseProp,newClip);
-            infoY+=_lineHeight+Spacing;
-            int flagsOld=FlagsFromTracking(trProp);
-            int flagsNew=EditorGUI.MaskField(new Rect(rightX, infoY, rightWidth, _lineHeight), _trackingLabel, flagsOld, _trackingOptions);
-            if(flagsNew!=flagsOld) Apply("Edit Tracking Mask", ()=> FlagsToTracking(flagsNew, trProp));
-            infoY+=_lineHeight+_lineHeight/2+Spacing; GUI.Box(new Rect(rightX, infoY, rightWidth,1),GUIContent.none); infoY+=_lineHeight/2;
-            bool loop=EditorGUI.Toggle(new Rect(rightX, infoY, rightWidth, _lineHeight), _isLoopLabel, trProp.FindPropertyRelative("loop").boolValue);
-            if(loop!=trProp.FindPropertyRelative("loop").boolValue) Apply("Toggle Loop", ()=> trProp.FindPropertyRelative("loop").boolValue=loop);
-            infoY+=_lineHeight;
-            float spd=EditorGUI.FloatField(new Rect(rightX, infoY, rightWidth, _lineHeight), _motionSpeedLabel, trProp.FindPropertyRelative("motionSpeed").floatValue);
-            if(!Mathf.Approximately(spd, trProp.FindPropertyRelative("motionSpeed").floatValue)) Apply("Change Motion Speed", ()=> trProp.FindPropertyRelative("motionSpeed").floatValue=spd);
+            var newClip = (AnimationClip)EditorGUI.ObjectField(new Rect(rightX, infoY, rightWidth - Spacing, _lineHeight), _animationClipLabel, clipProp.objectReferenceValue, typeof(AnimationClip), false);
+            if (newClip != clipProp.objectReferenceValue) ApplyClipChange(poseProp, newClip);
+            infoY += _lineHeight + Spacing;
+            int flagsOld = FlagsFromTracking(trProp);
+            int flagsNew = EditorGUI.MaskField(new Rect(rightX, infoY, rightWidth, _lineHeight), _trackingLabel, flagsOld, _trackingOptions);
+            if (flagsNew != flagsOld) Apply("Edit Tracking Mask", () => FlagsToTracking(flagsNew, trProp));
+            infoY += _lineHeight + _lineHeight / 2 + Spacing; GUI.Box(new Rect(rightX, infoY, rightWidth, 1), GUIContent.none); infoY += _lineHeight / 2;
+            bool loop = EditorGUI.Toggle(new Rect(rightX, infoY, rightWidth, _lineHeight), _isLoopLabel, trProp.FindPropertyRelative("loop").boolValue);
+            if (loop != trProp.FindPropertyRelative("loop").boolValue) Apply("Toggle Loop", () => trProp.FindPropertyRelative("loop").boolValue = loop);
+            infoY += _lineHeight;
+            float spd = EditorGUI.FloatField(new Rect(rightX, infoY, rightWidth, _lineHeight), _motionSpeedLabel, trProp.FindPropertyRelative("motionSpeed").floatValue);
+            if (!Mathf.Approximately(spd, trProp.FindPropertyRelative("motionSpeed").floatValue)) Apply("Change Motion Speed", () => trProp.FindPropertyRelative("motionSpeed").floatValue = spd);
         }
 
         private void DrawPoseDropArea(Rect area, SerializedProperty posesProp, int catIdx)
         {
             GUI.Box(area, _dropBoxLabel, EditorStyles.helpBox);
             Event evt = Event.current;
-            if(!area.Contains(evt.mousePosition)|| evt.type is not (EventType.DragUpdated or EventType.DragPerform)) return;
-            DragAndDrop.visualMode=DragAndDropVisualMode.Copy;
-            if(evt.type!=EventType.DragPerform) return;
+            if (!area.Contains(evt.mousePosition) || evt.type is not (EventType.DragUpdated or EventType.DragPerform)) return;
+            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+            if (evt.type != EventType.DragPerform) return;
             DragAndDrop.AcceptDrag();
-            Apply("Add Pose by Drag&Drop", ()=>
+            Apply("Add Pose by Drag&Drop", () =>
             {
-                foreach(var clip in DragAndDrop.objectReferences.OfType<AnimationClip>())
+                foreach (var clip in DragAndDrop.objectReferences.OfType<AnimationClip>())
                 {
-                    AddPose(posesProp,clip);
+                    AddPose(posesProp, clip);
                 }
             });
             evt.Use();
@@ -894,16 +928,16 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             int i = posesProp.arraySize;
             posesProp.InsertArrayElementAtIndex(i);
-            var p= posesProp.GetArrayElementAtIndex(i);
+            var p = posesProp.GetArrayElementAtIndex(i);
 
             // 初期値の設定
             p.FindPropertyRelative("thumbnail").objectReferenceValue = DynamicVariables.Settings.Menu.pose.thumbnail;
             p.FindPropertyRelative("animationClip").objectReferenceValue = clip;
             p.FindPropertyRelative("name").stringValue = DynamicVariables.Settings.Menu.pose.title;
 
-            p.FindPropertyRelative("autoThumbnail").boolValue=true;
-            
-            var tr=p.FindPropertyRelative("tracking");
+            p.FindPropertyRelative("autoThumbnail").boolValue = true;
+
+            var tr = p.FindPropertyRelative("tracking");
             tr.FindPropertyRelative("motionSpeed").floatValue = 1f;
             tr.FindPropertyRelative("loop").boolValue = true;
             tr.FindPropertyRelative("head").boolValue = true;
@@ -912,12 +946,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             tr.FindPropertyRelative("finger").boolValue = true;
             tr.FindPropertyRelative("locomotion").boolValue = false;
             tr.FindPropertyRelative("fx").boolValue = true;
-            
+
             if (i > 0)
             {
                 // カテゴリ内の値を参照
-                var pm= posesProp.GetArrayElementAtIndex(i-1);
-                var trm=pm.FindPropertyRelative("tracking");
+                var pm = posesProp.GetArrayElementAtIndex(i - 1);
+                var trm = pm.FindPropertyRelative("tracking");
                 p.FindPropertyRelative("autoThumbnail").boolValue = pm.FindPropertyRelative("autoThumbnail").boolValue;
                 tr.FindPropertyRelative("head").boolValue = trm.FindPropertyRelative("head").boolValue;
                 tr.FindPropertyRelative("arm").boolValue = trm.FindPropertyRelative("arm").boolValue;
@@ -930,80 +964,80 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (clip)
             {
                 p.FindPropertyRelative("name").stringValue = clip.name;
-                
+
                 // アニメーション種別による初期値
                 bool moving = MotionBuilder.IsMoveAnimation(clip);
-                tr.FindPropertyRelative("motionSpeed").floatValue = moving?1f:0f;
-                tr.FindPropertyRelative("loop").boolValue =! moving || MotionBuilder.IsLoopAnimation(clip);
+                tr.FindPropertyRelative("motionSpeed").floatValue = moving ? 1f : 0f;
+                tr.FindPropertyRelative("loop").boolValue = !moving || MotionBuilder.IsLoopAnimation(clip);
             }
         }
-        
+
         private void DetectHierarchyChange()
         {
-            string path=GetInstancePath(_library.transform);
-            if(path==_instanceIdPathBuffer) return;
+            string path = GetInstancePath(_library.transform);
+            if (path == _instanceIdPathBuffer) return;
             SyncLibraryTags();
-            _instanceIdPathBuffer=path;
+            _instanceIdPathBuffer = path;
         }
 
         private void SyncLibraryTags()
         {
-            string[] duplicates = _library.GetLibraries().Select(e=>e.data.name).ToArray();
+            string[] duplicates = _library.GetLibraries().Select(e => e.data.name).ToArray();
             _libraryTagList = duplicates.Distinct().ToArray();
-            _libraryTagIndex = Array.FindIndex(_libraryTagList, n=>n==Data.name);
+            _libraryTagIndex = Array.FindIndex(_libraryTagList, n => n == Data.name);
         }
 
         private void ApplyClipChange(SerializedProperty poseProp, AnimationClip clip)
         {
-            Apply("Change Animation Clip", ()=>
+            Apply("Change Animation Clip", () =>
             {
-                poseProp.FindPropertyRelative("animationClip").objectReferenceValue=clip;
-                if(!clip) return;
-                poseProp.FindPropertyRelative("name").stringValue=clip.name;
-                var tr=poseProp.FindPropertyRelative("tracking");
-                bool moving=MotionBuilder.IsMoveAnimation(clip);
-                tr.FindPropertyRelative("motionSpeed").floatValue=moving?1f:0f;
-                tr.FindPropertyRelative("loop").boolValue=moving? MotionBuilder.IsLoopAnimation(clip):true;
+                poseProp.FindPropertyRelative("animationClip").objectReferenceValue = clip;
+                if (!clip) return;
+                poseProp.FindPropertyRelative("name").stringValue = clip.name;
+                var tr = poseProp.FindPropertyRelative("tracking");
+                bool moving = MotionBuilder.IsMoveAnimation(clip);
+                tr.FindPropertyRelative("motionSpeed").floatValue = moving ? 1f : 0f;
+                tr.FindPropertyRelative("loop").boolValue = moving ? MotionBuilder.IsLoopAnimation(clip) : true;
             });
         }
 
         private Texture2D GenerateThumbnail(GameObject obj, AnimationClip clip)
         {
-            var avatar = obj.GetComponentInParent<VRCAvatarDescriptor>(); 
-            if(!avatar) return null;
-            var clone = Object.Instantiate(avatar.gameObject); 
+            var avatar = obj.GetComponentInParent<VRCAvatarDescriptor>();
+            if (!avatar) return null;
+            var clone = Object.Instantiate(avatar.gameObject);
             Texture2D tex;
             using (var cap = new ThumbnailGenerator(clone))
             {
                 var cs = DynamicVariables.GetCameraSettings(Data);
-                tex = cap.Capture(clip,cs);
+                tex = cap.Capture(clip, cs);
             }
-            Object.DestroyImmediate(clone); 
+            Object.DestroyImmediate(clone);
             return tex;
         }
 
         private static int FlagsFromTracking(SerializedProperty t)
         {
-            int f=0;
+            int f = 0;
             if (t.FindPropertyRelative("head").boolValue) f |= 1 << 0;
             if (t.FindPropertyRelative("arm").boolValue) f |= 1 << 1;
-            if (t.FindPropertyRelative("finger").boolValue) f|=1<<2;
+            if (t.FindPropertyRelative("finger").boolValue) f |= 1 << 2;
             if (t.FindPropertyRelative("foot").boolValue) f |= 1 << 3;
-            if (t.FindPropertyRelative("locomotion").boolValue) f|=1<<4;
-            if (t.FindPropertyRelative("fx").boolValue) f|=1<<5;
+            if (t.FindPropertyRelative("locomotion").boolValue) f |= 1 << 4;
+            if (t.FindPropertyRelative("fx").boolValue) f |= 1 << 5;
             return f;
         }
         private static void FlagsToTracking(int f, SerializedProperty t)
         {
-            t.FindPropertyRelative("head").boolValue      =(f&(1<<0))!=0;
-            t.FindPropertyRelative("arm").boolValue       =(f&(1<<1))!=0;
-            t.FindPropertyRelative("finger").boolValue    =(f&(1<<2))!=0;
-            t.FindPropertyRelative("foot").boolValue      =(f&(1<<3))!=0;
-            t.FindPropertyRelative("locomotion").boolValue=(f&(1<<4))!=0;
-            t.FindPropertyRelative("fx").boolValue        =(f&(1<<5))!=0;
+            t.FindPropertyRelative("head").boolValue = (f & (1 << 0)) != 0;
+            t.FindPropertyRelative("arm").boolValue = (f & (1 << 1)) != 0;
+            t.FindPropertyRelative("finger").boolValue = (f & (1 << 2)) != 0;
+            t.FindPropertyRelative("foot").boolValue = (f & (1 << 3)) != 0;
+            t.FindPropertyRelative("locomotion").boolValue = (f & (1 << 4)) != 0;
+            t.FindPropertyRelative("fx").boolValue = (f & (1 << 5)) != 0;
         }
-        private static string GetInstancePath(Transform t)=> t.parent? GetInstancePath(t.parent)+"/"+t.gameObject.GetInstanceID(): t.gameObject.GetInstanceID().ToString();
-        
+        private static string GetInstancePath(Transform t) => t.parent ? GetInstancePath(t.parent) + "/" + t.gameObject.GetInstanceID() : t.gameObject.GetInstanceID().ToString();
+
         private bool CopyCategory(int catIdx)
         {
             try
@@ -1035,7 +1069,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     if (asNew)
                     {
                         Data.categories.Insert(catIdx + 1, newCat);
-                        
+
                     }
                     else
                     {
@@ -1078,17 +1112,17 @@ namespace com.hhotatea.avatar_pose_library.editor
                     if (asNew)
                     {
                         Data.categories[catIdx].poses.Insert(poseIdx + 1, newPose);
-                
+
                         // 開いた状態で張り付ける
-                        SetFoldoutBuffer(newPose,true);
+                        SetFoldoutBuffer(newPose, true);
                     }
                     else
                     {
                         var foldout = GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]);
                         Data.categories[catIdx].poses[poseIdx] = newPose;
-                
+
                         // 開いた状態で張り付ける
-                        SetFoldoutBuffer(newPose,foldout);
+                        SetFoldoutBuffer(newPose, foldout);
                     }
                 });
             }
@@ -1106,9 +1140,9 @@ namespace com.hhotatea.avatar_pose_library.editor
         }
         private JsonType IsValidJson(string json)
         {
-            if (string.IsNullOrEmpty(json)) 
+            if (string.IsNullOrEmpty(json))
                 return JsonType.None;
-            if (!json.StartsWith("{") || !json.EndsWith("}")) 
+            if (!json.StartsWith("{") || !json.EndsWith("}"))
                 return JsonType.None;
             if (json.Contains("poses"))
             {
@@ -1120,7 +1154,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             return JsonType.None;
         }
-                
+
         void MenuHelper(GenericMenu menu, string parent, string label, Action onSelect, bool selected)
         {
             menu.AddItem(new GUIContent($"{parent}/{label}"), selected, () =>
@@ -1130,8 +1164,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         }
 
         void AddTrackingMenu(GenericMenu menu, List<PoseEntry> poses,
-            string optionName, string label, 
-            Action<PoseEntry> trackingSetter, Func<List<PoseEntry>,bool> trackingSelected)
+            string optionName, string label,
+            Action<PoseEntry> trackingSetter, Func<List<PoseEntry>, bool> trackingSelected)
         {
             if (poses.Count == 0)
             {
@@ -1151,7 +1185,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 }, trackingSelected.Invoke(poses));
             }
         }
-        
+
         #endregion
     }
 }
