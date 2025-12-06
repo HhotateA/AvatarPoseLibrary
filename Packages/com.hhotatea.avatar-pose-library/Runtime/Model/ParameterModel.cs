@@ -54,6 +54,9 @@ namespace com.hhotatea.avatar_pose_library.model {
         public Texture2D thumbnail;
         public List<PoseEntry> poses = new List<PoseEntry> ();
         public VRCExpressionsMenu target = null;
+
+        // システムが使用
+        public string Parameter { get; set; }
     }
 
     [Serializable]
