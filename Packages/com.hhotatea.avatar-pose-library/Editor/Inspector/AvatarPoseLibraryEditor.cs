@@ -560,7 +560,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var list = EnsurePoseList(i, FindData($"categories.Array.data[{i}].poses"));
             var listHeight = GetCategoryFoldout(Data.categories[i]) ? list.GetHeight() : 0f;
-            return _lineHeight + 8f + Mathf.Max(_lineHeight * 5, _lineHeight) + _lineHeight + listHeight + 60f;
+            return _lineHeight + 8f + Mathf.Max(_lineHeight * 5, _lineHeight) + listHeight + 60f;
         }
 
         void CategorySubmenu(Rect rect, int catIdx)
@@ -719,6 +719,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             float thumbSz = _lineHeight * 5f;
             float nameArea = rect.width - Spacing;
 
+            var category = Data.categories[index];
+            bool isExpanded = GetCategoryFoldout(category);
+
             CategorySubmenu(new Rect(rect.x, rect.y, rect.width, _lineHeight * 3f), index);
 
             var thumbRect = new Rect(rect.x + Spacing, y, thumbSz, thumbSz);
@@ -735,24 +738,24 @@ namespace com.hhotatea.avatar_pose_library.editor
             // 一括の開閉処理
             y += Mathf.Max(thumbSz, _lineHeight) + Spacing;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_openAllLabel).x, GUI.skin.button.CalcSize(_closeAllLabel).x) + 5f;
-            if (GUI.Button(new Rect(rect.x + rect.width - btnW * 2 - 10, y, btnW, _lineHeight), _openAllLabel))
-                foreach (var t in Data.categories[index].poses)
-                    SetFoldoutBuffer(t, true);
-            if (GUI.Button(new Rect(rect.x + rect.width - btnW - 5, y, btnW, _lineHeight), _closeAllLabel))
-                foreach (var t in Data.categories[index].poses)
-                    SetFoldoutBuffer(t, false);
+            if(isExpanded)
+            {
+                if (GUI.Button(new Rect(rect.x + rect.width - btnW * 2 - 45, y, btnW, _lineHeight), _openAllLabel))
+                    foreach (var t in Data.categories[index].poses)
+                        SetFoldoutBuffer(t, true);
+                if (GUI.Button(new Rect(rect.x + rect.width - btnW - 40, y, btnW, _lineHeight), _closeAllLabel))
+                    foreach (var t in Data.categories[index].poses)
+                        SetFoldoutBuffer(t, false);
+            }
 
-            y += _lineHeight + Spacing;
-
-            var category = Data.categories[index];
             var foldoutRect = new Rect(rect.x, y, 200f, _lineHeight);
-            bool isExpanded = GetCategoryFoldout(category);
             bool newExpanded = EditorGUI.Foldout(foldoutRect, isExpanded, _poseListLabel, true);
             if (newExpanded != isExpanded)
             {
                 SetCategoryFoldout(category, newExpanded);
             }
 
+            // カウント
             var poseCount = category.poses.Count;
             var countLabel = $"{poseCount}";
             var badgeStyle = new GUIStyle("Badge");
