@@ -9,7 +9,6 @@ using Object = UnityEngine.Object;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.logic;
 using com.hhotatea.avatar_pose_library.model;
-using UnityEditor.AnimatedValues;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
@@ -71,42 +70,42 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         AnimationClip GetClipBuffer(PoseEntry pose)
         {
-            var p = GetParameter(pose);
-            _lastClips.TryAdd(p, null);
-            return _lastClips[p];
+            var key = GetParameter(pose);
+            _lastClips.TryAdd(key, null);
+            return _lastClips[key];
         }
 
         void SetClipBuffer(PoseEntry pose, AnimationClip value)
         {
-            var p = GetParameter(pose);
-            _lastClips.TryAdd(p, null);
-            _lastClips[p] = value;
+            var key = GetParameter(pose);
+            _lastClips.TryAdd(key, null);
+            _lastClips[key] = value;
         }
 
         bool GetFoldoutBuffer(PoseEntry pose)
         {
-            var p = GetParameter(pose);
-            _foldout.TryAdd(p, false);
-            return _foldout[p];
+            var key = GetParameter(pose);
+            _foldout.TryAdd(key, false);
+            return _foldout[key];
         }
 
         void SetFoldoutBuffer(PoseEntry pose, bool value)
         {
-            var p = GetParameter(pose);
-            _foldout.TryAdd(p, false);
-            _foldout[p] = value;
+            var key = GetParameter(pose);
+            _foldout.TryAdd(key, false);
+            _foldout[key] = value;
         }
 
-        bool GetCategoryFoldout(int catIdx)
+        bool GetCategoryFoldout(PoseCategory category)
         {
-            var key = $"cat_{catIdx}";
+            var key = GetParameter(category);
             _foldout.TryAdd(key, true);
             return _foldout[key];
         }
 
-        void SetCategoryFoldout(int catIdx, bool value)
+        void SetCategoryFoldout(PoseCategory category, bool value)
         {
-            var key = $"cat_{catIdx}";
+            var key = GetParameter(category);
             _foldout.TryAdd(key, true);
             _foldout[key] = value;
         }
@@ -115,10 +114,22 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             if (String.IsNullOrWhiteSpace(pose.Parameter))
             {
-                pose.Parameter = Guid.NewGuid().ToString("N").Substring(0, 8);
+                var guid = Guid.NewGuid().ToString("N").Substring(0, 8);
+                pose.Parameter = $"pose_{guid}";
             }
 
             return pose.Parameter;
+        }
+
+        string GetParameter(PoseCategory category)
+        {
+            if (String.IsNullOrWhiteSpace(category.Parameter))
+            {
+                var guid = Guid.NewGuid().ToString("N").Substring(0, 8);
+                category.Parameter = $"cat_{guid}";
+            }
+
+            return category.Parameter;
         }
 
         void SyncBuffer()
@@ -134,6 +145,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                     _lastClips.TryAdd(p, null);
                     _foldout.TryAdd(p, false);
                 }
+                var c = GetParameter(category);
+                _foldout.TryAdd(c, true);
             }
 
             foreach (var p in ps)
@@ -175,6 +188,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     // パラメーターの初期化。
                     pose.Parameter = "";
                 }
+                category.Parameter = "";
             }
 
             // 初期化時に、タグを合わせる
@@ -476,7 +490,10 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 onReorderCallbackWithDetails = (l, oldIndex, newIndex) =>
                 {
-                    // fold outの同期を入れるべきだけど、この時点でデータは失われている。
+                    var a = Data.categories[oldIndex].Parameter;
+                    var b = Data.categories[newIndex].Parameter;
+                    Data.categories[oldIndex].Parameter = b;
+                    Data.categories[newIndex].Parameter = a;
                 },
 
                 onAddCallback = l => Apply("Add Category", () =>
@@ -542,8 +559,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         private float GetCategoryHeight(int i)
         {
             var list = EnsurePoseList(i, FindData($"categories.Array.data[{i}].poses"));
-            var listHeight = GetCategoryFoldout(i) ? list.GetHeight() : 0f;
-            return _lineHeight + 8f + Mathf.Max(_lineHeight * 5, _lineHeight) + _lineHeight + listHeight + 60f;
+            var listHeight = GetCategoryFoldout(Data.categories[i]) ? list.GetHeight() : 0f;
+            return _lineHeight + 8f + Mathf.Max(_lineHeight * 5, _lineHeight) + listHeight + 60f;
         }
 
         void CategorySubmenu(Rect rect, int catIdx)
@@ -702,6 +719,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             float thumbSz = _lineHeight * 5f;
             float nameArea = rect.width - Spacing;
 
+            var category = Data.categories[index];
+            bool isExpanded = GetCategoryFoldout(category);
+
             CategorySubmenu(new Rect(rect.x, rect.y, rect.width, _lineHeight * 3f), index);
 
             var thumbRect = new Rect(rect.x + Spacing, y, thumbSz, thumbSz);
@@ -718,24 +738,24 @@ namespace com.hhotatea.avatar_pose_library.editor
             // 一括の開閉処理
             y += Mathf.Max(thumbSz, _lineHeight) + Spacing;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_openAllLabel).x, GUI.skin.button.CalcSize(_closeAllLabel).x) + 5f;
-            if (GUI.Button(new Rect(rect.x + rect.width - btnW * 2 - 10, y, btnW, _lineHeight), _openAllLabel))
-                foreach (var t in Data.categories[index].poses)
-                    SetFoldoutBuffer(t, true);
-            if (GUI.Button(new Rect(rect.x + rect.width - btnW - 5, y, btnW, _lineHeight), _closeAllLabel))
-                foreach (var t in Data.categories[index].poses)
-                    SetFoldoutBuffer(t, false);
+            if(isExpanded)
+            {
+                if (GUI.Button(new Rect(rect.x + rect.width - btnW * 2 - 45, y, btnW, _lineHeight), _openAllLabel))
+                    foreach (var t in Data.categories[index].poses)
+                        SetFoldoutBuffer(t, true);
+                if (GUI.Button(new Rect(rect.x + rect.width - btnW - 40, y, btnW, _lineHeight), _closeAllLabel))
+                    foreach (var t in Data.categories[index].poses)
+                        SetFoldoutBuffer(t, false);
+            }
 
-            y += _lineHeight + Spacing;
-
-            var category = Data.categories[index];
             var foldoutRect = new Rect(rect.x, y, 200f, _lineHeight);
-            bool isExpanded = GetCategoryFoldout(index);
             bool newExpanded = EditorGUI.Foldout(foldoutRect, isExpanded, _poseListLabel, true);
             if (newExpanded != isExpanded)
             {
-                SetCategoryFoldout(index, newExpanded);
+                SetCategoryFoldout(category, newExpanded);
             }
 
+            // カウント
             var poseCount = category.poses.Count;
             var countLabel = $"{poseCount}";
             var badgeStyle = new GUIStyle("Badge");
