@@ -141,6 +141,14 @@ namespace com.hhotatea.avatar_pose_library.logic
                     defaultValue = 0,
                     saved = true,
                 });
+                mResult.parameters.Add(new ParameterConfig
+                {
+                    nameOrPrefix = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{poseLibrary.Guid}",
+                    syncType = ParameterSyncType.Float,
+                    localOnly = true,
+                    defaultValue = 0,
+                    saved = false,
+                });
             }
 
             if (poseLibrary.enablePoseSpace)

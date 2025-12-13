@@ -240,6 +240,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Foot, $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Finger, $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
             result.AddLayer (builder.ActiveTrackingLayer (TrackingType.Face, $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
+            result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Mirror, $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
             result.AddLayer (builder.ResetLayer($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
             
             if(poseLibrary.EnableAudioMode)
@@ -290,6 +291,13 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 defaultBool = false,
             };
             result.AddParameter (mirrorParam);
+
+            var mirrorCycleOffsetParam = new AnimatorControllerParameter {
+                name = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{poseLibrary.Guid}",
+                type = AnimatorControllerParameterType.Float,
+                defaultFloat = 0f,
+            };
+            result.AddParameter (mirrorCycleOffsetParam);
 
             foreach (var param in poseLibrary.Parameters) {
                 // パラメーター追加

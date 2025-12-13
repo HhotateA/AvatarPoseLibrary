@@ -21,6 +21,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string SpeedParamPrefix = "AnimPoseSpeed";
         public const string ResetParamPrefix = "AnimPoseReset";
         public const string MirrorParamPrefix = "AnimPoseMirror";
+        public const string MirrorCycleOffsetParamPrefix = "AnimPoseMirrorCycleOffset";
         public const string FlagParamPrefix = "AnimPoseFlag";
         public const string AudioParamPrefix = "AnimPoseAudio";
         public const string PoseSpaceParamPrefix = "AnimPoseSpace";
