@@ -61,6 +61,11 @@ namespace com.hhotatea.avatar_pose_library.logic {
             }
             paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
+                name = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{poseLibrary.Guid}",
+                value = 0,
+            });
+            paramReset.parameters.Add (new VRC_AvatarParameterDriver.Parameter {
+                type = VRC_AvatarParameterDriver.ChangeType.Set,
                 name = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
                 value = 0,
             });
@@ -124,7 +129,8 @@ namespace com.hhotatea.avatar_pose_library.logic {
             Finger,
             Face,
             Action,
-            Space
+            Space,
+            Mirror
         }
 
         public AnimatorControllerLayer ActiveTrackingLayer(TrackingType type, string param, string guid)
@@ -271,6 +277,24 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     var spaceExit = offConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace>();
                     spaceExit.enterPoseSpace = false;
 
+                    break;
+
+                case TrackingType.Mirror:
+                    var mirrorOffDriver = offConState.AddSafeParameterDriver();
+                    mirrorOffDriver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{guid}",
+                        value = 0f,
+                    });
+
+                    var mirrorOnDriver = onConState.AddSafeParameterDriver();
+                    mirrorOnDriver.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                    {
+                        type = VRC_AvatarParameterDriver.ChangeType.Set,
+                        name = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{guid}",
+                        value = 0.5f,
+                    });
                     break;
             }
 
@@ -586,6 +610,12 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
+                if(pose.tracking.loop)
+                {
+                    // Unityの不具合対策でOffsetを入れる
+                    poseState.cycleOffsetParameterActive = true;
+                    poseState.cycleOffsetParameter = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{guid}";
+                }
             }
 
             var inTransition = flags.Select((flag, i) => new AnimatorCondition
@@ -689,6 +719,12 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
+                if(pose.tracking.loop)
+                {
+                    // Unityの不具合対策でOffsetを入れる
+                    poseState.cycleOffsetParameterActive = true;
+                    poseState.cycleOffsetParameter = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{guid}";
+                }
             }
 
             // 侵入経路
