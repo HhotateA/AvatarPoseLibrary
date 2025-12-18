@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEditor.Animations;
 using VRC.SDKBase;
 using VRC.SDK3.Avatars.Components;
@@ -149,6 +152,58 @@ namespace com.hhotatea.avatar_pose_library.logic
             transition.duration = 0.0f;
             transition.exitTime = 0.0f;
             return transition;
+        }
+
+        public static void ReplaceResetAnimation(AnimatorController animator, AvatarPoseData data, GameObject root)
+        {
+            if (animator == null) return;
+            if (data == null) return;
+            if (root == null) return;
+            if (!data.enableAutoResetAnim) return;
+
+            var resetClip = CreateResetAnim(data, root);
+            if (resetClip == null) return;
+
+            var controllerPath = AssetDatabase.GetAssetPath(animator);
+            if (!string.IsNullOrEmpty(controllerPath) && string.IsNullOrEmpty(AssetDatabase.GetAssetPath(resetClip)))
+            {
+                AssetDatabase.AddObjectToAsset(resetClip, controllerPath);
+                EditorUtility.SetDirty(resetClip);
+            }
+
+            foreach (var layer in animator.layers)
+            {
+                ReplaceResetMotionRecursive(layer.stateMachine, resetClip);
+            }
+
+            EditorUtility.SetDirty(animator);
+            AssetDatabase.SaveAssets();
+        }
+
+        static void ReplaceResetMotionRecursive(AnimatorStateMachine stateMachine, AnimationClip resetClip)
+        {
+            foreach (var state in stateMachine.states)
+            {
+                if (state.state != null && state.state.name == ConstVariables.StateReset)
+                {
+                    state.state.motion = resetClip;
+                }
+            }
+
+            foreach (var child in stateMachine.stateMachines)
+            {
+                ReplaceResetMotionRecursive(child.stateMachine, resetClip);
+            }
+        }
+
+        static AnimationClip CreateResetAnim(AvatarPoseData data, GameObject root)
+        {
+            // リセットアニメーションの生成
+            var anims = data.
+                categories.SelectMany( c => 
+                c.poses.Select( p => 
+                p.animationClip)).ToArray();
+            return MotionBuilder.ResetAnimation(root,anims);
         }
     }
 }

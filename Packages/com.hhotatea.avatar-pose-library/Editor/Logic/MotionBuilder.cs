@@ -417,6 +417,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         public static AnimationClip ResetAnimation(GameObject root, AnimationClip[] anims)
         {
             var result = new AnimationClip();
+            result.name = "ResetAnimation";
             if (root == null || anims == null) return result;
 
             var defaultValueCache = new Dictionary<CurveKey, float>();
