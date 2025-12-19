@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -12,6 +13,42 @@ namespace com.hhotatea.avatar_pose_library.logic
 {
     public static class MotionBuilder
     {
+        readonly struct CurveKey : IEquatable<CurveKey>
+        {
+            public readonly string Path;
+            public readonly Type Type;
+            public readonly string PropertyName;
+
+            public CurveKey(string path, Type type, string propertyName)
+            {
+                Path = path ?? string.Empty;
+                Type = type;
+                PropertyName = propertyName ?? string.Empty;
+            }
+
+            public bool Equals(CurveKey other)
+            {
+                return Path == other.Path && Type == other.Type && PropertyName == other.PropertyName;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is CurveKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    var hash = 17;
+                    hash = hash * 31 + (Path != null ? Path.GetHashCode() : 0);
+                    hash = hash * 31 + (Type != null ? Type.GetHashCode() : 0);
+                    hash = hash * 31 + (PropertyName != null ? PropertyName.GetHashCode() : 0);
+                    return hash;
+                }
+            }
+        }
+
         /// <summary>
         /// アニメーションの脚の高さを変える
         /// </summary>
@@ -323,6 +360,89 @@ namespace com.hhotatea.avatar_pose_library.logic
             result.SetCurve("FakeAnimationKey", 
                 typeof(Transform), "localPosition.x", curve);
             
+            return result;
+        }
+
+        static float GetDefaultValue(GameObject root, string path, Type type, string propertyName)
+        {
+            if (root == null) return 0f;
+            if (type == null) return 0f;
+            if (string.IsNullOrEmpty(propertyName)) return 0f;
+
+            var binding = EditorCurveBinding.FloatCurve(path, type, propertyName);
+            if (UnityEditor.AnimationUtility.GetFloatValue(root, binding, out var v))
+            {
+                return v;
+            }
+
+            // Fallback (covers a few common cases when GetFloatValue fails)
+            var targetTransform = string.IsNullOrEmpty(path) ? root.transform : root.transform.Find(path);
+            if (targetTransform == null) return 0f;
+
+            if (type == typeof(Transform))
+            {
+                switch (propertyName)
+                {
+                    case "m_LocalPosition.x": return targetTransform.localPosition.x;
+                    case "m_LocalPosition.y": return targetTransform.localPosition.y;
+                    case "m_LocalPosition.z": return targetTransform.localPosition.z;
+
+                    case "m_LocalRotation.x": return targetTransform.localRotation.x;
+                    case "m_LocalRotation.y": return targetTransform.localRotation.y;
+                    case "m_LocalRotation.z": return targetTransform.localRotation.z;
+                    case "m_LocalRotation.w": return targetTransform.localRotation.w;
+
+                    case "m_LocalScale.x": return targetTransform.localScale.x;
+                    case "m_LocalScale.y": return targetTransform.localScale.y;
+                    case "m_LocalScale.z": return targetTransform.localScale.z;
+                }
+            }
+
+            // BlendShape curve name pattern: "blendShape.<BlendShapeName>"
+            if (type == typeof(SkinnedMeshRenderer) && propertyName.StartsWith("blendShape.", StringComparison.Ordinal))
+            {
+                var renderer = targetTransform.GetComponent<SkinnedMeshRenderer>();
+                var mesh = renderer != null ? renderer.sharedMesh : null;
+                if (renderer != null && mesh != null)
+                {
+                    var blendShapeName = propertyName.Substring("blendShape.".Length);
+                    var index = mesh.GetBlendShapeIndex(blendShapeName);
+                    if (index >= 0) return renderer.GetBlendShapeWeight(index);
+                }
+            }
+
+            return 0f;
+        }
+
+        public static AnimationClip ResetAnimation(GameObject root, AnimationClip[] anims)
+        {
+            var result = new AnimationClip();
+            result.name = "ResetAnimation";
+            if (root == null || anims == null) return result;
+
+            var defaultValueCache = new Dictionary<CurveKey, float>();
+
+            foreach (var anim in anims)
+            {
+                if (anim == null) continue;
+                var curves = UnityEditor.AnimationUtility.GetCurveBindings(anim);
+                foreach (var binding in curves)
+                {
+
+                    // rootにおける現在のValueを取得
+                    var key = new CurveKey(binding.path, binding.type, binding.propertyName);
+                    if (!defaultValueCache.TryGetValue(key, out var v))
+                    {
+                        v = GetDefaultValue(root, binding.path, binding.type, binding.propertyName);
+                        defaultValueCache[key] = v;
+                    }
+
+                    var c = new AnimationCurve();
+                    c.AddKey(0f, v);
+                    c.AddKey(1f/60f, v);
+                    result.SetCurve(binding.path, binding.type, binding.propertyName, c);
+                }
+            }
             return result;
         }
     }

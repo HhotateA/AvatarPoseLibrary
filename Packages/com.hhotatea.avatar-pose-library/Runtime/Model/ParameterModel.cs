@@ -71,6 +71,7 @@ namespace com.hhotatea.avatar_pose_library.model {
         public bool enableDeepSync = true; // 同期を安定させる（ON推奨）
         public bool enablePoseSpace = true; // 視線追従の機能を有効にする
         public bool enableUseCache = false; // キャッシュを使用してビルド時間を短縮する
+        public bool enableAutoResetAnim = true; // リセット用アニメーションを自動生成する
         public bool enableLocomotionAnimator = true;
         public bool enableFxAnimator = true;
 
@@ -142,6 +143,7 @@ namespace com.hhotatea.avatar_pose_library.model {
                         apd.enableDeepSync = d.enableDeepSync;
                         apd.enablePoseSpace = d.enablePoseSpace;
                         apd.enableUseCache = d.enableUseCache;
+                        apd.enableAutoResetAnim = d.enableAutoResetAnim;
                         apd.writeDefaultType = d.writeDefaultType;
                         apd.enableLocomotionAnimator = d.enableLocomotionAnimator;
                         apd.enableFxAnimator = d.enableFxAnimator;

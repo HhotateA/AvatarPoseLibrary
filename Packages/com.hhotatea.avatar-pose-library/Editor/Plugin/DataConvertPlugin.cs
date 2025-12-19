@@ -10,6 +10,7 @@ using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using UnityEditor.Animations;
 using UnityEditor.VersionControl;
+using AnimatorUtility = com.hhotatea.avatar_pose_library.logic.AnimatorUtility;
 
 [assembly : ExportsPlugin (typeof (DataConvertPlugin))]
 namespace com.hhotatea.avatar_pose_library.editor {
@@ -34,7 +35,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
 
                         var assets = GetAssetCache(d, d.enableUseCache);
                         if(d.EnableAudioMode) BuildAudioSource(ctx.AvatarRootObject.transform,d);
-                        BuildRuntimeAnimator (go, assets, d);
+                        BuildRuntimeAnimator (go, assets, d, ctx.AvatarRootObject);
                         BuildRuntimeMenu (go, assets, root?.transform, ctx.AvatarRootObject.transform);
                         BuildRuntimeParameter(go, assets);
                     }
@@ -84,9 +85,7 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// <summary>
         /// アニメーターの設定
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="data"></param>
-        void BuildRuntimeAnimator (GameObject obj, CacheModel assets, AvatarPoseData data) {
+        void BuildRuntimeAnimator (GameObject obj, CacheModel assets, AvatarPoseData data, GameObject root) {
             var result = new GameObject ();
             bool matchAvatarWriteDefaults = (data.writeDefaultType == WriteDefaultType.MatchAvatar);
 
@@ -106,7 +105,9 @@ namespace com.hhotatea.avatar_pose_library.editor {
 
             var ma_fx = result.AddComponent<ModularAvatarMergeAnimator> ();
             ma_fx.layerPriority = 1;
-            ma_fx.animator = assets.paramLayer;
+            ma_fx.animator = data.enableAutoResetAnim ? 
+                AnimatorUtility.ReplaceResetAnimation(assets.paramLayer,data,root) :
+                assets.paramLayer;
             ma_fx.pathMode = MergeAnimatorPathMode.Absolute;
             ma_fx.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
             ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;

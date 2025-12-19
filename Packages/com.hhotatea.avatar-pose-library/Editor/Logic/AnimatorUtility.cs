@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEditor.Animations;
 using VRC.SDKBase;
 using VRC.SDK3.Avatars.Components;
@@ -149,6 +152,39 @@ namespace com.hhotatea.avatar_pose_library.logic
             transition.duration = 0.0f;
             transition.exitTime = 0.0f;
             return transition;
+        }
+
+        public static AnimatorController ReplaceResetAnimation(AnimatorController animator, AvatarPoseData data, GameObject root)
+        {
+            if (!data.enableAutoResetAnim) return animator;
+            var resetClip = CreateResetAnim(data, root);
+
+            foreach (var layer in animator.layers)
+            {
+                if(layer.name != $"{ConstVariables.FxAnimatorPrefix}_{data.Guid}")
+                {
+                    continue;
+                }
+                foreach (var state in layer.stateMachine.states)
+                {
+                    if (state.state == null) continue;
+                    if (state.state.name == ConstVariables.StateNameReset)
+                    {
+                        state.state.motion = resetClip;
+                    }
+                }
+            }
+            return animator;
+        }
+
+        static AnimationClip CreateResetAnim(AvatarPoseData data, GameObject root)
+        {
+            // リセットアニメーションの生成
+            var anims = data.
+                categories.SelectMany( c => 
+                c.poses.Select( p => 
+                p.animationClip)).ToArray();
+            return MotionBuilder.ResetAnimation(root,anims);
         }
     }
 }
