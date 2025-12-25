@@ -428,6 +428,11 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var curves = UnityEditor.AnimationUtility.GetCurveBindings(anim);
                 foreach (var binding in curves)
                 {
+                    bool isLocomotionAnimation = binding.type == typeof(Animator);
+                    if(isLocomotionAnimation)
+                    {
+                        continue;
+                    }
 
                     // rootにおける現在のValueを取得
                     var key = new CurveKey(binding.path, binding.type, binding.propertyName);
