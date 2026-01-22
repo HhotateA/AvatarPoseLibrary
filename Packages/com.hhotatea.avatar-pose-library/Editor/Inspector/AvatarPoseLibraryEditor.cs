@@ -81,9 +81,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var key = GetParameter(pose);
             _lastClips.TryAdd(key, null);
-            _animationWarm.TryAdd(key, "");
             _lastClips[key] = value;
-            _animationWarm[key] = CheckAnimationClipWarm(value);
         }
 
         string GetAnimWarm(PoseEntry pose)
@@ -91,6 +89,13 @@ namespace com.hhotatea.avatar_pose_library.editor
             var key = GetParameter(pose);
             _animationWarm.TryAdd(key, "");
             return _animationWarm[key];
+        }
+
+        void SetAnimWarm(PoseEntry pose, AnimationClip value)
+        {
+            var key = GetParameter(pose);
+            _animationWarm.TryAdd(key, "");
+            _animationWarm[key] = CheckAnimationClipWarm(value);
         }
 
         bool GetFoldoutBuffer(PoseEntry pose)
@@ -899,6 +904,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     SetClipBuffer(p, (AnimationClip)clipProp.objectReferenceValue);
                     SetThumbnailBuffer(p, GenerateThumbnail(_library.gameObject, (AnimationClip)clipProp.objectReferenceValue));
+                    SetAnimWarm(p,(AnimationClip)clipProp.objectReferenceValue);
                 }
                 if (GetThumbnailBuffer(p))
                 {
@@ -935,7 +941,11 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
 
             var newClip = (AnimationClip)EditorGUI.ObjectField(new Rect(rightX, infoY, rightWidth - Spacing, _lineHeight), _animationClipLabel, clipProp.objectReferenceValue, typeof(AnimationClip), false);
-            if (newClip != clipProp.objectReferenceValue) ApplyClipChange(poseProp, newClip);
+            if (newClip != clipProp.objectReferenceValue) 
+            {
+                ApplyClipChange(poseProp, newClip);
+                SetAnimWarm(Data.categories[catIdx].poses[poseIdx],newClip);
+            }
 
 
             infoY += _lineHeight + Spacing;
