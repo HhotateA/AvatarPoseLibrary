@@ -115,3 +115,7 @@ MonoBehaviour:
   footTrackingOption: "\u56FA\u5B9A\u8173"
   locomotionTrackingOption: "\u7981\u6B62\u79FB\u52A8"
   fxTrackingOption: "\u56FA\u5B9A\u8868\u60C5"
+  animationWarmVRCShapekey: 'The AnimationClip contains shape keys used by VRChat.
+
+    If
+    uploaded as is, facial expressions and lip sync may be broken.'

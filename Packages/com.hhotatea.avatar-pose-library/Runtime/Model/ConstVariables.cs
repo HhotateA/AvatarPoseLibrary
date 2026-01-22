@@ -42,5 +42,8 @@ namespace com.hhotatea.avatar_pose_library.model
         public const int MaxAnimationState = 255;
         public const int PoseFlagCount = 2;
         public const int HashLong = 16;
+
+        // 設定で使用するアイコン
+        public const string warmIcon = "console.warnicon.sml";
     }
 }

@@ -186,5 +186,28 @@ namespace com.hhotatea.avatar_pose_library.logic
                 p.animationClip)).ToArray();
             return MotionBuilder.ResetAnimation(root,anims);
         }
+        public static bool IsIncludeVRCShapeKey(AnimationClip anim)
+        {
+            if (anim == null)
+            {
+                return false;
+            }
+            
+            var curves = AnimationUtility.GetCurveBindings(anim);
+            
+            foreach (var binding in curves)
+            {
+                if(IsVRCShapeKey(binding.type,binding.path,binding.propertyName))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        public static bool IsVRCShapeKey(Type type, string path, string propertyName)
+        {
+            return (type == typeof(SkinnedMeshRenderer)) && (path == "Body") && (propertyName.StartsWith("blendShape.vrc."));
+        }
     }
 }

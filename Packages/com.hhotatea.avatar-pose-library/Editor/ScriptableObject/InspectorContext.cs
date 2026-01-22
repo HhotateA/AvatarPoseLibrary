@@ -103,5 +103,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public string locomotionTrackingOption = "Move Lock";
         public string fxTrackingOption = "Fx Active";
 
+        [Multiline] public string animationWarmVRCShapekey = "AnimationClipにVRChatが使用するシェイプキーが含まれています。\nこのままアップロードすると表情やリップシンクが壊れる可能性があります。";
+
     }
 }

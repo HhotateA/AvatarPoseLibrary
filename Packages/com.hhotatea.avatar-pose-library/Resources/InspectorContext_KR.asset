@@ -103,7 +103,7 @@ MonoBehaviour:
   enableMenuLabel: Enable All
   enableMenuTooltip: Enable all items.
   presetNames: []
-  updateMessage: "\u6700\u65B0\u7248\u30A2\u30C3\u30D7\u30C7\u30FC\u30C8\u304C\u3042\u308A\u307E\u3059\u3002VCC\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+  updateMessage: A new update is available. Please check the VCC.
   thumbnailBg: {fileID: 2800000, guid: 9c605c794272c614d8cf187acf554b3a, type: 3}
   headTrackingOption: "\uD5E4\uB4DC"
   armTrackingOption: "\uD314 "
@@ -111,3 +111,4 @@ MonoBehaviour:
   footTrackingOption: "\uBC1C "
   locomotionTrackingOption: "\uC774\uB3D9 "
   fxTrackingOption: "\uD45C\uC815"
+  animationWarmVRCShapekey: "AnimationClip\u306BVRChat\u304C\u4F7F\u7528\u3059\u308B\u30B7\u30A7\u30A4\u30D7\u30AD\u30FC\u304C\u542B\u307E\u308C\u3066\u3044\u307E\u3059\u3002\n\u3053\u306E\u307E\u307E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u3059\u308B\u3068\u8868\u60C5\u3084\u30EA\u30C3\u30D7\u30B7\u30F3\u30AF\u304C\u58CA\u308C\u308B\u53EF\u80FD\u6027\u304C\u3042\u308A\u307E\u3059\u3002"
