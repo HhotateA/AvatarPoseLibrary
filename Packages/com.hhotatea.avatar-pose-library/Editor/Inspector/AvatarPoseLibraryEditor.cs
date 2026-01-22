@@ -9,6 +9,7 @@ using Object = UnityEngine.Object;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.logic;
 using com.hhotatea.avatar_pose_library.model;
+using AnimatorUtility = com.hhotatea.avatar_pose_library.logic.AnimatorUtility;
 
 namespace com.hhotatea.avatar_pose_library.editor
 {
@@ -52,6 +53,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private readonly Dictionary<string, Texture2D> _thumbnails = new();
         private readonly Dictionary<string, AnimationClip> _lastClips = new();
+        private readonly Dictionary<string, string> _animationWarm = new();
         private readonly Dictionary<string, bool> _foldout = new();
 
         Texture2D GetThumbnailBuffer(PoseEntry pose)
@@ -79,7 +81,16 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var key = GetParameter(pose);
             _lastClips.TryAdd(key, null);
+            _animationWarm.TryAdd(key, "");
             _lastClips[key] = value;
+            _animationWarm[key] = CheckAnimationClipWarm(value);
+        }
+
+        string GetAnimWarm(PoseEntry pose)
+        {
+            var key = GetParameter(pose);
+            _animationWarm.TryAdd(key, "");
+            return _animationWarm[key];
         }
 
         bool GetFoldoutBuffer(PoseEntry pose)
@@ -909,8 +920,24 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             float infoY = rect.y + _lineHeight + Spacing + 4;
             var trProp = poseProp.FindPropertyRelative("tracking");
+            var animWarm = GetAnimWarm(Data.categories[catIdx].poses[poseIdx]);
+            if(String.IsNullOrWhiteSpace(animWarm))
+            {
+                _animationClipLabel.tooltip = DynamicVariables.Settings.Inspector.animationClipTooltip;
+            }
+            else
+            {
+                Rect warnRect = new Rect(rightX + rightWidth*0.45f + _lineHeight, infoY, _lineHeight, _lineHeight);
+                var warnIcon = EditorGUIUtility.IconContent(ConstVariables.warmIcon);
+                warnIcon.tooltip = animWarm;
+                GUI.Label(warnRect, warnIcon);
+                _animationClipLabel.tooltip = animWarm;
+            }
+
             var newClip = (AnimationClip)EditorGUI.ObjectField(new Rect(rightX, infoY, rightWidth - Spacing, _lineHeight), _animationClipLabel, clipProp.objectReferenceValue, typeof(AnimationClip), false);
             if (newClip != clipProp.objectReferenceValue) ApplyClipChange(poseProp, newClip);
+
+
             infoY += _lineHeight + Spacing;
             int flagsOld = FlagsFromTracking(trProp);
             int flagsNew = EditorGUI.MaskField(new Rect(rightX, infoY, rightWidth, _lineHeight), _trackingLabel, flagsOld, _trackingOptions);
@@ -1034,6 +1061,15 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             Object.DestroyImmediate(clone);
             return tex;
+        }
+
+        private string CheckAnimationClipWarm(AnimationClip clip)
+        {
+            if(AnimatorUtility.IsIncludeVRCShapeKey(clip))
+            {
+                return DynamicVariables.Settings.Inspector.animationWarmVRCShapekey;
+            }
+            return "";
         }
 
         private static int FlagsFromTracking(SerializedProperty t)
