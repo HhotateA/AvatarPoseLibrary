@@ -7,6 +7,9 @@ on:
       - main  # 必要に応じてブランチ名を変更してください
   workflow_call:  # 他のワークフローから呼び出し可能
 
+permissions:
+  contents: write  # リポジトリへの書き込み権限を付与
+
 jobs:
   increment:
     runs-on: ubuntu-latest
