@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write  # リポジトリへの書き込み権限を付与
+
 jobs:
   increment-version:
     if: github.event.pull_request.merged == true
