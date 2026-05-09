@@ -203,9 +203,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
                         name = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
                         value = 0f,
                 });
-                var additiveOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-                additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                additiveOff.goalWeight = 0f;
+                var actionOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                actionOff.goalWeight = 0f;
 
                 // デフォルトへの遷移
                 var leftTransition = resetState.MakeTransition (defaultState,true);

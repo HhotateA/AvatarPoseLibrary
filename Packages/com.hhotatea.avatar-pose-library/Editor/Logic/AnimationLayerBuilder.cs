@@ -98,9 +98,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 });
             }
 
-            var additive = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-            additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-            additive.goalWeight = 0f;
+            var action = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+            action.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+            action.goalWeight = 0f;
 
             var gesture = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
             gesture.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
@@ -382,9 +382,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     name = $"{ConstVariables.OnPlayParamPrefix}_{guid}",
                     value = 1f,
                 });
-                var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-                additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                additive.goalWeight = 1f;
+                var action = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                action.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                action.goalWeight = 1f;
             }
 
             // メインステートの作成
@@ -643,18 +643,18 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 bypassTransition.duration = 0.1f;
 
                 // レイヤーの設定
-                var additiveOn = beforeState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-                additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                additiveOn.goalWeight = 1f;
+                var actionOn = beforeState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                actionOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                actionOn.goalWeight = 1f;
             } else {
                 // 遷移を作成
                 var joinTransition = defaultState.MakeTransition (poseState,false);
                 joinTransition.conditions = inTransition.ToArray ();
 
                 // レイヤーの設定
-                var additiveOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-                additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                additiveOn.goalWeight = 1f;
+                var actionOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                actionOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                actionOn.goalWeight = 1f;
             }
 
             // 脱出経路
