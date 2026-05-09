@@ -11,7 +11,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
     public static class AnimatorBuilder {
         public static AnimatorController BuildTrackingAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = BaseAnimator (poseLibrary, writeDefault);
-            var builder = new AnimationLayerBuilder (writeDefault);
+            var builder = new AnimationLayerBuilder (writeDefault, poseLibrary);
 
             // フルトラ以外の場合は、アクションレイヤーを無効化する。
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Action, $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
@@ -22,7 +22,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
         public static AnimatorController BuildLocomotionAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = BaseAnimator (poseLibrary, writeDefault);
-            var builder = new AnimationLayerBuilder(writeDefault);
+            var builder = new AnimationLayerBuilder(writeDefault, poseLibrary);
 
             // レイヤー作成
             if (poseLibrary.enableLocomotionAnimator)
@@ -68,7 +68,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
         public static AnimatorController BuildFxAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = BaseAnimator (poseLibrary, writeDefault);
-            var builder = new AnimationLayerBuilder (writeDefault);
+            var builder = new AnimationLayerBuilder (writeDefault, poseLibrary);
 
             // レイヤー作成
             {
@@ -203,9 +203,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
                         name = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
                         value = 0f,
                 });
-                var additiveOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-                additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                additiveOff.goalWeight = 0f;
+                var actionOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                actionOff.goalWeight = 0f;
 
                 // デフォルトへの遷移
                 var leftTransition = resetState.MakeTransition (defaultState,true);
@@ -257,7 +257,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
         static AnimatorController BaseAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = new AnimatorController ();
-            var builder = new AnimationLayerBuilder (writeDefault);
             /*result.AddLayer(new AnimatorControllerLayer
             {
                 name = "null",

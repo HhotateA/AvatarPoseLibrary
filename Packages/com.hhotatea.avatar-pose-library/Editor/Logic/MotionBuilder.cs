@@ -229,14 +229,14 @@ namespace com.hhotatea.avatar_pose_library.logic
                 return SplitAnimation(after, 0f);
             }
             
-            return DynamicVariables.Settings.defaultAnimation;
+            return NoneAnimation ;
         }
 
         static AnimationClip SplitAnimation(AnimationClip anim,float time)
         {
             if (anim == null)
             {
-                return DynamicVariables.Settings.defaultAnimation;
+                return NoneAnimation ;
             }
             
             // 既存のアニメーションの検証
@@ -273,7 +273,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             if (anim == null)
             {
-                return DynamicVariables.Settings.defaultAnimation;
+                return NoneAnimation;
             }
             
             // 既存のアニメーションの検証
