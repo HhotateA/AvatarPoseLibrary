@@ -1,0 +1,17 @@
+name: PR Merge Workflow
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  increment-version:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/increment-version.yml
+
+  release:
+    needs: increment-version
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/release.yml

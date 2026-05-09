@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main  # 必要に応じてブランチ名を変更してください
+  workflow_call:  # 他のワークフローから呼び出し可能
 
 jobs:
   increment:
@@ -21,6 +22,7 @@ jobs:
           node-version: '18'
 
       - name: Increment version in package.json
+        working-directory: Packages/com.hhotatea.avatar-pose-library
         run: |
           npm version patch --no-git-tag-version
 
@@ -28,6 +30,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add package.json
-          git commit -m "Increment version to $(node -p 'require(\"./package.json\").version')"
+          git add Packages/com.hhotatea.avatar-pose-library/package.json
+          git commit -m "Increment version to $(node -p 'require("./Packages/com.hhotatea.avatar-pose-library/package.json").version')"
           git push
