@@ -3,6 +3,9 @@ name: Build Release
 on: 
   workflow_dispatch:
   workflow_call:
+    secrets:
+      DISCORD_WEBHOOK_URL:
+        required: false
 
 jobs:
 
@@ -90,7 +93,7 @@ jobs:
       # DiscordNotice
       - name: Notify Discord
         run: |
-          curl -H "Content-Type: application/json" \
-            -X POST \
-            -d "{\"content\": \"AvatarPoseLibrary v${{ env.version }} のリリースが完了しました。\"}" \
-            ${{ secrets.DISCORD_WEBHOOK_URL }}
+            curl -H "Content-Type: application/json" \
+              -X POST \
+              -d "{\"content\": \"AvatarPoseLibrary v${{ env.version }} のリリースが完了しました。\"}" \
+              ${{ secrets.DISCORD_WEBHOOK_URL }}
