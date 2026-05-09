@@ -1,0 +1,33 @@
+name: Increment Version
+
+on:
+  workflow_dispatch:  # 手動トリガー
+  push:
+    branches:
+      - main  # 必要に応じてブランチ名を変更してください
+
+jobs:
+  increment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Increment version in package.json
+        run: |
+          npm version patch --no-git-tag-version
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json
+          git commit -m "Increment version to $(node -p 'require(\"./package.json\").version')"
+          git push
