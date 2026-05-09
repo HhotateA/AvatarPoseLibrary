@@ -112,11 +112,6 @@ namespace com.hhotatea.avatar_pose_library.component
         public float audioPitch = 1.0f;
 
         /// <summary>
-        /// AnimatorLayerに使うアセット群
-        /// </summary>
-        public AnimationClip defaultAnimation;
-
-        /// <summary>
         /// キャッシュ用のパス
         /// </summary>
         public string cachePath = "Assets/_APLCache";
