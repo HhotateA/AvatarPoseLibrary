@@ -1,7 +1,7 @@
 {
   "name": "com.hhotatea.avatar-pose-library",
   "displayName": "AvatarPoseLibrary",
-  "version": "1.2.17",
+  "version": "1.2.18",
   "description": "VRChatのエモートアニメーションを自動設定するツール群。",
   "gitDependencies": {},
   "vpmDependencies": {
