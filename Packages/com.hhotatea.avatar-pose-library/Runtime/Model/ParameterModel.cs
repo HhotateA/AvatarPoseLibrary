@@ -74,6 +74,7 @@ namespace com.hhotatea.avatar_pose_library.model {
         public bool enableAutoResetAnim = true; // リセット用アニメーションを自動生成する
         public bool enableLocomotionAnimator = true;
         public bool enableFxAnimator = true;
+        public bool suppressAdditiveAnimator = true; // additiveレイヤーの抑制設定
 
         public VRCExpressionsMenu target = null; // メニューの登録先を上書きする
         public VRCExpressionsMenu settings = null; // 設定メニューのみ分離する
@@ -147,6 +148,7 @@ namespace com.hhotatea.avatar_pose_library.model {
                         apd.writeDefaultType = d.writeDefaultType;
                         apd.enableLocomotionAnimator = d.enableLocomotionAnimator;
                         apd.enableFxAnimator = d.enableFxAnimator;
+                        apd.suppressAdditiveAnimator = d.suppressAdditiveAnimator;
                     }
                     apd.categories.AddRange(d.categories);
                 }

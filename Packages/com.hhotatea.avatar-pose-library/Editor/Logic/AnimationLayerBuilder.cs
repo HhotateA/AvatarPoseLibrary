@@ -11,9 +11,11 @@ using com.hhotatea.avatar_pose_library.model;
 namespace com.hhotatea.avatar_pose_library.logic {
     public class AnimationLayerBuilder {
         bool writeDefault_;
+        AvatarPoseData poseLibrary_;
 
-        public AnimationLayerBuilder (bool writeDefault) {
+        public AnimationLayerBuilder (bool writeDefault, AvatarPoseData poseLibrary) {
             writeDefault_ = writeDefault;
+            poseLibrary_ = poseLibrary;
         }
 
         public AnimatorControllerLayer ResetLayer (string param, AvatarPoseData poseLibrary) {
@@ -258,12 +260,15 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     break;
 
                 case TrackingType.Action:
+                    if (poseLibrary_.suppressAdditiveAnimator)
+                    {
                     var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                     additiveOff.goalWeight = 1f;
                     var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                     additiveOn.goalWeight = 0f;
+                    }
 
                     var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
@@ -382,9 +387,12 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     name = $"{ConstVariables.OnPlayParamPrefix}_{guid}",
                     value = 1f,
                 });
+                if(poseLibrary_.suppressAdditiveAnimator)
+                {
                 var action = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
                 action.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 action.goalWeight = 1f;
+            }
             }
 
             // メインステートの作成

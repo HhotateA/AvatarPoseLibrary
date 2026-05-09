@@ -11,7 +11,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
     public static class AnimatorBuilder {
         public static AnimatorController BuildTrackingAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = BaseAnimator (poseLibrary, writeDefault);
-            var builder = new AnimationLayerBuilder (writeDefault);
+            var builder = new AnimationLayerBuilder (writeDefault, poseLibrary);
 
             // フルトラ以外の場合は、アクションレイヤーを無効化する。
             result.AddLayer (builder.ConstantTrackingLayer (TrackingType.Action, $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
@@ -22,7 +22,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
         public static AnimatorController BuildLocomotionAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = BaseAnimator (poseLibrary, writeDefault);
-            var builder = new AnimationLayerBuilder(writeDefault);
+            var builder = new AnimationLayerBuilder(writeDefault, poseLibrary);
 
             // レイヤー作成
             if (poseLibrary.enableLocomotionAnimator)
@@ -68,7 +68,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
         public static AnimatorController BuildFxAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = BaseAnimator (poseLibrary, writeDefault);
-            var builder = new AnimationLayerBuilder (writeDefault);
+            var builder = new AnimationLayerBuilder (writeDefault, poseLibrary);
 
             // レイヤー作成
             {
@@ -257,7 +257,6 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
         static AnimatorController BaseAnimator (AvatarPoseData poseLibrary, bool writeDefault) {
             var result = new AnimatorController ();
-            var builder = new AnimationLayerBuilder (writeDefault);
             /*result.AddLayer(new AnimatorControllerLayer
             {
                 name = "null",
