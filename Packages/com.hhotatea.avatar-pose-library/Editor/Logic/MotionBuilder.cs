@@ -416,7 +416,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static AnimationClip ResetAnimation(GameObject root, AnimationClip[] anims)
         {
-            var result = CreateFrameAnimation(1f / 60f);
+            var result = new AnimationClip();
             result.name = "ResetAnimation";
             if (root == null || anims == null) return result;
 
