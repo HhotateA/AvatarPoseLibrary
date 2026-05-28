@@ -1,0 +1,24 @@
+{
+  "name": "3minn VPM Repository",
+  "id": "com.3minn.vpm",
+  "url": "https://3minn.github.io/AvatarPoseLibrary/packages.json",
+  "packages": [
+    {
+      "name": "com.hhotatea.avatar-pose-library",
+      "displayName": "AvatarPoseLibrary Audio Sync Patch",
+      "version": "1.2.15-audiopatch",
+      "description": "AvatarPoseLibrary with audio pitch sync support.",
+      "unity": "2022.3",
+      "author": {
+        "name": "3minn"
+      },
+      "url": "https://github.com/3minn/AvatarPoseLibrary/releases/download/v1.2.15-audiopatch/com.hhotatea.avatar-pose-library.zip",
+      "zipSHA256": "95941388F3DC0F322832BADA9E0AB63CF3A725470D6599FAA35B337D3B516AD2",
+      "vpmDependencies": {
+        "com.vrchat.avatars": ">=3.7.0",
+        "nadena.dev.ndmf": ">=1.5.0",
+        "nadena.dev.modular-avatar": ">=1.10.0"
+      }
+    }
+  ]
+}
