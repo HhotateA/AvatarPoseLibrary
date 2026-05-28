@@ -8,6 +8,7 @@ namespace com.hhotatea.avatar_pose_library.component
 {
     /// <summary>
     /// アバターにアタッチすることでポーズカテゴリを設定可能にするコンポーネント
+    /// ポーズごとのオーディオ再生と、ポーズ速度に合わせたオーディオ速度調整に対応。
     /// </summary>
     [HelpURL("https://github.com/HhotateA/AvatarPoseLibrary/wiki")]
     public class AvatarPoseLibrary : MonoBehaviour, IEditorOnly
@@ -18,9 +19,42 @@ namespace com.hhotatea.avatar_pose_library.component
         // Editorで初期化処理を行いたいので、フラグを持っておく。
         public bool isInitialized;
 
+        // 追加：ポーズ再生時に使用する AudioSource
+        public AudioSource audioSource;
+
         private void Reset()
         {
             isInitialized = false;
+
+        /// <summary>
+        /// ポーズに紐づいた AudioClip を再生する。
+        /// speed に合わせて AudioSource の pitch も変更する。
+        /// </summary>
+        /// <param name="clip">再生する AudioClip</param>
+        /// <param name="speed">ポーズの再生速度</param>
+        public void PlayPoseAudio(AudioClip clip, float speed)
+        {
+            if (audioSource == null || clip == null)
+            {
+                return;
+            }
+
+            audioSource.clip = clip;
+            audioSource.pitch = speed;
+            audioSource.Play();
+        }
+
+        /// <summary>
+        /// 現在再生中のポーズ音声を停止する。
+        /// </summary>
+        public void StopPoseAudio()
+        {
+            if (audioSource == null)
+            {
+                return;
+            }
+
+            audioSource.Stop();
         }
 
         /* MenuSourceComponent参照でバグりそうなので将来的実装
