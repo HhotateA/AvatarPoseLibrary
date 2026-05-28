@@ -11,11 +11,9 @@ using com.hhotatea.avatar_pose_library.model;
 namespace com.hhotatea.avatar_pose_library.logic {
     public class AnimationLayerBuilder {
         bool writeDefault_;
-        AvatarPoseData poseLibrary_;
 
-        public AnimationLayerBuilder (bool writeDefault, AvatarPoseData poseLibrary) {
+        public AnimationLayerBuilder (bool writeDefault) {
             writeDefault_ = writeDefault;
-            poseLibrary_ = poseLibrary;
         }
 
         public AnimatorControllerLayer ResetLayer (string param, AvatarPoseData poseLibrary) {
@@ -100,9 +98,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 });
             }
 
-            var action = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-            action.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-            action.goalWeight = 0f;
+            var additive = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+            additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+            additive.goalWeight = 0f;
 
             var gesture = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
             gesture.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
@@ -260,15 +258,12 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     break;
 
                 case TrackingType.Action:
-                    if (poseLibrary_.suppressAdditiveAnimator)
-                    {
                     var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                     additiveOff.goalWeight = 1f;
                     var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                     additiveOn.goalWeight = 0f;
-                    }
 
                     var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
                     actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
@@ -344,6 +339,32 @@ namespace com.hhotatea.avatar_pose_library.logic {
             configureOn (onCon);
         }
 
+        private void ApplyPoseAudio(AnimatorState poseState, PoseEntry pose, string guid)
+        {
+            if (!pose.audioClip)
+            {
+                return;
+            }
+
+            var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
+            vapa.SourcePath = $"{ConstVariables.AudioParamPrefix}_{guid}";
+            vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+
+            // Pitch is controlled by AudioPitchLayer so that menu speed changes can update audio speed.
+            vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+
+            vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+            vapa.Clips = new AudioClip[] { pose.audioClip };
+
+            vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+            vapa.Loop = pose.tracking.loop;
+
+            vapa.PlayOnEnter = true;
+            vapa.StopOnEnter = false;
+            vapa.PlayOnExit = false;
+            vapa.StopOnExit = true;
+        }
+
         public void AddParamLayer (
             AnimatorControllerLayer layer, PoseEntry pose,
             List<string> parameters, string guid,
@@ -387,12 +408,9 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     name = $"{ConstVariables.OnPlayParamPrefix}_{guid}",
                     value = 1f,
                 });
-                if(poseLibrary_.suppressAdditiveAnimator)
-                {
-                var action = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-                action.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                action.goalWeight = 1f;
-            }
+                var additive = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                additive.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                additive.goalWeight = 1f;
             }
 
             // メインステートの作成
@@ -405,21 +423,7 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
             }
-            if (pose.audioClip)
-            {
-                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
-                vapa.SourcePath = $"{ConstVariables.AudioParamPrefix}_{guid}";
-                vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
-                vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
-                vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
-                vapa.Clips = new AudioClip[] { pose.audioClip };
-                vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
-                vapa.Loop = pose.tracking.loop;
-                vapa.PlayOnEnter = true;
-                vapa.StopOnEnter = false;
-                vapa.PlayOnExit = false;
-                vapa.StopOnExit = true;
-            }
+            ApplyPoseAudio(poseState, pose, guid);
 
             // 遷移を作成
             var joinTransition = defaultState.MakeTransition (reserveState,false);
@@ -572,6 +576,98 @@ namespace com.hhotatea.avatar_pose_library.logic {
             return layer;
         }
 
+
+        public AnimatorControllerLayer AudioPitchLayer(string param, string obj)
+        {
+            // Creates a pitch control layer for VRCAnimatorPlayAudio.
+            // The speed parameter range is treated as 0.0 - 1.0, then converted to pitch 0.0 - 2.0.
+            // This matches the animation speed logic where 0.5 means normal speed.
+            AnimatorControllerLayer layer = new AnimatorControllerLayer
+            {
+                name = param + "_Pitch",
+                defaultWeight = 0f,
+                stateMachine = new AnimatorStateMachine(),
+                blendingMode = AnimatorLayerBlendingMode.Override
+            };
+
+            var defaultState = layer.stateMachine.AddState("Default");
+            defaultState.writeDefaultValues = writeDefault_;
+            defaultState.motion = MotionBuilder.FrameAnimation;
+
+            var noneClip = MotionBuilder.CreateFrameAnimation(DynamicVariables.Settings.paramRate);
+
+            const int count = 100;
+            float step = 1f / count;
+            float shift = 1f / 512f;
+
+            for (int i = -1; i < count + 1; i++)
+            {
+                float v = (float)i / count;
+                float pitch = Mathf.Clamp(v * 2f, 0f, 2f);
+
+                var poseState = layer.stateMachine.AddState("Pitch_" + i.ToString());
+                poseState.writeDefaultValues = writeDefault_;
+                poseState.motion = noneClip;
+
+                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
+                vapa.SourcePath = obj;
+
+                vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+
+                vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
+                vapa.Pitch = new Vector2(pitch, pitch);
+
+                vapa.ClipsApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+                vapa.LoopApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
+
+                vapa.PlayOnEnter = true;
+                vapa.StopOnEnter = false;
+                vapa.PlayOnExit = false;
+                vapa.StopOnExit = false;
+
+                var joinTransition = defaultState.MakeTransition(poseState, false);
+                joinTransition.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.Greater,
+                        parameter = param,
+                        threshold = v - shift,
+                    },
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.Less,
+                        parameter = param,
+                        threshold = v + step + shift,
+                    }
+                };
+
+                var leftTransition1 = poseState.MakeTransition(defaultState, false);
+                leftTransition1.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.Less,
+                        parameter = param,
+                        threshold = v - shift,
+                    }
+                };
+
+                var leftTransition2 = poseState.MakeTransition(defaultState, false);
+                leftTransition2.conditions = new AnimatorCondition[]
+                {
+                    new AnimatorCondition()
+                    {
+                        mode = AnimatorConditionMode.Greater,
+                        parameter = param,
+                        threshold = v + step + shift,
+                    }
+                };
+            }
+
+            return layer;
+        }
+
         public void AddFxLayer (
             PoseEntry pose,
             AnimatorControllerLayer layer,
@@ -651,18 +747,18 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 bypassTransition.duration = 0.1f;
 
                 // レイヤーの設定
-                var actionOn = beforeState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-                actionOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                actionOn.goalWeight = 1f;
+                var additiveOn = beforeState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                additiveOn.goalWeight = 1f;
             } else {
                 // 遷移を作成
                 var joinTransition = defaultState.MakeTransition (poseState,false);
                 joinTransition.conditions = inTransition.ToArray ();
 
                 // レイヤーの設定
-                var actionOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
-                actionOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
-                actionOn.goalWeight = 1f;
+                var additiveOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl> ();
+                additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
+                additiveOn.goalWeight = 1f;
             }
 
             // 脱出経路
