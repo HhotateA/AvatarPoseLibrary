@@ -1,164 +1,43 @@
-# Avatar Pose Library (APL)
+# AvatarPoseLibrary Audio Pitch Sync Patch
 
-**AvatarPoseLibrary (APL)** は、Unity 上で VRChat 向けのアバター用のポーズを管理・適用するためのツールです。アバターのポーズを効率的に制御し、VRChat アバターの制作やカスタマイズを支援します。
+Studio KEEP의 VRChat 영상 제작 및 퍼포먼스 workflow를 위해 제작한 AvatarPoseLibrary 확장 패치입니다.
 
----
+기존 AvatarPoseLibrary에 포즈별 오디오 재생 기능과 Motion Speed 기반 Audio Pitch Sync 기능을 추가했습니다.
 
-## ✨ 特徴
+## ✨ 추가 기능
 
-- **パラメーター数を最小限に最適化**  
-  複数のメニューを統合し、制御する Int パラメーターを最小限にします。
+* 포즈별 AudioClip 설정 지원
+* Inspector 내 Audio Clip UI 추가
+* Motion Speed와 오디오 재생 속도 실시간 동기화
+* AudioPitchLayer 추가
+* VCC / VPM Repository 지원
+* GitHub Release 및 패키지 구조 정리
 
-- **サムネイル撮影機能**  
-  アニメーションごとに自動でサムネイルを撮影し、メニュー画像を差し替え可能。
+## 🎵 사용 예시
 
-- **トラッキング抑制**  
-  アニメーションごとに異なるトラッキング設定が可能。指だけを動かしたり、操作を完全に無効化することもできます。
+* 댄스 애니메이션 BPM 동기화
+* VRChat 퍼포먼스 연출
+* 시네마틱 및 뮤직비디오 제작
+* 모션 속도 기반 오디오 연출
 
-- **コンポーネントで設定完了**  
-  設定はコンポーネントベース。プレハブ化可能で再利用性も高いです。
+## 📦 설치 방법
 
-- **より人間らしい動きに**  
-  動きのないポーズを、自動で動画撮影に最適化された自然な動きに変換します。
+### VCC Repository 추가
 
-- **許諾なしで再配布OK**  
-  アニメーションやポーズデータの配布に、商用・非商用問わず許諾なしで使うことができます。
+VCC → Settings → Packages → Add Repository
 
----
+다음 URL 입력:
 
-## 📦 導入方法
-
-APL は 2つの方法で導入することができます。
-**VCC (VRChat Creator Companion)** 経由の導入がおすすめです。  
-
-### 1. VCC 経由での導入
-
-1. VCC を開き、**Settings** に移動  
-2. **Packages** タブをクリック  
-3. **Add Repository** をクリック  
-4. 入力欄に以下の URL を貼り付け  
-   ```text
-   https://HhotateA.github.io/AvatarPoseLibrary/index.json
-   ```  
-5. **Add** をクリック  
-6. リポジトリ情報を確認し、**I Understand** をクリック  
-7. 任意のプロジェクトの **Manage Project** から APL を追加
-
-### 2. UnityPackage 経由での導入
-
-1. あらかじめ以下の依存パッケージをプロジェクトに追加しておく  
-   ```json
-   "com.vrchat.avatars": "3.8.0",
-   "nadena.dev.ndmf": "1.7.9",
-   "nadena.dev.modular-avatar": "1.12.5"
-   ```
-2. 下記 URL から UnityPackage を取得  
-   ```text
-   https://github.com/HhotateA/AvatarPoseLibrary/releases/latest/
-   ```
-3. 任意の Unity プロジェクトを開き、UnityPackage をドラッグ＆ドロップ  
-4. 追加ファイルを確認し、**Import** をクリック
-
----
-
-## 🤝 PRの作成方法
-
-1. フォークの作成
-
-リポジトリ右上の「Fork」ボタンをクリックし、自分のアカウントにコピーします。
-
-2. ブランチを作成
-
-フォークしたリポジトリをクローンし、新しいブランチを切ります。
-
-```git checkout -b feature/your-feature-name```
-
-3. 変更を加える
-
-必要な修正や追加を行い、コミットメッセージは明確に書きます。
-
-```git add .```  
-の後、
-
+```text
+https://3minn.github.io/AvatarPoseLibrary/packages.json
 ```
-git commit -m "Add: 追加したアセットの概要"  
-git commit -m "Feature: 追加した機能の概要"  
-git commit -m "Fix: 修正したバグの概要"  
-```  
 
-のように、カンタンに変更内容を記述してください。
+## ⚠️ 주의사항
 
-4. プッシュ
+* 기존 AvatarPoseLibrary 기반으로 제작된 비공식 확장 패치입니다.
+* VRChat FX Animator 구조에 따라 일부 환경에서는 충돌 가능성이 있습니다.
+* Audio Pitch는 Animator State 기반으로 동작하므로 매우 빠른 속도 변경 시 약간의 단계식 변화가 발생할 수 있습니다.
 
-作成したブランチをリモートにプッシュします。
+## 🛠️ 제작
 
-```git push origin feature/your-feature-name```
-
-5. プルリクエストを作成
-
-オリジナルリポジトリのページに移動し、「Compare & pull request」をクリック。
-
-- タイトルと詳細な説明を入力
-
-- 関連 Issue があればリンクを貼る
-
-6. レビューとマージ
-
-メンテナーがレビューを行い、問題なければマージされます。
-
-フィードバックがあれば、追加コミットで修正してください。
-
-※ バージョンコードの更新は行わないでください。  
-
-- メジャーバージョン：互換性のない変更・機能追加  
-- マイナーバージョン：互換性のある変更・機能追加  
-- パッチバージョン：軽微なバグ修正  
-
----
-
-## 💰 開発支援のお願い
-
-APLは、完全無料・無償利用OKのツールとして公開されています。 商用・非商用問わず再配布も可能で、アニメーション販売やアバター改変で自由にご活用いただけます。
-
-もしAPLを利用したコンテンツ（アバター、衣装、ポーズ集など）で一定以上の収益や反響があった場合は、 開発者の活動継続のために投げ銭・宣伝などでご支援いただけると嬉しいです！
-
-Donation => https://hhotatea.booth.pm/items/6902222
-
-皆さんの支援が、APLのさらなるアップデートや新機能開発につながります。
-
----
-
-## 📄 ライセンス
-
-このプロジェクトは **MIT ライセンス** の下で提供されます。
-
-- 商用・非商用問わず利用することが可能です。
-- 再配布する場合も、許諾は必要ありません。
-
-バグ報告・機能提案・プルリクエストは歓迎です！  
-GitHub の Issues や PR を通じてご参加ください。
-
-ライセンスファイルは、 [LICENCE](https://github.com/HhotateA/AvatarPoseLibrary/blob/main/Packages/com.hhotatea.avatar-pose-library/LICENCE) を参照してください。
-
----
-
-## 👯 共同製作メンバー
-
-- ロゴ作成：lowteq  
-https://x.com/lowteq_neko
-
-- ストア作成：meron-farm  
-https://meronfarm.booth.pm/
-
----
-
-## 📞 連絡先
-
-質問は、以下の連絡先にお願いします。
-
-- ほたてねこまじん @HhotateA_xR  
-https://x.com/HhotateA_xR
-
----
-
-2025-05-15 v1.0.0
+Created for Studio KEEP.
