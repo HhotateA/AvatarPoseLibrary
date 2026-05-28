@@ -1,7 +1,7 @@
 {
   "name": "com.3minn.vpm",
   "id": "com.3minn.vpm",
-  "url": "https://3minn.github.io/AvatarPseLibrary-audio-pitch-sync/packages.json",
+  "url": "https://3minn.github.io/AvatarPoseLibrary/packages.json",
   "packages": {
     "com.hhotatea.avatar-pose-library": {
       "displayName": "AvatarPoseLibrary Audio Sync Patch",
@@ -12,8 +12,8 @@
       "versions": {
         "1.2.15-audiopatch": {
           "version": "1.2.15-audiopatch",
-          "url": "https://github.com/3minn/AvatarPseLibrary-audio-pitch-sync/releases/download/v1.2.15-audiopatch/com.hhotatea.avatar-pose-library.zip",
-          "zipSHA256": "8A564E6BC674DCF8C492615C5A2CE58C59D255795E1146829A57FF0458106B02",
+          "url": "https://github.com/3minn/AvatarPoseLibrary/releases/download/v1.2.15-audiopatch/com.hhotatea.avatar-pose-library.zip",
+          "zipSHA256": "95941388F3DC0F322832BADA9E0AB63CF3A725470D6599FAA35B337D3B516AD2",
           "unity": "2022.3",
           "vpmDependencies": {
             "com.vrchat.avatars": ">=3.7.0",
