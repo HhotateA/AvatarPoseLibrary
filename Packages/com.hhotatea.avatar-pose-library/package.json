@@ -1,17 +1,25 @@
 {
   "name": "com.hhotatea.avatar-pose-library",
   "displayName": "AvatarPoseLibrary",
-  "version": "1.2.24",
-  "description": "VRChatのエモートアニメーションを自動設定するツール群。",
-  "gitDependencies": {},
+  "version": "1.2.15-audiopatch",
+  "description": "VRChat pose animation system with audio sync support and motion speed pitch sync.",
+  "unity": "2022.3",
+  "author": {
+    "name": "3minn",
+    "url": "https://github.com/3minn"
+  },
   "vpmDependencies": {
     "com.vrchat.avatars": ">=3.7.0",
     "nadena.dev.ndmf": ">=1.5.0",
     "nadena.dev.modular-avatar": ">=1.10.0"
   },
-  "author": {
-    "name": "HhotateA",
-    "url": "https://hhotatea.com/"
-  },
-  "unity": "2022.3"
+  "keywords": [
+    "VRChat",
+    "Avatar",
+    "Animation",
+    "Pose",
+    "Audio",
+    "PitchSync",
+    "ModularAvatar"
+  ]
 }
