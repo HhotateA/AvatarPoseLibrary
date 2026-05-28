@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,16 +11,17 @@
             color: #f5f5f5;
             font-family: Arial, sans-serif;
             padding: 40px;
-            line-height: 1.6;
+            line-height: 1.7;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: auto;
         }
 
         h1 {
             color: #7fffd4;
+            margin-top: 24px;
         }
 
         h2 {
@@ -34,43 +35,66 @@
 
         .box {
             background: #1d1d1d;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
         }
 
         code {
             background: #222;
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 6px 10px;
+            border-radius: 8px;
             display: inline-block;
-            margin-top: 8px;
+            margin-top: 10px;
         }
 
         .button {
             display: inline-block;
             background: #7fffd4;
             color: #111;
-            padding: 12px 20px;
-            border-radius: 10px;
+            padding: 14px 22px;
+            border-radius: 12px;
             font-weight: bold;
             margin-top: 10px;
         }
 
         .button:hover {
-            opacity: 0.8;
+            opacity: 0.85;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .banner {
+            width: 100%;
+            border-radius: 18px;
+            margin-bottom: 12px;
         }
     </style>
 </head>
 <body>
     <div class="container">
 
+        <img src="./VCC배너.png"
+             alt="AvatarPoseLibrary Banner"
+             class="banner">
+
         <h1>AvatarPoseLibrary Audio Pitch Sync Patch</h1>
 
-        <p>
-            VPM Repository for VRChat Creator Companion.<br>
-            Created for Studio KEEP.
-        </p>
+        <div class="box">
+            <h2>한국어 / Korean</h2>
+
+            <p>
+                VRChat 퍼포먼스와 영상 제작을 위한 AvatarPoseLibrary 오디오 피치 싱크 확장 패치입니다.<br>
+                포즈별 오디오 재생 및 Motion Speed 기반 실시간 Audio Pitch Sync를 지원합니다.
+            </p>
+
+            <p>
+                Audio pitch synchronization extension patch for AvatarPoseLibrary designed for VRChat performances and cinematic production.<br>
+                Supports per-pose audio playback and realtime Motion Speed based audio pitch sync.
+            </p>
+        </div>
 
         <div class="box">
             <h2>Add Repository to VCC</h2>
