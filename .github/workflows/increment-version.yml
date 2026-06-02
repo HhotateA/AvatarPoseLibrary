@@ -3,6 +3,9 @@ name: Increment Version
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      DEPLOY_KEY:
+        required: true
 
 permissions:
   contents: write
@@ -15,6 +18,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Debug SSH setup
+        run: |
+          git remote -v
+          test -n "${{ secrets.DEPLOY_KEY }}" && echo "DEPLOY_KEY is set" || echo "DEPLOY_KEY is empty"
+          ls -la ~/.ssh || true
+          ssh -T git@github.com || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,5 +42,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add Packages/com.hhotatea.avatar-pose-library/package.json
           git commit -m "Increment version to $(node -p 'require("./Packages/com.hhotatea.avatar-pose-library/package.json").version')" || exit 0
-          git remote set-url origin git@github.com:HhotateA/AvatarPoseLibrary.git
           git push origin HEAD:main
