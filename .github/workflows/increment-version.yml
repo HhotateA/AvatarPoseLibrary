@@ -26,12 +26,6 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-          echo "Private key fingerprint:"
-          ssh-keygen -y -f ~/.ssh/deploy_key | ssh-keygen -lf -
-
-          echo "Testing SSH auth:"
-          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -T git@github.com
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
