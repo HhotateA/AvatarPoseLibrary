@@ -7,12 +7,14 @@ on:
       - main
 
 permissions:
-  contents: write  # リポジトリへの書き込み権限を付与
+  contents: write
 
 jobs:
   increment-version:
     if: github.event.pull_request.merged == true
     uses: ./.github/workflows/increment-version.yml
+    secrets:
+      DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
 
   release:
     needs: increment-version
