@@ -22,44 +22,44 @@ MonoBehaviour:
     title: "\u65B0\u59FF\u52BF"
     thumbnail: {fileID: 2800000, guid: aae77dadba1d9814cbdf7ab852731f6d, type: 3}
   tracking:
-    title: "\u8FFD\u8E2A\u70B9"
+    title: "\u8FFD\u8E2A\u8BBE\u7F6E"
     thumbnail: {fileID: 2800000, guid: a66c1c8e3e5b04846b06ef9bc46eda0a, type: 3}
   reset:
     title: "\u91CD\u7F6E"
     thumbnail: {fileID: 2800000, guid: 59c1fcfb45762f449a016814ce5532f4, type: 3}
   setting:
-    title: "\u8BBE\u5B9A"
+    title: "\u8BBE\u7F6E"
     thumbnail: {fileID: 2800000, guid: b48174cf50086494f91015e974b4406a, type: 3}
   height:
     title: "\u9AD8\u5EA6"
     thumbnail: {fileID: 2800000, guid: 2c83accf528124444b9519d50cf55a91, type: 3}
   head:
-    title: "\u56FA\u5B9A\u5934\u90E8"
+    title: "\u9501\u5B9A\u5934\u90E8"
     thumbnail: {fileID: 2800000, guid: 4cdc563ba62fc9b4188df6607f013c1e, type: 3}
   arm:
-    title: "\u56FA\u5B9A\u624B\u81C2"
+    title: "\u9501\u5B9A\u624B\u81C2"
     thumbnail: {fileID: 2800000, guid: 8b85610814623144a8fce977626eccbf, type: 3}
   foot:
-    title: "\u56FA\u5B9A\u817F"
+    title: "\u9501\u5B9A\u817F\u90E8"
     thumbnail: {fileID: 2800000, guid: 21855590a2aeb014d878314f8a82b198, type: 3}
   finger:
-    title: "\u56FA\u5B9A\u624B\u6307"
+    title: "\u9501\u5B9A\u624B\u6307"
     thumbnail: {fileID: 2800000, guid: 006e9ab6b4aaced41b1e418951fcdb54, type: 3}
   face:
-    title: "\u8868\u60C5"
+    title: "\u542F\u7528\u8868\u60C5"
     thumbnail: {fileID: 2800000, guid: a55e88444cd25474085328e4290fcb8f, type: 3}
   speed:
     title: "\u901F\u5EA6"
     thumbnail: {fileID: 2800000, guid: 614dbb744a5622a4c8dd820707ee4eb0, type: 3}
   locomotion:
-    title: "\u7981\u6B62\u79FB\u52A8"
+    title: "\u9501\u5B9A\u79FB\u52A8"
     thumbnail: {fileID: 2800000, guid: dd6bb7f632fa6ee43ab5b5495099fc3b, type: 3}
   mirror:
     title: "\u955C\u50CF"
     thumbnail: {fileID: 2800000, guid: 93f091fcd0da866409a5af967301e6c8, type: 3}
   poseSpace:
-    title: FollowViewPoint
+    title: "\u89C6\u89D2\u8DDF\u968F"
     thumbnail: {fileID: 2800000, guid: 2a78f551d4dcbdf4cb7aa6567dd6b12d, type: 3}
   volume:
-    title: Volume
+    title: "\u97F3\u91CF"
     thumbnail: {fileID: 0}
