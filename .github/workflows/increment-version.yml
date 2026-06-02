@@ -25,7 +25,12 @@ jobs:
           printf '%s\n' "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan github.com >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key -T git@github.com || true
+
+          echo "Private key fingerprint:"
+          ssh-keygen -y -f ~/.ssh/deploy_key | ssh-keygen -lf -
+
+          echo "Testing SSH auth:"
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -T git@github.com
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,7 +44,7 @@ jobs:
 
       - name: Commit and push changes
         env:
-          GIT_SSH_COMMAND: ssh -i ~/.ssh/deploy_key -o UserKnownHostsFile=~/.ssh/known_hosts
+          GIT_SSH_COMMAND: ssh -i /home/runner/.ssh/deploy_key -o IdentitiesOnly=yes -o UserKnownHostsFile=/home/runner/.ssh/known_hosts
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
