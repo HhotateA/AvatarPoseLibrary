@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: facf1bf2fe40e384a9ddc0645a18be6b, type: 3}
   m_Name: InspectorContext_zh-cn
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   libraryMenuLabel: "\u3010 \u83DC\u5355\u540D\u79F0 \u3011"
   libraryMenuTooltip: "\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u540D\u79F0"
   categoriesLabel: "\u7C7B\u522B\u5217\u8868"
   categoriesTooltip: "\u7C7B\u522B\u7684\u5217\u8868"
-  categoryIconLabel: 
+  categoryIconLabel:
   categoryIconTooltip: "\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u7C7B\u522B\u56FE\u6807"
   categoryTextLabel: "\u3010\u7C7B\u522B\u540D\u79F0\u3011"
   categoryTextTooltip: "\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u7C7B\u522B\u540D\u79F0"
@@ -42,9 +42,9 @@ MonoBehaviour:
   motionSpeedTooltip: "\u52A8\u753B\u521D\u59CB\u64AD\u653E\u901F\u5EA6"
   dropboxLabel: "\u5C06\u52A8\u753B\uFF08Animation Clip\uFF09\u62D6\u5165\u81F3\u6B64\u4EE5\u65B0\u589E\u4E3A\u59FF\u52BF"
   dropboxTooltip: "\u53EF\u5C06\u52A8\u753B (Animation Clip) \u6279\u91CF\u62D6\u5165\u81F3\u6B64\u533A\u57DF\u4EE5\u65B0\u589E\u4E3A\u59FF\u52BF"
-  mainThumbnailTooltip: "AvatarPoseLibrary \u5236\u4F5C\u56E2\u961F\n\n\u4E3B\u7A0B\u5E8F:
-    \u307B\u305F\u3066\u306D\u3053\u307E\u3058\u3093\nhttps://www.hhotatea.com/work/\n\nLogo\u5236\u4F5C:
-    lowteq\nhttps://x.com/lowteq_neko\n\n\u5546\u5E97\u9875\u9762\u5236\u4F5C: meron-farm\nhttps://meronfarm.booth.pm/"
+  mainThumbnailTooltip: "AvatarPoseLibrary \u5236\u4F5C\u56E2\u961F\n\n\u4E3B\u7A0B\u5E8F\uFF1A:
+    Hotate Nekomajin\nhttps://www.hhotatea.com/work/\n\nLogo: lowteq\nhttps://x.com/lowteq_neko\n\nStore:
+    meron-farm\nhttps://meronfarm.booth.pm/"
   poseThumbnailTooltip: "\u5728\u83DC\u5355\u4E2D\u663E\u793A\u7684\u7F29\u7565\u56FE\u9884\u89C8"
   posePreviewTooltip: "\u8FD9\u662F\u663E\u793A\u5728\u83DC\u5355\u4E2D\u7684\u7F29\u7565\u56FE\u9884\u89C8\n\u9884\u89C8\u4E2D\u53EF\u80FD\u4F1A\u51FA\u73B0\u670D\u88C5\u7B49\u663E\u793A\u4F4D\u7F6E\u504F\u79FB\u7684\u60C5\u51B5\uFF0C\u4F46\u5728\u4E0A\u4F20\u65F6\u4F1A\u91CD\u65B0\u62CD\u6444"
   enableHeightLabel: "\u542F\u7528\u9AD8\u5EA6\u8C03\u6574"
