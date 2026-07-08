@@ -1,0 +1,20 @@
+{
+    "name": "com.hhotatea.avatar-pose-library.Tests.Editor",
+    "rootNamespace": "",
+    "references": [
+        "com.hhotatea.avatar-pose-library.Runtime",
+        "com.hhotatea.avatar-pose-library.Editor",
+        "VRC.SDK3A",
+        "nadena.dev.modular-avatar.core"
+    ],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": ["VRCSDKBase.dll", "VRCSDK3A.dll"],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": ["TestAssemblies"]
+}
