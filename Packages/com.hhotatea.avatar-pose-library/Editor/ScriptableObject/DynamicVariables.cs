@@ -52,7 +52,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
 
             // 読み込み済みのPackageInfoから同期的に取得し、Editorのメインスレッドを停止させない。
-            var packageInfo = PackageInfo.FindForAssembly(typeof(DynamicVariables).Assembly);
+            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(
+                typeof(DynamicVariables).Assembly);
             currentVersion = Version.TryParse(packageInfo?.version, out var version)
                 ? version
                 : FallbackVersion;
