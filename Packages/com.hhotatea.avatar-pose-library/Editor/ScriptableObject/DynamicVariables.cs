@@ -84,7 +84,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 if (!isFetchedLatestVersion)
                 {
                     isFetchedLatestVersion = true;
-                    FetchLatestVersionAsync();
+                    _ = FetchLatestVersionAsync();
                 }
 
                 // 完了するまではCurrentVersionを返す
@@ -122,14 +122,14 @@ namespace com.hhotatea.avatar_pose_library.editor
                 }
             }
         }
-        
+
         public static CameraSettings GetCameraSettings(AvatarPoseData poseLibrary)
         {
-            if(poseLibrary.enableFxAnimator && poseLibrary.enableLocomotionAnimator)
+            if (poseLibrary.enableFxAnimator && poseLibrary.enableLocomotionAnimator)
             {
-                return Settings.cameraBoth;  
+                return Settings.cameraBoth;
             }
-            if(poseLibrary.enableFxAnimator && !poseLibrary.enableLocomotionAnimator)
+            if (poseLibrary.enableFxAnimator && !poseLibrary.enableLocomotionAnimator)
             {
                 return Settings.cameraFx;
             }

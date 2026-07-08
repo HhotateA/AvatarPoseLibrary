@@ -18,9 +18,9 @@ namespace com.hhotatea.avatar_pose_library.logic
         private GameObject cameraGO;
         private Transform headTransform;
         private Quaternion headInverse;
-        
-        private Dictionary<GameObject,int> currentLayers = new Dictionary<GameObject, int>();
-        
+
+        private Dictionary<GameObject, int> currentLayers = new Dictionary<GameObject, int>();
+
         private Camera camera;
         private RenderTexture renderTexture;
 
@@ -93,7 +93,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0f);
             }
             AnimationMode.EndSampling();
-            
+
             // 頭にカメラを合わせる
             ApplyCameraPos(cameraSettings);
             camera.Render();
@@ -109,7 +109,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             avatarGO.SetActive(false);
             return tex;
         }
-        
+
         void ApplyCameraPos(CameraSettings cameraSettings)
         {
             if (!headTransform) return;
@@ -119,8 +119,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             var distance = AvatarHeight / (2f * Mathf.Tan(cameraSettings.fieldOfView * 0.5f * Mathf.Deg2Rad));
             distance = distance * cameraSettings.cameraDistance;
             var headFoward = headTransform.rotation * headInverse * Vector3.forward;
-            var center = Vector3.Lerp( aPos, hPos, cameraSettings.posAvatarToHead);
-            var target = Vector3.Lerp( aPos, hPos, cameraSettings.posAvatarToHead);
+            var center = Vector3.Lerp(aPos, hPos, cameraSettings.posAvatarToHead);
+            var target = Vector3.Lerp(aPos, hPos, cameraSettings.posAvatarToHead);
 
             // カリング設定
             camera.nearClipPlane = distance * 0.01f;
@@ -130,14 +130,14 @@ namespace com.hhotatea.avatar_pose_library.logic
             cameraGO.transform.position = center
                 + distance * Vector3.Lerp(Vector3.forward, headFoward, cameraSettings.lookAtFace).normalized
                 + cameraSettings.cameraOffset * AvatarHeight;
-            cameraGO.transform.LookAt(target 
+            cameraGO.transform.LookAt(target
                 + cameraSettings.cameraTarget * AvatarHeight);
         }
 
         public Texture2D Capture(AnimationClip poseClip)
         {
             var cameraSettings = DynamicVariables.Settings.cameraBoth;
-            return Capture(poseClip,cameraSettings);
+            return Capture(poseClip, cameraSettings);
         }
 
         public void Dispose()
@@ -146,7 +146,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 ResetLayers();
             }
-            
+
             if (cameraGO != null)
             {
                 camera.targetTexture = null;
@@ -159,7 +159,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 renderTexture.Release();
                 renderTexture = null;
             }
-            
+
             avatarGO.SetActive(true);
         }
 
@@ -170,7 +170,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <param name="layer"></param>
         private void SetLayerRecursively(GameObject obj, int layer)
         {
-            currentLayers.Add(obj,obj.layer);
+            currentLayers.Add(obj, obj.layer);
             obj.layer = layer;
             foreach (Transform child in obj.transform)
             {

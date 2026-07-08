@@ -29,7 +29,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     nameOrPrefix = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
                     syncType = ParameterSyncType.Int,
-                    localOnly = poseLibrary.PoseCount < (1 << i*8),
+                    localOnly = poseLibrary.PoseCount < (1 << i * 8),
                     defaultValue = 0,
                     saved = false,
                 });
@@ -158,12 +158,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                     nameOrPrefix = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
                     syncType = ParameterSyncType.Bool,
                     localOnly = true,
-                    defaultValue =  1,
+                    defaultValue = 1,
                     saved = true,
                 });
             }
 
-            if(poseLibrary.EnableAudioMode)
+            if (poseLibrary.EnableAudioMode)
             {
                 mResult.parameters.Add(new ParameterConfig
                 {
@@ -189,7 +189,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 nameOrPrefix = $"{ConstVariables.HeightUpdateParamPrefix}_{poseLibrary.Guid}",
                 syncType = ParameterSyncType.Bool,
                 localOnly = true,
-                defaultValue =  0,
+                defaultValue = 0,
                 saved = false,
             });
 

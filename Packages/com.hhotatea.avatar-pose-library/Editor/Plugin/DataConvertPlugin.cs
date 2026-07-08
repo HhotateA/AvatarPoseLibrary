@@ -12,31 +12,36 @@ using UnityEditor.Animations;
 using UnityEditor.VersionControl;
 using AnimatorUtility = com.hhotatea.avatar_pose_library.logic.AnimatorUtility;
 
-[assembly : ExportsPlugin (typeof (DataConvertPlugin))]
-namespace com.hhotatea.avatar_pose_library.editor {
-    public class DataConvertPlugin : Plugin<DataConvertPlugin> {
+[assembly: ExportsPlugin(typeof(DataConvertPlugin))]
+namespace com.hhotatea.avatar_pose_library.editor
+{
+    public class DataConvertPlugin : Plugin<DataConvertPlugin>
+    {
         public override string DisplayName => "AvatarPoseLibrary";
 
-        protected override void Configure () {
-            InPhase (BuildPhase.Generating)
-                .BeforePlugin ("nadena.dev.modular-avatar")
-                .Run ("AvatarPose: Data Converting...", ctx => {
-                    var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary> ();
+        protected override void Configure()
+        {
+            InPhase(BuildPhase.Generating)
+                .BeforePlugin("nadena.dev.modular-avatar")
+                .Run("AvatarPose: Data Converting...", ctx =>
+                {
+                    var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
 
                     // ターゲット未指定のデータを統合して処理
-                    var combinedData = AvatarPoseData.Combine (
-                        settings.Select (e => e.data)
-                        .ToArray ());
+                    var combinedData = AvatarPoseData.Combine(
+                        settings.Select(e => e.data)
+                        .ToArray());
 
-                    foreach (var d in combinedData) {
-                        var go = new GameObject (d.Guid);
-                        var root = settings.FirstOrDefault (e => e.data.name == d.name);
-                        go.transform.SetParent (root?.transform ?? ctx.AvatarRootObject.transform);
+                    foreach (var d in combinedData)
+                    {
+                        var go = new GameObject(d.Guid);
+                        var root = settings.FirstOrDefault(e => e.data.name == d.name);
+                        go.transform.SetParent(root?.transform ?? ctx.AvatarRootObject.transform);
 
                         var assets = GetAssetCache(d, d.enableUseCache);
-                        if(d.EnableAudioMode) BuildAudioSource(ctx.AvatarRootObject.transform,d);
-                        BuildRuntimeAnimator (go, assets, d, ctx.AvatarRootObject);
-                        BuildRuntimeMenu (go, assets, root?.transform, ctx.AvatarRootObject.transform);
+                        if (d.EnableAudioMode) BuildAudioSource(ctx.AvatarRootObject.transform, d);
+                        BuildRuntimeAnimator(go, assets, d, ctx.AvatarRootObject);
+                        BuildRuntimeMenu(go, assets, root?.transform, ctx.AvatarRootObject.transform);
                         BuildRuntimeParameter(go, assets);
                     }
                 });
@@ -85,41 +90,42 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// <summary>
         /// アニメーターの設定
         /// </summary>
-        void BuildRuntimeAnimator (GameObject obj, CacheModel assets, AvatarPoseData data, GameObject root) {
-            var result = new GameObject ();
+        void BuildRuntimeAnimator(GameObject obj, CacheModel assets, AvatarPoseData data, GameObject root)
+        {
+            var result = new GameObject();
             bool matchAvatarWriteDefaults = (data.writeDefaultType == WriteDefaultType.MatchAvatar);
 
-            var ma_base = result.AddComponent<ModularAvatarMergeAnimator> ();
+            var ma_base = result.AddComponent<ModularAvatarMergeAnimator>();
             ma_base.layerPriority = 1;
             ma_base.animator = assets.locomotionLayer;
             ma_base.pathMode = MergeAnimatorPathMode.Absolute;
             ma_base.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
             ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
 
-            var ma_action = result.AddComponent<ModularAvatarMergeAnimator> ();
+            var ma_action = result.AddComponent<ModularAvatarMergeAnimator>();
             ma_action.layerPriority = 1;
             ma_action.animator = assets.locomotionLayer;
             ma_action.pathMode = MergeAnimatorPathMode.Absolute;
             ma_action.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
             ma_action.layerType = VRCAvatarDescriptor.AnimLayerType.Action;
 
-            var ma_fx = result.AddComponent<ModularAvatarMergeAnimator> ();
+            var ma_fx = result.AddComponent<ModularAvatarMergeAnimator>();
             ma_fx.layerPriority = 1;
-            ma_fx.animator = data.enableAutoResetAnim ? 
-                AnimatorUtility.ReplaceResetAnimation(assets.paramLayer,data,root) :
+            ma_fx.animator = data.enableAutoResetAnim ?
+                AnimatorUtility.ReplaceResetAnimation(assets.paramLayer, data, root) :
                 assets.paramLayer;
             ma_fx.pathMode = MergeAnimatorPathMode.Absolute;
             ma_fx.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
             ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
 
-            var ma_tracking = result.AddComponent<ModularAvatarMergeAnimator> ();
+            var ma_tracking = result.AddComponent<ModularAvatarMergeAnimator>();
             ma_tracking.layerPriority = 1;
             ma_tracking.animator = assets.trackingLayer;
             ma_tracking.pathMode = MergeAnimatorPathMode.Absolute;
             ma_tracking.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
             ma_tracking.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
 
-            result.transform.SetParent (obj.transform);
+            result.transform.SetParent(obj.transform);
         }
 
         /// <summary>
@@ -156,13 +162,13 @@ namespace com.hhotatea.avatar_pose_library.editor {
                 result.transform.SetParent(obj.transform);
             }
         }
-        
+
         /// <summary>
         /// AudioSourceを作成
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="assets"></param>
-        void BuildAudioSource (Transform root, AvatarPoseData data) 
+        void BuildAudioSource(Transform root, AvatarPoseData data)
         {
             var result = new GameObject($"{ConstVariables.AudioParamPrefix}_{data.Guid}");
             result.transform.SetParent(root);
@@ -213,9 +219,10 @@ namespace com.hhotatea.avatar_pose_library.editor {
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="assets"></param>
-        void BuildRuntimeParameter (GameObject obj, CacheModel assets) {
+        void BuildRuntimeParameter(GameObject obj, CacheModel assets)
+        {
             var result = assets.paramObject;
-            result.transform.SetParent (obj.transform);
+            result.transform.SetParent(obj.transform);
         }
     }
 }

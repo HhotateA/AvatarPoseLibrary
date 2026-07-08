@@ -8,7 +8,8 @@ using Unity.Collections;
 using UnityEngine;
 using System.Linq;
 
-namespace com.hhotatea.avatar_pose_library.logic {
+namespace com.hhotatea.avatar_pose_library.logic
+{
     // AvatarPoseLibrary のパラメータを提供するクラス
     [ParameterProviderFor(typeof(AvatarPoseLibrary))]
     public sealed class AvatarPoseLibraryParametersProvider : IParameterProvider
@@ -33,12 +34,12 @@ namespace com.hhotatea.avatar_pose_library.logic {
                 _component.GetComponentMember()
                     .Select(e => e.data)
                     .ToArray())
-                .FirstOrDefault(e=>e.name == _component.data.name);
+                .FirstOrDefault(e => e.name == _component.data.name);
             if (data == null)
             {
                 yield break;
             }
-            
+
             // パラメーターの最適化
             data.UpdateParameter();
             // AvatarPoseLibrary のデータからパラメータ用の GameObject を構築
@@ -48,10 +49,11 @@ namespace com.hhotatea.avatar_pose_library.logic {
 
             foreach (var cfg in mParams.parameters)
             {
-                var type = cfg.syncType switch {
+                var type = cfg.syncType switch
+                {
                     // syncType に応じて AnimatorControllerParameterType をマッピング
-                    ParameterSyncType.Bool  => AnimatorControllerParameterType.Bool,
-                    ParameterSyncType.Int   => AnimatorControllerParameterType.Int,
+                    ParameterSyncType.Bool => AnimatorControllerParameterType.Bool,
+                    ParameterSyncType.Int => AnimatorControllerParameterType.Int,
                     ParameterSyncType.Float => AnimatorControllerParameterType.Float,
                     _ => AnimatorControllerParameterType.Float
                 };
@@ -63,7 +65,8 @@ namespace com.hhotatea.avatar_pose_library.logic {
                     source: mParams,
                     plugin: DataConvertPlugin.Instance,
                     parameterType: type
-                ) {
+                )
+                {
                     // localOnly が false の場合は同期を希望
                     WantSynced = !cfg.localOnly
                 };

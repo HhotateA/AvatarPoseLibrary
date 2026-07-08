@@ -97,7 +97,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     continue;
                 }
                 bool isError = true;
-                foreach(var s in layer.stateMachine.states)
+                foreach (var s in layer.stateMachine.states)
                 {
                     foreach (var beh in s.state.behaviours)
                     {
@@ -121,7 +121,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 return isError;
             }
             return true;
-        } 
+        }
 
         public CacheModel LoadAsset()
         {
@@ -154,11 +154,11 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 asset.version = DynamicVariables.CurrentVersion.ToString();
                 asset.libraryName = asset.menuObject.name;
-                SaveAnimator(asset.locomotionLayer,filePath);
-                SaveAnimator(asset.paramLayer,filePath);
-                SaveAnimator(asset.trackingLayer,filePath);
-                asset.menuObject = SaveGameObject(asset.menuObject,filePath);
-                asset.paramObject = SaveGameObject(asset.paramObject,filePath);
+                SaveAnimator(asset.locomotionLayer, filePath);
+                SaveAnimator(asset.paramLayer, filePath);
+                SaveAnimator(asset.trackingLayer, filePath);
+                asset.menuObject = SaveGameObject(asset.menuObject, filePath);
+                asset.paramObject = SaveGameObject(asset.paramObject, filePath);
 
                 EditorUtility.SetDirty(asset);
                 AssetDatabase.SaveAssets();
@@ -176,7 +176,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         GameObject SaveGameObject(GameObject go, string path)
         {
-            var prefabName = System.Guid.NewGuid ().ToString ("N").Substring (0, ConstVariables.HashLong);
+            var prefabName = System.Guid.NewGuid().ToString("N").Substring(0, ConstVariables.HashLong);
             var prefabPath = EnsureFilePath(Path.ChangeExtension(prefabName, "prefab"));
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
             GameObject.DestroyImmediate(go);
@@ -211,7 +211,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
             foreach (var s in st.states)
             {
-                SaveState(s.state,path);
+                SaveState(s.state, path);
             }
             foreach (var t in st.anyStateTransitions)
             {
