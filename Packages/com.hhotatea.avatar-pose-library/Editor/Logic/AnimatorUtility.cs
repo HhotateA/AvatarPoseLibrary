@@ -58,10 +58,11 @@ namespace com.hhotatea.avatar_pose_library.logic
         public static Motion MakeLocomotionAnim(this AnimationClip anim, bool loop, bool height, bool speed, string guid)
         {
             var blendTree = new BlendTree();
+            var isMoveAnimation = MotionBuilder.IsMoveAnimation(anim);
             anim = MotionBuilder.SetAnimationLoop(anim, loop);
             anim = MotionBuilder.PartAnimation(anim, MotionBuilder.AnimationPart.Locomotion);
 
-            if (MotionBuilder.IsMoveAnimation(anim))
+            if (isMoveAnimation)
             {
                 // アニメーションの生成
                 AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel(anim, DynamicVariables.Settings.minMaxHeight) : anim;

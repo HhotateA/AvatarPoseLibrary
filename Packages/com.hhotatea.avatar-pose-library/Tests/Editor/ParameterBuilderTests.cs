@@ -4,6 +4,7 @@ using com.hhotatea.avatar_pose_library.logic;
 using com.hhotatea.avatar_pose_library.model;
 using nadena.dev.modular_avatar.core;
 using NUnit.Framework;
+using UnityEditor.Animations;
 using UnityEngine;
 
 namespace com.hhotatea.avatar_pose_library.tests
@@ -94,6 +95,76 @@ namespace com.hhotatea.avatar_pose_library.tests
                 {
                     Object.DestroyImmediate(result);
                 }
+            }
+        }
+
+        [Test]
+        public void BuildLocomotionAnimator_ClassifiesMovementBeforeFilteringFxCurves()
+        {
+            var clip = new AnimationClip { name = "FxOnlyMotion" };
+            clip.SetCurve(
+                "Body",
+                typeof(SkinnedMeshRenderer),
+                "blendShape.Probe",
+                AnimationCurve.Linear(0f, 0f, 1f, 100f));
+            var data = new AvatarPoseData
+            {
+                enableHeightParam = false,
+                enableSpeedParam = false,
+                enableMirrorParam = false,
+                categories = new List<PoseCategory>
+                {
+                    new PoseCategory
+                    {
+                        poses = new List<PoseEntry>
+                        {
+                            new PoseEntry { animationClip = clip },
+                        },
+                    },
+                },
+            }.UpdateParameter();
+
+            AnimatorController controller = null;
+            BlendTree blendTree = null;
+            try
+            {
+                Assert.That(MotionBuilder.IsMoveAnimation(clip), Is.True);
+
+                controller = AnimatorBuilder.BuildLocomotionAnimator(data, false);
+                var poseState = controller.layers
+                    .SelectMany(layer => layer.stateMachine.states)
+                    .Select(child => child.state)
+                    .Single(state => state.name == "Pose_1");
+                blendTree = (BlendTree)poseState.motion;
+
+                Assert.That(blendTree.blendType, Is.EqualTo(BlendTreeType.Simple1D));
+                Assert.That(blendTree.blendParameter,
+                    Is.EqualTo($"{ConstVariables.HeightParamPrefix}_{data.Guid}"));
+                Assert.That(blendTree.children, Has.Length.EqualTo(2));
+            }
+            finally
+            {
+                if (blendTree != null)
+                {
+                    var generatedMotions = blendTree.children
+                        .Select(child => child.motion)
+                        .Where(motion => motion != null)
+                        .Distinct()
+                        .ToArray();
+                    foreach (var motion in generatedMotions)
+                    {
+                        Object.DestroyImmediate(motion);
+                    }
+
+                    Object.DestroyImmediate(blendTree);
+                }
+
+                if (controller != null)
+                {
+                    Object.DestroyImmediate(controller);
+                }
+
+                Object.DestroyImmediate(clip);
             }
         }
 

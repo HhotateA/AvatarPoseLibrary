@@ -44,6 +44,7 @@ jobs:
         uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac
         with:
           ref: ${{ inputs.checkout_ref || github.sha }}
+          fetch-depth: 0
 
       - name: Get version
         id: version
@@ -60,10 +61,26 @@ jobs:
 
       - name: Create package zip
         working-directory: "${{ env.PACKAGE_PATH }}"
-        run: zip -r "${{ github.workspace }}/${{ env.ZIP_FILE }}" .
+        run: |
+          archive="${{ github.workspace }}/${ZIP_FILE}"
+          zip -r "$archive" . \
+            -x './Tests/*' './Tests.meta' 'Tests/*' 'Tests.meta'
+          archive_entries=$(unzip -Z1 "$archive")
+          if grep -Eq '^(\./)?Tests(/|\.meta$)' <<< "$archive_entries"; then
+            echo "::error::Tests directory or Tests.meta was included in the package zip."
+            exit 1
+          fi
 
       - name: Track package meta files
-        run: find "${{ env.PACKAGE_PATH }}/" -name '*.meta' > metaList
+        run: |
+          find "${PACKAGE_PATH}" \
+            -path "${PACKAGE_PATH}/Tests" -prune -o \
+            -path "${PACKAGE_PATH}/Tests.meta" -prune -o \
+            -name '*.meta' -print > metaList
+          if grep -Eq '(^|/)Tests(/|\.meta$)' metaList; then
+            echo "::error::Tests metadata was included in the Unity package input list."
+            exit 1
+          fi
 
       - name: Create Unity package
         uses: pCYSl5EDgo/create-unitypackage@v1.2.3
@@ -71,12 +88,29 @@ jobs:
           package-path: ${{ env.UNITY_PACKAGE }}
           include-files: metaList
 
+      - name: Validate release tag
+        id: release_tag
+        run: |
+          head_commit=$(git rev-parse --verify 'HEAD^{commit}')
+          echo "head_commit=${head_commit}" >> "$GITHUB_OUTPUT"
+          if git show-ref --verify --quiet "refs/tags/${VERSION}"; then
+            tag_commit=$(git rev-parse --verify "refs/tags/${VERSION}^{commit}")
+            if [[ "$tag_commit" != "$head_commit" ]]; then
+              echo "::error::Tag ${VERSION} points to ${tag_commit}, but this release was built from ${head_commit}."
+              exit 1
+            fi
+            echo "Tag ${VERSION} already points to ${head_commit}; skipping tag creation."
+            echo "should_create=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_create=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create tag
+        if: steps.release_tag.outputs.should_create == 'true'
         uses: rickstaa/action-create-tag@88dbf7ff6fe2405f8e8f6c6fdfd78829bc631f83
         with:
           tag: "${{ env.VERSION }}"
-          commit_sha: ${{ inputs.checkout_ref || github.sha }}
-          tag_exists_error: false
+          commit_sha: ${{ steps.release_tag.outputs.head_commit }}
 
       - name: Publish release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
