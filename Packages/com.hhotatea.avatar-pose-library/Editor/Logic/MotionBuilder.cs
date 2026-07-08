@@ -250,6 +250,11 @@ namespace com.hhotatea.avatar_pose_library.logic
             foreach (var binding in curves)
             {
                 var curve = AnimationUtility.GetEditorCurve(anim, binding);
+                if (curve == null || curve.keys.Length == 0)
+                {
+                    continue;
+                }
+
                 float minValue = curve.keys.OrderByDescending(k => k.time).Last().value;
                 float maxValue = curve.keys.OrderByDescending(k => k.time).First().value;
 

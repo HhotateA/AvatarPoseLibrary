@@ -7,6 +7,7 @@ using com.hhotatea.avatar_pose_library.logic;
 using com.hhotatea.avatar_pose_library.model;
 using nadena.dev.modular_avatar.core;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 using AnimatorUtility = com.hhotatea.avatar_pose_library.logic.AnimatorUtility;
@@ -112,9 +113,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 matchAvatarWriteDefaults);
 
             var ma_fx = result.AddComponent<ModularAvatarMergeAnimator>();
-            var fxAnimator = data.enableAutoResetAnim
-                ? AnimatorUtility.ReplaceResetAnimation(assets.paramLayer, data, root)
-                : assets.paramLayer;
+            var fxAnimator = GetFxAnimatorForBuild(assets.paramLayer, data, root);
             ConfigureMergeAnimator(
                 ma_fx,
                 fxAnimator,
@@ -243,6 +242,28 @@ namespace com.hhotatea.avatar_pose_library.editor
             mergeAnimator.layerType = layerType;
         }
 
+        private static RuntimeAnimatorController GetFxAnimatorForBuild(
+            UnityEditor.Animations.AnimatorController cachedAnimator,
+            AvatarPoseData data,
+            GameObject root)
+        {
+            if (!data.enableAutoResetAnim)
+            {
+                return cachedAnimator;
+            }
+
+            var animator = cachedAnimator;
+            if (animator != null && AssetDatabase.Contains(animator))
+            {
+                // The reset clip depends on the current avatar's default values. Never write it
+                // into the persistent cache asset, which may be reused by another avatar/build.
+                var overrideWriteDefault = data.writeDefaultType == WriteDefaultType.OverrideTrue;
+                animator = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault);
+            }
+
+            return AnimatorUtility.ReplaceResetAnimation(animator, data, root);
+        }
+
         private static AvatarPoseLibrary FindRootComponent(
             AvatarPoseLibrary[] settings,
             AvatarPoseData data)
@@ -250,6 +271,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             // 明示的なターゲットを持つデータは参照一致を優先し、統合データだけ名前で検索する。
             return settings.FirstOrDefault(setting => ReferenceEquals(setting.data, data))
                 ?? settings.FirstOrDefault(setting =>
+                    setting.data.target == null &&
                     string.Equals(setting.data.name, data.name, StringComparison.Ordinal));
         }
     }
