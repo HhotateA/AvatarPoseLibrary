@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using VRC.SDK3.Avatars.ScriptableObjects;
 using com.hhotatea.avatar_pose_library.component;
@@ -23,7 +24,10 @@ namespace com.hhotatea.avatar_pose_library.editor
                 .BeforePlugin("nadena.dev.modular-avatar")
                 .Run("AvatarPose: Data Converting...", ctx =>
                 {
-                    var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
+                    var settings = ctx.AvatarRootObject
+                        .GetComponentsInChildren<AvatarPoseLibrary>()
+                        .Where(setting => setting.data != null)
+                        .ToArray();
 
                     // ターゲット未指定のデータを統合して処理
                     var combinedData = AvatarPoseData.Combine(
@@ -33,7 +37,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                     foreach (var d in combinedData)
                     {
                         var go = new GameObject(d.Guid);
-                        var root = settings.FirstOrDefault(e => e.data.name == d.name);
+                        var root = FindRootComponent(settings, d);
                         go.transform.SetParent(root?.transform ?? ctx.AvatarRootObject.transform);
 
                         var assets = GetAssetCache(d, d.enableUseCache);
@@ -205,7 +209,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             var item = menuRoot.GetComponent<ModularAvatarMenuItem>();
             if (item)
             {
-                if (item.Control.type == VRCExpressionsMenu.Control.ControlType.SubMenu &&
+                if (item.Control?.type == VRCExpressionsMenu.Control.ControlType.SubMenu &&
                     item.MenuSource == SubmenuSource.Children)
                 {
                     return true;
@@ -237,6 +241,16 @@ namespace com.hhotatea.avatar_pose_library.editor
             mergeAnimator.pathMode = MergeAnimatorPathMode.Absolute;
             mergeAnimator.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
             mergeAnimator.layerType = layerType;
+        }
+
+        private static AvatarPoseLibrary FindRootComponent(
+            AvatarPoseLibrary[] settings,
+            AvatarPoseData data)
+        {
+            // 明示的なターゲットを持つデータは参照一致を優先し、統合データだけ名前で検索する。
+            return settings.FirstOrDefault(setting => ReferenceEquals(setting.data, data))
+                ?? settings.FirstOrDefault(setting =>
+                    string.Equals(setting.data.name, data.name, StringComparison.Ordinal));
         }
     }
 }

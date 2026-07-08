@@ -266,7 +266,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         private void EnsureInitialData()
         {
             // データの初期化
-            if (_library.isInitialized) return;
+            if (_library.isInitialized && _library.data != null) return;
             _library.data = new AvatarPoseData();
             _library.data.name = DynamicVariables.Settings.Menu.main.title;
             _library.data.thumbnail = DynamicVariables.Settings.Menu.main.thumbnail;
@@ -1039,7 +1039,10 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void SyncLibraryTags()
         {
-            string[] duplicates = _library.GetLibraries().Select(e => e.data.name).ToArray();
+            string[] duplicates = _library.GetLibraries()
+                .Where(library => library.data != null)
+                .Select(library => library.data.name)
+                .ToArray();
             _libraryTagList = duplicates.Distinct().ToArray();
             _libraryTagIndex = Array.FindIndex(_libraryTagList, n => n == Data.name);
         }

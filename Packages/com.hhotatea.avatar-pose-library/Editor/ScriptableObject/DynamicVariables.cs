@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.model;
@@ -13,8 +12,10 @@ namespace com.hhotatea.avatar_pose_library.editor
     public static class DynamicVariables
     {
         private const string SettingsGuid = "ca5572910cc499a4faf1a7986787d6e2";
-        private const string PackageName = "com.hhotatea.avatar-pose-library";
-        private const string VersionEndpoint = "https://script.google.com/macros/s/AKfycbyIJ6zUa0LHzdZU5GSO7h0pDWUPCZ1xAKQxWNST88Y9KpgCSsw0fE2u00xHLWW9_S-eng/exec";
+        private const string VersionEndpoint =
+            "https://script.google.com/macros/s/AKfycbyIJ6zUa0LHzdZU5GSO7h0pDWUPCZ1xAKQxWNST88Y9KpgCSsw0fE2u00xHLWW9_S-eng/exec";
+        private const int VersionRequestTimeoutSeconds = 10;
+
         private static readonly Version FallbackVersion = new Version(0, 0, 0);
         private static Version currentVersion;
         private static Version latestVersion;
@@ -50,17 +51,11 @@ namespace com.hhotatea.avatar_pose_library.editor
                 return currentVersion;
             }
 
-            // Package Managerの一覧取得は非同期APIのみのため、初回だけ完了を待機する。
-            // 結果をキャッシュし、インスペクターの再描画ごとの問い合わせを防ぐ。
-            var request = Client.List(true, true);
-            while (!request.IsCompleted)
-            {
-            }
-
-            var versionText = request.Status == StatusCode.Success
-                ? request.Result.FirstOrDefault(package => package.name == PackageName)?.version
-                : null;
-            currentVersion = Version.TryParse(versionText, out var version) ? version : FallbackVersion;
+            // 読み込み済みのPackageInfoから同期的に取得し、Editorのメインスレッドを停止させない。
+            var packageInfo = PackageInfo.FindForAssembly(typeof(DynamicVariables).Assembly);
+            currentVersion = Version.TryParse(packageInfo?.version, out var version)
+                ? version
+                : FallbackVersion;
             return currentVersion;
         }
 
@@ -77,28 +72,42 @@ namespace com.hhotatea.avatar_pose_library.editor
                 _ = FetchLatestVersionAsync();
             }
 
-            // リモート問い合わせ中はインスペクターを待機させず、現在のバージョンを返す。
+            // リモート問い合わせ中は現在のバージョンを返し、インスペクターを待機させない。
             return CurrentVersion;
         }
+
         private static async Task FetchLatestVersionAsync()
         {
-            using (var request = UnityWebRequest.Get(VersionEndpoint))
+            try
             {
-                var completion = new TaskCompletionSource<bool>();
-                request.SendWebRequest().completed += _ => completion.TrySetResult(true);
-                await completion.Task;
-
-                if (request.result != UnityWebRequest.Result.Success)
+                using (var request = UnityWebRequest.Get(VersionEndpoint))
                 {
-                    Debug.LogWarning($"AvatarPoseLibrary: Version check failed: {request.error}");
-                    latestVersion = CurrentVersion;
-                    return;
-                }
+                    request.timeout = VersionRequestTimeoutSeconds;
+                    var completion = new TaskCompletionSource<bool>();
+                    request.SendWebRequest().completed += _ => completion.TrySetResult(true);
+                    await completion.Task;
 
-                var response = JsonUtility.FromJson<AnalyticsResponse>(request.downloadHandler.text);
-                latestVersion = Version.TryParse(response?.version, out var version)
-                    ? version
-                    : CurrentVersion;
+                    if (request.result != UnityWebRequest.Result.Success)
+                    {
+                        Debug.LogWarning($"AvatarPoseLibrary: Version check failed: {request.error}");
+                        latestVersion = CurrentVersion;
+                        return;
+                    }
+
+                    var response = JsonUtility.FromJson<AnalyticsResponse>(request.downloadHandler.text);
+                    latestVersion = Version.TryParse(response?.version, out var version)
+                        ? version
+                        : CurrentVersion;
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"AvatarPoseLibrary: Version check failed: {exception.Message}");
+                latestVersion = CurrentVersion;
+            }
+            finally
+            {
+                isFetchingLatestVersion = false;
             }
         }
 

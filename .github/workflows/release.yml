@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       checkout_ref:
-        description: Git ref containing the version to release
+        description: リリース対象のGit ref
         required: false
         type: string
     secrets:
@@ -23,7 +23,12 @@ jobs:
         id: config_package
         env:
           PACKAGE_NAME: ${{ vars.PACKAGE_NAME }}
-        run: echo "configPackage=$([[ -n "$PACKAGE_NAME" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+        run: |
+          if [[ -n "$PACKAGE_NAME" ]]; then
+            echo "configPackage=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configPackage=false" >> "$GITHUB_OUTPUT"
+          fi
 
   build:
     needs: config
@@ -33,13 +38,12 @@ jobs:
       contents: write
     env:
       PACKAGE_PATH: Packages/${{ vars.PACKAGE_NAME }}
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
-      # バージョン更新後の再利用実行では、マージ時のSHAではなく更新後のコミットを使用する。
+      # バージョン更新後の固定SHAを使用し、後続のmain更新による取り違えを防ぐ。
       - name: Checkout release ref
         uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac
         with:
-          ref: ${{ inputs.checkout_ref || github.ref }}
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Get version
         id: version
@@ -71,6 +75,8 @@ jobs:
         uses: rickstaa/action-create-tag@88dbf7ff6fe2405f8e8f6c6fdfd78829bc631f83
         with:
           tag: "${{ env.VERSION }}"
+          commit_sha: ${{ inputs.checkout_ref || github.sha }}
+          tag_exists_error: false
 
       - name: Publish release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -82,8 +88,13 @@ jobs:
           tag_name: ${{ env.VERSION }}
 
       - name: Notify Discord
-        if: env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
+          if [[ -z "$DISCORD_WEBHOOK_URL" ]]; then
+            echo "Discord webhook is not configured; skipping notification."
+            exit 0
+          fi
           jq -n --arg content "AvatarPoseLibrary v${VERSION} has been released." \
             '{content: $content}' \
             | curl --fail-with-body --header "Content-Type: application/json" \

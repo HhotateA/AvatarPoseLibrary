@@ -22,20 +22,35 @@ namespace com.hhotatea.avatar_pose_library.editor
                     var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
                     foreach (var setting in settings)
                     {
-                        var cameraSettings = DynamicVariables.GetCameraSettings(setting.data);
-                        using (var capture = new ThumbnailGenerator(ctx.AvatarRootObject))
+                        var data = setting.data;
+                        if (data != null)
                         {
-                            foreach (var category in setting.data.categories)
+                            var cameraSettings = DynamicVariables.GetCameraSettings(data);
+                            using (var capture = new ThumbnailGenerator(ctx.AvatarRootObject))
                             {
-                                foreach (var pose in category.poses)
+                                if (data.categories != null)
                                 {
-                                    if (!pose.autoThumbnail) continue;
-                                    var c = SearchMenu(ctx.AvatarDescriptor.expressionsMenu, pose);
-                                    if (c == null)
+                                    foreach (var category in data.categories)
                                     {
-                                        continue;
+                                        if (category?.poses == null)
+                                        {
+                                            continue;
+                                        }
+
+                                        foreach (var pose in category.poses)
+                                        {
+                                            if (pose == null || !pose.autoThumbnail)
+                                            {
+                                                continue;
+                                            }
+
+                                            var control = SearchMenu(ctx.AvatarDescriptor.expressionsMenu, pose);
+                                            if (control != null)
+                                            {
+                                                control.icon = capture.Capture(pose.animationClip, cameraSettings);
+                                            }
+                                        }
                                     }
-                                    c.icon = capture.Capture(pose.animationClip, cameraSettings);
                                 }
                             }
                         }

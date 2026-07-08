@@ -23,6 +23,11 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public IEnumerable<ProvidedParameter> GetSuppliedParameters(BuildContext ctx = null)
         {
+            if (_component == null || _component.data == null)
+            {
+                yield break;
+            }
+
             // 最上位オブジェクトのみで実行
             if (!_component.IsRootComponent())
             {
