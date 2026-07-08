@@ -9,6 +9,11 @@ on:
 permissions:
   contents: write
 
+# バージョン更新からリリースまでを直列化し、連続マージをすべて待機させる。
+concurrency:
+  group: package-release-${{ github.repository }}
+  queue: max
+
 jobs:
   increment-version:
     if: github.event.pull_request.merged == true
@@ -20,5 +25,7 @@ jobs:
     needs: increment-version
     if: github.event.pull_request.merged == true
     uses: ./.github/workflows/release.yml
+    with:
+      checkout_ref: ${{ needs.increment-version.outputs.commit_sha }}
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}

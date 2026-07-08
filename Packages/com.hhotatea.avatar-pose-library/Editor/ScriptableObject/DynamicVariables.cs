@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using com.hhotatea.avatar_pose_library.component;
 using com.hhotatea.avatar_pose_library.model;
@@ -12,135 +11,131 @@ namespace com.hhotatea.avatar_pose_library.editor
 {
     public static class DynamicVariables
     {
-        private const string settingsGuid = "ca5572910cc499a4faf1a7986787d6e2";
-        private const string packageName = "com.hhotatea.avatar-pose-library";
-
-        private const string analyticsURL =
+        private const string SettingsGuid = "ca5572910cc499a4faf1a7986787d6e2";
+        private const string VersionEndpoint =
             "https://script.google.com/macros/s/AKfycbyIJ6zUa0LHzdZU5GSO7h0pDWUPCZ1xAKQxWNST88Y9KpgCSsw0fE2u00xHLWW9_S-eng/exec";
+        private const int VersionRequestTimeoutSeconds = 10;
 
-        private static Version currentVersion, latestVersion;
+        private static readonly Version FallbackVersion = new Version(0, 0, 0);
+        private static Version currentVersion;
+        private static Version latestVersion;
+        private static bool isFetchingLatestVersion;
+        private static AvatarPoseSettings cachedSettings;
 
-        private static bool isFetchedLatestVersion = false;
+        public static AvatarPoseSettings Settings => GetSettings();
+        public static Version CurrentVersion => GetCurrentVersion();
+        public static Version LatestVersion => GetLatestVersion();
 
-        private static AvatarPoseSettings settingsBuff;
-
-        public static AvatarPoseSettings Settings
+        private static AvatarPoseSettings GetSettings()
         {
-            get
+            if (cachedSettings)
             {
-                if (settingsBuff) return settingsBuff;
-
-                var filePath = AssetDatabase.GUIDToAssetPath(settingsGuid);
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    throw new NullReferenceException("Settingファイルが見つかりません。再インポートしてください。");
-                }
-
-                settingsBuff = AssetDatabase.LoadAssetAtPath<AvatarPoseSettings>(filePath);
-                return settingsBuff;
+                return cachedSettings;
             }
+
+            var path = AssetDatabase.GUIDToAssetPath(SettingsGuid);
+            cachedSettings = AssetDatabase.LoadAssetAtPath<AvatarPoseSettings>(path);
+            if (!cachedSettings)
+            {
+                throw new InvalidOperationException(
+                    "AvatarPoseLibrary settings could not be loaded. Reimport the package and try again.");
+            }
+
+            return cachedSettings;
         }
 
-        public static Version CurrentVersion
+        private static Version GetCurrentVersion()
         {
-            get
+            if (currentVersion != null)
             {
-                if (currentVersion == null)
-                {
-                    var request = Client.List(true, true);
-                    while (!request.IsCompleted) { }
-
-                    if (request.Status == StatusCode.Success)
-                    {
-                        var versionStr = request.Result.FirstOrDefault(pkg =>
-                            pkg.name == packageName)?.version ?? "";
-
-                        if (!string.IsNullOrWhiteSpace(versionStr))
-                        {
-                            currentVersion = Version.Parse(versionStr);
-                        }
-                        else
-                        {
-                            currentVersion = new Version(0, 0, 0); // デフォルト
-                        }
-                    }
-                }
-
                 return currentVersion;
             }
+
+            // 読み込み済みのPackageInfoから同期的に取得し、Editorのメインスレッドを停止させない。
+            var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(
+                typeof(DynamicVariables).Assembly);
+            currentVersion = Version.TryParse(packageInfo?.version, out var version)
+                ? version
+                : FallbackVersion;
+            return currentVersion;
         }
 
-        public static Version LatestVersion
+        private static Version GetLatestVersion()
         {
-            get
+            if (latestVersion != null)
             {
-                // 取得済みならそれを返す
-                if (latestVersion != null)
-                {
-                    return latestVersion;
-                }
-
-                // 取得中でなければタスクを開始
-                if (!isFetchedLatestVersion)
-                {
-                    isFetchedLatestVersion = true;
-                    FetchLatestVersionAsync();
-                }
-
-                // 完了するまではCurrentVersionを返す
-                return CurrentVersion;
+                return latestVersion;
             }
+
+            if (!isFetchingLatestVersion)
+            {
+                isFetchingLatestVersion = true;
+                _ = FetchLatestVersionAsync();
+            }
+
+            // リモート問い合わせ中は現在のバージョンを返し、インスペクターを待機させない。
+            return CurrentVersion;
         }
 
         private static async Task FetchLatestVersionAsync()
         {
-            using (UnityWebRequest request = UnityWebRequest.Get(analyticsURL))
+            try
             {
-                var tcs = new TaskCompletionSource<bool>();
-
-                var operation = request.SendWebRequest();
-                operation.completed += _ => tcs.SetResult(true);
-
-                await tcs.Task;
-
-                if (request.result == UnityWebRequest.Result.Success)
+                using (var request = UnityWebRequest.Get(VersionEndpoint))
                 {
-                    var data = JsonUtility.FromJson<AnalyticsResponse>(request.downloadHandler.text);
-                    if (!string.IsNullOrWhiteSpace(data.version))
+                    request.timeout = VersionRequestTimeoutSeconds;
+                    var completion = new TaskCompletionSource<bool>();
+                    request.SendWebRequest().completed += _ => completion.TrySetResult(true);
+                    await completion.Task;
+
+                    if (request.result != UnityWebRequest.Result.Success)
                     {
-                        latestVersion = Version.Parse(data.version);
-                    }
-                    else
-                    {
+                        Debug.LogWarning($"AvatarPoseLibrary: Version check failed: {request.error}");
                         latestVersion = CurrentVersion;
+                        return;
                     }
+
+                    var response = JsonUtility.FromJson<AnalyticsResponse>(request.downloadHandler.text);
+                    latestVersion = Version.TryParse(response?.version, out var version)
+                        ? version
+                        : CurrentVersion;
                 }
-                else
-                {
-                    Debug.LogError("Failed to fetch latest version: " + request.error);
-                    latestVersion = CurrentVersion;
-                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"AvatarPoseLibrary: Version check failed: {exception.Message}");
+                latestVersion = CurrentVersion;
+            }
+            finally
+            {
+                isFetchingLatestVersion = false;
             }
         }
-        
-        public static CameraSettings GetCameraSettings(AvatarPoseData poseLibrary)
+
+        public static CameraSettings GetCameraSettings(AvatarPoseData library)
         {
-            if(poseLibrary.enableFxAnimator && poseLibrary.enableLocomotionAnimator)
+            if (library == null)
             {
-                return Settings.cameraBoth;  
+                throw new ArgumentNullException(nameof(library));
             }
-            if(poseLibrary.enableFxAnimator && !poseLibrary.enableLocomotionAnimator)
+
+            if (library.enableFxAnimator && library.enableLocomotionAnimator)
+            {
+                return Settings.cameraBoth;
+            }
+
+            if (library.enableFxAnimator)
             {
                 return Settings.cameraFx;
             }
-            if (!poseLibrary.enableFxAnimator && poseLibrary.enableLocomotionAnimator)
-            {
-                return Settings.cameraLocomotion;
-            }
-            return new CameraSettings();
+
+            return library.enableLocomotionAnimator
+                ? Settings.cameraLocomotion
+                : new CameraSettings();
         }
 
-        class AnalyticsResponse
+        [Serializable]
+        private class AnalyticsResponse
         {
             public string version;
         }

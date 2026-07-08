@@ -15,12 +15,13 @@ namespace com.hhotatea.avatar_pose_library.logic
         private float AvatarHeight = 1.5f;
 
         private GameObject avatarGO;
+        private bool avatarWasActive;
         private GameObject cameraGO;
         private Transform headTransform;
         private Quaternion headInverse;
-        
-        private Dictionary<GameObject,int> currentLayers = new Dictionary<GameObject, int>();
-        
+
+        private Dictionary<GameObject, int> currentLayers = new Dictionary<GameObject, int>();
+
         private Camera camera;
         private RenderTexture renderTexture;
 
@@ -33,13 +34,16 @@ namespace com.hhotatea.avatar_pose_library.logic
                 return;
             }
 
+            avatarGO = contextObject;
+            avatarWasActive = avatarGO.activeSelf;
+
             var animator = descriptor.GetComponent<Animator>();
-            if (animator)
+            if (animator && animator.avatar != null && animator.avatar.isHuman)
             {
-                if (animator.avatar.isHuman)
+                // HeadBoneの取得
+                headTransform = animator.GetBoneTransform(HumanBodyBones.Head);
+                if (headTransform)
                 {
-                    // HeadBoneの取得
-                    headTransform = animator.GetBoneTransform(HumanBodyBones.Head);
                     headInverse = Quaternion.Inverse(headTransform.rotation);
                 }
             }
@@ -48,7 +52,6 @@ namespace com.hhotatea.avatar_pose_library.logic
             AvatarHeight = descriptor.ViewPosition.y * 1.2f + 0.1f;
 
             // アバターのセッティング
-            avatarGO = contextObject;
             // avatarGO.transform.position = avatarGO.transform.position + ConstVariables.ThumbnailOffset;
 
             SetLayerRecursively(avatarGO, DynamicVariables.Settings.thumbnailLayer);
@@ -77,39 +80,66 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// </summary>
         public Texture2D Capture(AnimationClip poseClip, CameraSettings cameraSettings)
         {
-            if (poseClip == null) return null;
+            if (poseClip == null || avatarGO == null || camera == null || renderTexture == null)
+            {
+                return null;
+            }
+
             avatarGO.SetActive(true);
-            AnimationMode.StartAnimationMode();
-
-            // 撮影の開始
-            AnimationMode.BeginSampling();
-            if (MotionBuilder.IsMoveAnimation(poseClip))
+            try
             {
-                // アニメーションはちょっと再生する
-                AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0.5f);
+                AnimationMode.StartAnimationMode();
+                // 撮影の開始
+                AnimationMode.BeginSampling();
+                try
+                {
+                    if (MotionBuilder.IsMoveAnimation(poseClip))
+                    {
+                        // アニメーションはちょっと再生する
+                        AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0.5f);
+                    }
+                    else
+                    {
+                        AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0f);
+                    }
+                }
+                finally
+                {
+                    AnimationMode.EndSampling();
+                }
+
+                // 頭にカメラを合わせる
+                ApplyCameraPos(cameraSettings);
+                camera.Render();
+
+                var currentActiveRT = RenderTexture.active;
+                try
+                {
+                    RenderTexture.active = renderTexture;
+                    var texture = new Texture2D(
+                        renderTexture.width,
+                        renderTexture.height,
+                        TextureFormat.RGBA32,
+                        false);
+                    texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+                    texture.Apply();
+                    return texture;
+                }
+                finally
+                {
+                    RenderTexture.active = currentActiveRT;
+                }
             }
-            else
+            finally
             {
-                AnimationMode.SampleAnimationClip(avatarGO, poseClip, 0f);
+                if (AnimationMode.InAnimationMode())
+                {
+                    AnimationMode.StopAnimationMode();
+                }
+                avatarGO.SetActive(false);
             }
-            AnimationMode.EndSampling();
-            
-            // 頭にカメラを合わせる
-            ApplyCameraPos(cameraSettings);
-            camera.Render();
-
-            RenderTexture currentActiveRT = RenderTexture.active;
-            RenderTexture.active = renderTexture;
-            Texture2D tex = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGBA32, false);
-            tex.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-            tex.Apply();
-            RenderTexture.active = currentActiveRT;
-
-            AnimationMode.StopAnimationMode();
-            avatarGO.SetActive(false);
-            return tex;
         }
-        
+
         void ApplyCameraPos(CameraSettings cameraSettings)
         {
             if (!headTransform) return;
@@ -119,8 +149,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             var distance = AvatarHeight / (2f * Mathf.Tan(cameraSettings.fieldOfView * 0.5f * Mathf.Deg2Rad));
             distance = distance * cameraSettings.cameraDistance;
             var headFoward = headTransform.rotation * headInverse * Vector3.forward;
-            var center = Vector3.Lerp( aPos, hPos, cameraSettings.posAvatarToHead);
-            var target = Vector3.Lerp( aPos, hPos, cameraSettings.posAvatarToHead);
+            var center = Vector3.Lerp(aPos, hPos, cameraSettings.posAvatarToHead);
+            var target = Vector3.Lerp(aPos, hPos, cameraSettings.posAvatarToHead);
 
             // カリング設定
             camera.nearClipPlane = distance * 0.01f;
@@ -130,14 +160,14 @@ namespace com.hhotatea.avatar_pose_library.logic
             cameraGO.transform.position = center
                 + distance * Vector3.Lerp(Vector3.forward, headFoward, cameraSettings.lookAtFace).normalized
                 + cameraSettings.cameraOffset * AvatarHeight;
-            cameraGO.transform.LookAt(target 
+            cameraGO.transform.LookAt(target
                 + cameraSettings.cameraTarget * AvatarHeight);
         }
 
         public Texture2D Capture(AnimationClip poseClip)
         {
             var cameraSettings = DynamicVariables.Settings.cameraBoth;
-            return Capture(poseClip,cameraSettings);
+            return Capture(poseClip, cameraSettings);
         }
 
         public void Dispose()
@@ -146,7 +176,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 ResetLayers();
             }
-            
+
             if (cameraGO != null)
             {
                 camera.targetTexture = null;
@@ -159,8 +189,11 @@ namespace com.hhotatea.avatar_pose_library.logic
                 renderTexture.Release();
                 renderTexture = null;
             }
-            
-            avatarGO.SetActive(true);
+
+            if (avatarGO != null)
+            {
+                avatarGO.SetActive(avatarWasActive);
+            }
         }
 
         /// <summary>
@@ -170,7 +203,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <param name="layer"></param>
         private void SetLayerRecursively(GameObject obj, int layer)
         {
-            currentLayers.Add(obj,obj.layer);
+            currentLayers.Add(obj, obj.layer);
             obj.layer = layer;
             foreach (Transform child in obj.transform)
             {
@@ -185,7 +218,10 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             foreach (var cl in currentLayers)
             {
-                cl.Key.layer = cl.Value;
+                if (cl.Key)
+                {
+                    cl.Key.layer = cl.Value;
+                }
             }
             currentLayers = new Dictionary<GameObject, int>();
         }

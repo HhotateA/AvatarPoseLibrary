@@ -16,7 +16,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 var installer = result.AddComponent<ModularAvatarMenuInstaller>();
                 installer.installTargetMenu = poseLibrary.target;
             }
-            
+
             var mResult = result.AddComponent<ModularAvatarMenuItem>();
             mResult.MenuSource = SubmenuSource.Children;
             mResult.Control.icon = poseLibrary.thumbnail;
@@ -42,7 +42,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 mSettings.Control.icon = DynamicVariables.Settings.Menu.setting.thumbnail;
                 mSettings.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
 
-                    SettingsMenu(mSettings.transform, poseLibrary);
+                SettingsMenu(mSettings.transform, poseLibrary);
             }
             else
             {
@@ -112,7 +112,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 DynamicVariables.Settings.Menu.reset.thumbnail,
                 $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}"
             );
-            
+
             // --- Radialメニューを追加 ---
             if (poseLibrary.enableHeightParam)
             {
@@ -125,7 +125,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
 
-            if(poseLibrary.enablePoseSpace)
+            if (poseLibrary.enablePoseSpace)
             {
                 CreateToggleMenu(
                     parent,
@@ -155,7 +155,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 );
             }
 
-            if(poseLibrary.EnableAudioMode)
+            if (poseLibrary.EnableAudioMode)
             {
                 CreateRadialMenu(
                     parent,
@@ -173,7 +173,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 mTracking.MenuSource = SubmenuSource.Children;
                 mTracking.Control.icon = DynamicVariables.Settings.Menu.tracking.thumbnail;
                 mTracking.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-                TrackingMenu(mTracking.transform,poseLibrary);
+                TrackingMenu(mTracking.transform, poseLibrary);
             }
         }
 
@@ -190,7 +190,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}"
                 );
             }
-            
+
             if (poseLibrary.enableLocomotionAnimator)
             {
                 CreateToggleMenu(
@@ -241,7 +241,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var item = obj.AddComponent<ModularAvatarMenuItem>();
             item.Control.icon = icon;
             item.Control.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
-            if(!string.IsNullOrWhiteSpace(parameterName))
+            if (!string.IsNullOrWhiteSpace(parameterName))
             {
                 item.Control.parameter = new VRCExpressionsMenu.Control.Parameter { name = parameterName };
             }

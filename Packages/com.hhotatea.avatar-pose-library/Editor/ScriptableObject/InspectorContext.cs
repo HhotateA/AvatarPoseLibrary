@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 namespace com.hhotatea.avatar_pose_library.component
-{ 
+{
     // [CreateAssetMenu(menuName = "HhotateA/InspectorContext")]
     public class InspectorContext : ScriptableObject
     {
@@ -54,7 +54,7 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string enablePoseSpaceTooltip = "カメラをアニメーションに追従する。";
         public string enableUseCache = "Enable Use Cache";
         [Multiline] public string enableUseCacheTooltip = "キャッシュを使用してビルドを高速化する。";
-        
+
         public string createCategoryLabel = "Create Category";
         [Multiline] public string createCategoryTooltip = "カテゴリーを新規作成。";
         public string deleteCategoryLabel = "Delete Category";
@@ -81,21 +81,21 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string pastePoseTooltip = "選択中のポーズを上書き。";
         public string pasteNewPoseLabel = "Paste Pose As New";
         [Multiline] public string pasteNewPoseTooltip = "ここにコピーを作成。";
-        
+
         public string autoThumbnailMenu = "Auto Thumbnail";
-        
+
         public string disableMenuLabel = "Disable All Pose";
         [Multiline] public string disableMenuTooltip = "一括で有効化。";
         public string enableMenuLabel = "Enable All Pose";
         [Multiline] public string enableMenuTooltip = "一括で無効化。";
 
         public string[] presetNames;
-        
-        
+
+
         [Multiline] public string updateMessage = "最新版アップデートがあります。VCCを確認してください。";
-        
+
         public Texture2D thumbnailBg;
-        
+
         public string headTrackingOption = "Head Lock";
         public string armTrackingOption = "Arm Lock";
         public string fingerTrackingOption = "Finger Lock";

@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using VRC.SDK3.Avatars.ScriptableObjects;
 using System.Security.Cryptography;
 using System.Text;
+using UnityEngine;
+using VRC.SDK3.Avatars.ScriptableObjects;
 
-namespace com.hhotatea.avatar_pose_library.model {
+namespace com.hhotatea.avatar_pose_library.model
+{
     [Serializable]
-    public class TrackingSetting {
+    public class TrackingSetting
+    {
         public bool head = true;
         public bool arm = true;
         public bool foot = true;
@@ -20,7 +22,8 @@ namespace com.hhotatea.avatar_pose_library.model {
     }
 
     [Serializable]
-    public class PoseEntry {
+    public class PoseEntry
+    {
         public string name;
         public bool autoThumbnail;
         public Texture2D thumbnail;
@@ -28,163 +31,198 @@ namespace com.hhotatea.avatar_pose_library.model {
         public AnimationClip afterAnimationClip;
         public AnimationClip animationClip;
         public AudioClip audioClip;
-        public VRCExpressionsMenu target = null;
+        public VRCExpressionsMenu target;
 
-        // 固定するパラメーターの選択
-        public TrackingSetting tracking;
+        // このポーズの再生中に適用するトラッキング設定。
+        public TrackingSetting tracking = new TrackingSetting();
 
-        // システムが使用
+        // AnimatorとExpression Menuの生成処理で使用する値。
         public string Parameter { get; set; }
         public int Value { get; set; }
         public int Index { get; set; }
 
-        public int[] GetAnimatorFlag () {
-            return new [] {
-                Index & 0xFF, // 0‒7 ビット目
-                    (Index >> 8) & 0xFF, // 8‒15 ビット目
-                    /*(Index >> 16) & 0xFF,  // 16‒23 ビット目
-                    (Index >> 24) & 0xFF   // 24‒31 ビット目*/
+        /// <summary>ポーズのインデックスをAnimatorで扱える8ビット単位のフラグに分割します。</summary>
+        public int[] GetAnimatorFlag()
+        {
+            return new[]
+            {
+                Index & 0xFF,
+                (Index >> 8) & 0xFF,
             };
         }
     }
 
     [Serializable]
-    public class PoseCategory {
+    public class PoseCategory
+    {
         public string name;
         public Texture2D thumbnail;
-        public List<PoseEntry> poses = new List<PoseEntry> ();
-        public VRCExpressionsMenu target = null;
+        public List<PoseEntry> poses = new List<PoseEntry>();
+        public VRCExpressionsMenu target;
 
-        // システムが使用
+        // このカテゴリ内のポーズで共有する生成済みパラメーター名。
         public string Parameter { get; set; }
     }
 
     [Serializable]
-    public class AvatarPoseData {
+    public class AvatarPoseData
+    {
         public string name = "";
         public Texture2D thumbnail;
-        public List<PoseCategory> categories = new List<PoseCategory> ();
+        public List<PoseCategory> categories = new List<PoseCategory>();
         public bool enableHeightParam = true;
         public bool enableSpeedParam = true;
         public bool enableMirrorParam = true;
-        public bool enableTrackingParam = true; // メニューにトラッキング項目を表示する
-        public bool enableDeepSync = true; // 同期を安定させる（ON推奨）
-        public bool enablePoseSpace = true; // 視線追従の機能を有効にする
-        public bool enableUseCache = false; // キャッシュを使用してビルド時間を短縮する
-        public bool enableAutoResetAnim = true; // リセット用アニメーションを自動生成する
+        public bool enableTrackingParam = true;
+        public bool enableDeepSync = true;
+        public bool enablePoseSpace = true;
+        public bool enableUseCache;
+        public bool enableAutoResetAnim = true;
         public bool enableLocomotionAnimator = true;
         public bool enableFxAnimator = true;
-        public bool suppressAdditiveAnimator = true; // additiveレイヤーの抑制設定
+        public bool suppressAdditiveAnimator = true;
 
-        public VRCExpressionsMenu target = null; // メニューの登録先を上書きする
-        public VRCExpressionsMenu settings = null; // 設定メニューのみ分離する
+        public VRCExpressionsMenu target;
+        public VRCExpressionsMenu settings;
         public WriteDefaultType writeDefaultType = WriteDefaultType.MatchAvatar;
 
-        // システムが使用
+        // ビルド時に生成する値のため、Unityのシリアライズ対象には含めません。
         public string Guid { get; set; }
-        public List<string> Parameters =>
-            categories.SelectMany (c => {
-                return c.poses.Select (p => p.Parameter);
-            }).Distinct ().ToList ();
 
-        public int PoseCount => categories.Sum(cat => cat.poses.Count);
-        public bool EnableAudioMode =>
-            categories.Any(
-                e => e.poses.Any(
-                    e => e.audioClip != null));
+        public List<string> Parameters => Categories
+            .SelectMany(category => category.poses ?? Enumerable.Empty<PoseEntry>())
+            .Select(pose => pose?.Parameter)
+            .Where(parameter => !string.IsNullOrEmpty(parameter))
+            .Distinct()
+            .ToList();
 
-        /// <summary>
-        /// パラメーターの最適化
-        /// 0906コミットにより、決定論的に動作
-        /// </summary>
-        public AvatarPoseData UpdateParameter (){
+        public int PoseCount => Categories.Sum(category => category.poses?.Count ?? 0);
+
+        public bool EnableAudioMode => Categories
+            .Any(category => category.poses?.Any(pose => pose?.audioClip != null) == true);
+
+        private IEnumerable<PoseCategory> Categories =>
+            categories?.Where(category => category != null) ?? Enumerable.Empty<PoseCategory>();
+
+        /// <summary>安定したIDと各ポーズのAnimator用の値を再生成します。</summary>
+        public AvatarPoseData UpdateParameter()
+        {
             Guid = ToHash();
-            int paramCount = 999;
-            int paramIndex = 1;
-            string paramName = "";
-            foreach (var category in categories) {
-                foreach (var pose in category.poses) {
-                    if (paramCount > ConstVariables.MaxAnimationState) {
-                        paramName = $"AnimPose_{Guid}_{paramIndex}";
-                        paramCount = 1;
+            var value = ConstVariables.MaxAnimationState + 1;
+            var poseIndex = 1;
+            var parameterName = "";
+
+            foreach (var category in Categories)
+            {
+                foreach (var pose in category.poses ?? Enumerable.Empty<PoseEntry>())
+                {
+                    if (pose == null)
+                    {
+                        continue;
                     }
 
-                    pose.Parameter = paramName;
-                    pose.Value = paramCount;
-                    pose.Index = paramIndex;
-                    paramCount++;
-                    paramIndex++;
+                    if (value > ConstVariables.MaxAnimationState)
+                    {
+                        parameterName = $"AnimPose_{Guid}_{poseIndex}";
+                        value = 1;
+                    }
+
+                    pose.Parameter = parameterName;
+                    pose.Value = value++;
+                    pose.Index = poseIndex++;
                 }
             }
+
             return this;
         }
 
         /// <summary>
-        /// 複数のデータを統合するスタティックメソッド
+        /// 明示的なExpression Menuが指定されていない同名のデータを統合します。
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static List<AvatarPoseData> Combine (AvatarPoseData[] data) {
-            var result = new List<AvatarPoseData> ();
-            var ps = data.Select (d => d.name).Distinct ().ToArray ();
-            foreach (var t in ps) {
-                var apd = new AvatarPoseData ();
-                apd.name = t;
-                foreach (var d in data) {
-                    if (d.name != apd.name) continue;
-                    if (d.target != null) continue;
-                    if(!apd.thumbnail)
+        public static List<AvatarPoseData> Combine(AvatarPoseData[] data)
+        {
+            if (data == null)
+            {
+                return new List<AvatarPoseData>();
+            }
+
+            var sources = data.Where(item => item != null).ToArray();
+            var result = new List<AvatarPoseData>();
+
+            foreach (var libraryName in sources.Select(item => item.name).Distinct())
+            {
+                var combined = new AvatarPoseData { name = libraryName };
+                var hasSettings = false;
+
+                foreach (var source in sources)
+                {
+                    if (source.name != libraryName || source.target != null)
                     {
-                        // 変数の同期
-                        apd.thumbnail = d.thumbnail;
-                        apd.enableHeightParam = d.enableHeightParam;
-                        apd.enableSpeedParam = d.enableSpeedParam;
-                        apd.enableMirrorParam = d.enableMirrorParam;
-                        apd.enableTrackingParam = d.enableTrackingParam;
-                        apd.enableDeepSync = d.enableDeepSync;
-                        apd.enablePoseSpace = d.enablePoseSpace;
-                        apd.enableUseCache = d.enableUseCache;
-                        apd.enableAutoResetAnim = d.enableAutoResetAnim;
-                        apd.writeDefaultType = d.writeDefaultType;
-                        apd.enableLocomotionAnimator = d.enableLocomotionAnimator;
-                        apd.enableFxAnimator = d.enableFxAnimator;
-                        apd.suppressAdditiveAnimator = d.suppressAdditiveAnimator;
+                        continue;
                     }
-                    apd.categories.AddRange(d.categories);
+
+                    if (!hasSettings)
+                    {
+                        combined.CopySettingsFrom(source);
+                        hasSettings = true;
+                    }
+
+                    combined.categories.AddRange(source.categories ?? Enumerable.Empty<PoseCategory>());
                 }
 
-                if (apd.categories.Count > 0) {
-                    apd.UpdateParameter ();
-                    result.Add (apd);
+                if (combined.categories.Count > 0)
+                {
+                    result.Add(combined.UpdateParameter());
                 }
             }
 
-            foreach (var apd in data) {
-                if (apd.target == null) continue;
-                apd.UpdateParameter ();
-                result.Add (apd);
+            foreach (var source in sources.Where(item => item.target != null))
+            {
+                result.Add(source.UpdateParameter());
             }
 
             return result;
         }
 
+        private void CopySettingsFrom(AvatarPoseData source)
+        {
+            thumbnail = source.thumbnail;
+            enableHeightParam = source.enableHeightParam;
+            enableSpeedParam = source.enableSpeedParam;
+            enableMirrorParam = source.enableMirrorParam;
+            enableTrackingParam = source.enableTrackingParam;
+            enableDeepSync = source.enableDeepSync;
+            enablePoseSpace = source.enablePoseSpace;
+            enableUseCache = source.enableUseCache;
+            enableAutoResetAnim = source.enableAutoResetAnim;
+            writeDefaultType = source.writeDefaultType;
+            enableLocomotionAnimator = source.enableLocomotionAnimator;
+            enableFxAnimator = source.enableFxAnimator;
+            suppressAdditiveAnimator = source.suppressAdditiveAnimator;
+        }
+
+        /// <summary>生成アセット名とキャッシュキーに使用する短いコンテンツハッシュを返します。</summary>
         public string ToHash()
         {
-            string json;
 #if UNITY_EDITOR
-            json = UnityEditor.EditorJsonUtility.ToJson(this, false);
+            var json = UnityEditor.EditorJsonUtility.ToJson(this, false);
 #else
-            json = JsonUtility.ToJson(this, false);
+            var json = JsonUtility.ToJson(this, false);
 #endif
             using var sha = SHA256.Create();
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(json ?? ""));
-            var sb = new StringBuilder(bytes.Length * 2);
-            foreach (var b in bytes) sb.AppendFormat("{0:x2}", b);
-            return sb.ToString ().Substring (0, ConstVariables.HashLong);
+            var hash = new StringBuilder(bytes.Length * 2);
+            foreach (var value in bytes)
+            {
+                hash.Append(value.ToString("x2"));
+            }
+
+            return hash.ToString(0, ConstVariables.HashLong);
         }
     }
 
-    public enum WriteDefaultType {
+    public enum WriteDefaultType
+    {
         MatchAvatar,
         OverrideTrue,
         OverrideFalse

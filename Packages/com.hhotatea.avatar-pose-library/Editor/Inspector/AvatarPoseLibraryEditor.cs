@@ -266,7 +266,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         private void EnsureInitialData()
         {
             // データの初期化
-            if (_library.isInitialized) return;
+            if (_library.isInitialized && _library.data != null) return;
             _library.data = new AvatarPoseData();
             _library.data.name = DynamicVariables.Settings.Menu.main.title;
             _library.data.thumbnail = DynamicVariables.Settings.Menu.main.thumbnail;
@@ -375,9 +375,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 if (combine.Count == 1)
                 {
                     var hash = combine[0].ToHash();
-                    Debug.Log($"AssetPoseLibrary.Editor: Deleate Cache {hash}");
+                    Debug.Log($"AvatarPoseLibrary.Editor: Delete cache {hash}");
                     var cache = new CacheSave(hash);
-                    cache.Deleate();
+                    cache.Delete();
                 }
             }
 
@@ -754,7 +754,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             // 一括の開閉処理
             y += Mathf.Max(thumbSz, _lineHeight) + Spacing;
             float btnW = Mathf.Max(GUI.skin.button.CalcSize(_openAllLabel).x, GUI.skin.button.CalcSize(_closeAllLabel).x) + 5f;
-            if(isExpanded)
+            if (isExpanded)
             {
                 if (GUI.Button(new Rect(rect.x + rect.width - btnW * 2 - 45, y, btnW, _lineHeight), _openAllLabel))
                     foreach (var t in Data.categories[index].poses)
@@ -904,7 +904,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 {
                     SetClipBuffer(p, (AnimationClip)clipProp.objectReferenceValue);
                     SetThumbnailBuffer(p, GenerateThumbnail(_library.gameObject, (AnimationClip)clipProp.objectReferenceValue));
-                    SetAnimWarm(p,(AnimationClip)clipProp.objectReferenceValue);
+                    SetAnimWarm(p, (AnimationClip)clipProp.objectReferenceValue);
                 }
                 if (GetThumbnailBuffer(p))
                 {
@@ -927,13 +927,13 @@ namespace com.hhotatea.avatar_pose_library.editor
             float infoY = rect.y + _lineHeight + Spacing + 4;
             var trProp = poseProp.FindPropertyRelative("tracking");
             var animWarm = GetAnimWarm(Data.categories[catIdx].poses[poseIdx]);
-            if(String.IsNullOrWhiteSpace(animWarm))
+            if (String.IsNullOrWhiteSpace(animWarm))
             {
                 _animationClipLabel.tooltip = DynamicVariables.Settings.Inspector.animationClipTooltip;
             }
             else
             {
-                Rect warnRect = new Rect(rightX + rightWidth*0.45f + _lineHeight, infoY, _lineHeight, _lineHeight);
+                Rect warnRect = new Rect(rightX + rightWidth * 0.45f + _lineHeight, infoY, _lineHeight, _lineHeight);
                 var warnIcon = EditorGUIUtility.IconContent(ConstVariables.warmIcon);
                 warnIcon.tooltip = animWarm;
                 GUI.Label(warnRect, warnIcon);
@@ -941,10 +941,10 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
 
             var newClip = (AnimationClip)EditorGUI.ObjectField(new Rect(rightX, infoY, rightWidth - Spacing, _lineHeight), _animationClipLabel, clipProp.objectReferenceValue, typeof(AnimationClip), false);
-            if (newClip != clipProp.objectReferenceValue) 
+            if (newClip != clipProp.objectReferenceValue)
             {
                 ApplyClipChange(poseProp, newClip);
-                SetAnimWarm(Data.categories[catIdx].poses[poseIdx],newClip);
+                SetAnimWarm(Data.categories[catIdx].poses[poseIdx], newClip);
             }
 
 
@@ -1039,7 +1039,10 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private void SyncLibraryTags()
         {
-            string[] duplicates = _library.GetLibraries().Select(e => e.data.name).ToArray();
+            string[] duplicates = _library.GetLibraries()
+                .Where(library => library.data != null)
+                .Select(library => library.data.name)
+                .ToArray();
             _libraryTagList = duplicates.Distinct().ToArray();
             _libraryTagIndex = Array.FindIndex(_libraryTagList, n => n == Data.name);
         }
@@ -1075,7 +1078,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private string CheckAnimationClipWarm(AnimationClip clip)
         {
-            if(AnimatorUtility.IsIncludeVRCShapeKey(clip))
+            if (AnimatorUtility.IsIncludeVRCShapeKey(clip))
             {
                 return DynamicVariables.Settings.Inspector.animationWarmVRCShapekey;
             }

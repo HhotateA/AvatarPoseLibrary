@@ -59,7 +59,7 @@ namespace com.hhotatea.avatar_pose_library.component
         {
             get
             {
-                for(int i = 0; i<settingsPresets.Length; i++)
+                for (int i = 0; i < settingsPresets.Length; i++)
                 {
                     if (i < Inspector.presetNames.Length)
                     {

@@ -5,7 +5,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string BaseName = "AvatarPoseLibrary";
         public const string OnPlayParamPrefix = "AnimPosePlay";
         public const string DummyParamPrefix = "AnimPoseDummy";
-        
+
         /// <summary>
         /// パラメーター名
         /// </summary>

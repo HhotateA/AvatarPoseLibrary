@@ -10,7 +10,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public MenuItem category;
         public MenuItem pose;
         public MenuItem tracking;
-    
+
         public MenuItem reset;
         public MenuItem setting;
         public MenuItem height;
@@ -24,7 +24,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public MenuItem mirror;
         public MenuItem poseSpace;
         public MenuItem volume;
-    
+
         [Serializable]
         public class MenuItem
         {

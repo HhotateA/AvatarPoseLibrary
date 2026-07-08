@@ -3,6 +3,13 @@ name: Increment Version
 on:
   workflow_dispatch:
   workflow_call:
+    outputs:
+      commit_sha:
+        description: バージョン更新後のコミットSHA
+        value: ${{ jobs.increment.outputs.commit_sha }}
+      version:
+        description: 更新後のパッケージバージョン
+        value: ${{ jobs.increment.outputs.version }}
     secrets:
       DEPLOY_KEY:
         required: true
@@ -13,11 +20,18 @@ permissions:
 jobs:
   increment:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event_name == 'workflow_dispatch' && format('package-release-{0}', github.repository) || github.run_id }}
+      queue: max
+    outputs:
+      commit_sha: ${{ steps.commit.outputs.commit_sha }}
+      version: ${{ steps.commit.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ github.token }}
+          ref: main
+          fetch-depth: 0
 
       - name: Setup SSH key for push
         run: |
@@ -29,20 +43,25 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
-      - name: Increment version in package.json
+      - name: Increment package version
         working-directory: Packages/com.hhotatea.avatar-pose-library
-        run: |
-          npm version patch --no-git-tag-version
+        run: npm version patch --no-git-tag-version
 
       - name: Commit and push changes
+        id: commit
         env:
           GIT_SSH_COMMAND: ssh -i /home/runner/.ssh/deploy_key -o IdentitiesOnly=yes -o UserKnownHostsFile=/home/runner/.ssh/known_hosts
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          version=$(node -p 'require("./Packages/com.hhotatea.avatar-pose-library/package.json").version')
           git add Packages/com.hhotatea.avatar-pose-library/package.json
-          git commit -m "Increment version to $(node -p 'require("./Packages/com.hhotatea.avatar-pose-library/package.json").version')" || exit 0
+          git commit -m "Increment version to ${version}"
           git remote set-url origin git@github.com:HhotateA/AvatarPoseLibrary.git
+          # 実行中にmainへ入った通常コミットを取り込み、non-fast-forwardを防ぐ。
+          git pull --rebase origin main
           git push origin HEAD:main
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"

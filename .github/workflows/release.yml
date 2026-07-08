@@ -1,99 +1,135 @@
 name: Build Release
 
-on: 
+on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      checkout_ref:
+        description: リリース対象のGit ref
+        required: false
+        type: string
     secrets:
       DISCORD_WEBHOOK_URL:
         required: false
 
 jobs:
-
-  # Validate Repository Configuration
   config:
     runs-on: ubuntu-latest
     outputs:
       config_package: ${{ steps.config_package.outputs.configPackage }}
     steps:
+      # リポジトリ変数が未設定の場合に、安全にリリースをスキップするための事前検証。
+      - name: Validate package config
+        id: config_package
+        env:
+          PACKAGE_NAME: ${{ vars.PACKAGE_NAME }}
+        run: |
+          if [[ -n "$PACKAGE_NAME" ]]; then
+            echo "configPackage=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configPackage=false" >> "$GITHUB_OUTPUT"
+          fi
 
-    # Ensure that required repository variable has been created for the Package
-    - name: Validate Package Config
-      id: config_package
-      run: |
-        if [ "${{ vars.PACKAGE_NAME }}" != "" ]; then
-          echo "configPackage=true" >> $GITHUB_OUTPUT;
-        else
-          echo "configPackage=false" >> $GITHUB_OUTPUT;
-        fi
-
-  # Build and release the Package
-  # If the repository is not configured properly, this job will be skipped
   build:
     needs: config
+    if: needs.config.outputs.config_package == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     env:
-      packagePath: Packages/${{ vars.PACKAGE_NAME }}
-    if: needs.config.outputs.config_package == 'true'
+      PACKAGE_PATH: Packages/${{ vars.PACKAGE_NAME }}
     steps:
-
-      # Checkout Local Repository
-      - name: Checkout
+      # バージョン更新後の固定SHAを使用し、後続のmain更新による取り違えを防ぐ。
+      - name: Checkout release ref
         uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
+          fetch-depth: 0
 
-      # Get the Package version based on the package.json file
-      - name: Get Version
+      - name: Get version
         id: version
         uses: zoexx/github-action-json-file-properties@b9f36ce6ee6fe2680cd3c32b2c62e22eade7e590
-        with: 
-            file_path: "${{ env.packagePath }}/package.json"
-            prop_path: "version"
-    
-      # Configure the Environment Variables needed for releasing the Package
-      - name: Set Environment Variables
-        run: |
-          echo "zipFile=${{ vars.PACKAGE_NAME }}-${{ steps.version.outputs.value }}".zip >> $GITHUB_ENV
-          echo "unityPackage=${{ vars.PACKAGE_NAME }}-${{ steps.version.outputs.value }}.unitypackage" >> $GITHUB_ENV
-          echo "version=${{ steps.version.outputs.value }}" >> $GITHUB_ENV
+        with:
+          file_path: "${{ env.PACKAGE_PATH }}/package.json"
+          prop_path: version
 
-      # Zip the Package for release
-      - name: Create Package Zip
-        working-directory: "${{ env.packagePath }}"
-        run: zip -r "${{ github.workspace }}/${{ env.zipFile }}" .
-      
-      # Build a list of .meta files for future use
-      - name: Track Package Meta Files
-        run: find "${{ env.packagePath }}/" -name \*.meta >> metaList
-      
-      # Make a UnityPackage version of the Package for release
-      - name: Create UnityPackage
+      - name: Set release environment
+        run: |
+          echo "ZIP_FILE=${{ vars.PACKAGE_NAME }}-${{ steps.version.outputs.value }}.zip" >> "$GITHUB_ENV"
+          echo "UNITY_PACKAGE=${{ vars.PACKAGE_NAME }}-${{ steps.version.outputs.value }}.unitypackage" >> "$GITHUB_ENV"
+          echo "VERSION=${{ steps.version.outputs.value }}" >> "$GITHUB_ENV"
+
+      - name: Create package zip
+        working-directory: "${{ env.PACKAGE_PATH }}"
+        run: |
+          archive="${{ github.workspace }}/${ZIP_FILE}"
+          zip -r "$archive" . \
+            -x './Tests/*' './Tests.meta' 'Tests/*' 'Tests.meta'
+          archive_entries=$(unzip -Z1 "$archive")
+          if grep -Eq '^(\./)?Tests(/|\.meta$)' <<< "$archive_entries"; then
+            echo "::error::Tests directory or Tests.meta was included in the package zip."
+            exit 1
+          fi
+
+      - name: Track package meta files
+        run: |
+          find "${PACKAGE_PATH}" \
+            -path "${PACKAGE_PATH}/Tests" -prune -o \
+            -path "${PACKAGE_PATH}/Tests.meta" -prune -o \
+            -name '*.meta' -print > metaList
+          if grep -Eq '(^|/)Tests(/|\.meta$)' metaList; then
+            echo "::error::Tests metadata was included in the Unity package input list."
+            exit 1
+          fi
+
+      - name: Create Unity package
         uses: pCYSl5EDgo/create-unitypackage@v1.2.3
         with:
-          package-path: ${{ env.unityPackage }}
+          package-path: ${{ env.UNITY_PACKAGE }}
           include-files: metaList
-      
-      # Make a release tag of the version from the package.json file 
-      - name: Create Tag
-        id: tag_version
+
+      - name: Validate release tag
+        id: release_tag
+        run: |
+          head_commit=$(git rev-parse --verify 'HEAD^{commit}')
+          echo "head_commit=${head_commit}" >> "$GITHUB_OUTPUT"
+          if git show-ref --verify --quiet "refs/tags/${VERSION}"; then
+            tag_commit=$(git rev-parse --verify "refs/tags/${VERSION}^{commit}")
+            if [[ "$tag_commit" != "$head_commit" ]]; then
+              echo "::error::Tag ${VERSION} points to ${tag_commit}, but this release was built from ${head_commit}."
+              exit 1
+            fi
+            echo "Tag ${VERSION} already points to ${head_commit}; skipping tag creation."
+            echo "should_create=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_create=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create tag
+        if: steps.release_tag.outputs.should_create == 'true'
         uses: rickstaa/action-create-tag@88dbf7ff6fe2405f8e8f6c6fdfd78829bc631f83
         with:
-          tag: "${{ env.version }}"
-      
-      # Publish the Release to GitHub
-      - name: Make Release
+          tag: "${{ env.VERSION }}"
+          commit_sha: ${{ steps.release_tag.outputs.head_commit }}
+
+      - name: Publish release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         with:
           files: |
-            ${{ env.zipFile }}
-            ${{ env.unityPackage }}
-            ${{ env.packagePath }}/package.json
-          tag_name: ${{ env.version }}
+            ${{ env.ZIP_FILE }}
+            ${{ env.UNITY_PACKAGE }}
+            ${{ env.PACKAGE_PATH }}/package.json
+          tag_name: ${{ env.VERSION }}
 
-      # DiscordNotice
       - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-            curl -H "Content-Type: application/json" \
-              -X POST \
-              -d "{\"content\": \"AvatarPoseLibrary v${{ env.version }} のリリースが完了しました。\"}" \
-              ${{ secrets.DISCORD_WEBHOOK_URL }}
+          if [[ -z "$DISCORD_WEBHOOK_URL" ]]; then
+            echo "Discord webhook is not configured; skipping notification."
+            exit 0
+          fi
+          jq -n --arg content "AvatarPoseLibrary v${VERSION} has been released." \
+            '{content: $content}' \
+            | curl --fail-with-body --header "Content-Type: application/json" \
+                --data @- "$DISCORD_WEBHOOK_URL"

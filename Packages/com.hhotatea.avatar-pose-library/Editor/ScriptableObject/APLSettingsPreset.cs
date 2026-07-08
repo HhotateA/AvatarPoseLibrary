@@ -7,7 +7,7 @@ namespace com.hhotatea.avatar_pose_library.component
     [CreateAssetMenu(menuName = "HhotateA/APLSettingsPreset")]
     public class APLSettingsPreset : ScriptableObject
     {
-        public string name{ get; set; }
+        public new string name { get; set; }
         public string defaultName;
         public bool heightParam = true;
         public bool speedParam = true;
