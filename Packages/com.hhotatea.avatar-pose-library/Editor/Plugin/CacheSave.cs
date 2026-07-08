@@ -13,9 +13,9 @@ namespace com.hhotatea.avatar_pose_library.editor
 {
     public class CacheSave
     {
-        string fileName;
-        string filePath;
-        CacheModel cacheAsset;
+        private readonly string fileName;
+        private readonly string filePath;
+        private CacheModel cacheAsset;
 
         public CacheSave(string guid)
         {
@@ -32,27 +32,33 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
-        public void Deleate()
+        public void Delete()
         {
             if (cacheAsset == null)
             {
                 return;
             }
-            DeleateAsset(cacheAsset.menuObject);
-            DeleateAsset(cacheAsset.paramObject);
-            DeleateAsset(cacheAsset);
+            DeleteAsset(cacheAsset.menuObject);
+            DeleteAsset(cacheAsset.paramObject);
+            DeleteAsset(cacheAsset);
             AssetDatabase.Refresh();
             cacheAsset = null;
         }
 
-        void DeleateAsset(Object o)
+        [Obsolete("Use Delete instead.")]
+        public void Deleate()
         {
-            if (o == null) return;
-            var existingPath = AssetDatabase.GetAssetPath(o);
+            Delete();
+        }
+
+        private static void DeleteAsset(Object asset)
+        {
+            if (asset == null) return;
+            var existingPath = AssetDatabase.GetAssetPath(asset);
             if (string.IsNullOrEmpty(existingPath)) return;
             if (AssetDatabase.DeleteAsset(existingPath))
             {
-                Debug.Log($"AssetPoseLibrary.CacheSave: Deleate cache at {existingPath}");
+                Debug.Log($"AvatarPoseLibrary.CacheSave: Deleted cache at {existingPath}");
             }
             else
             {
@@ -60,7 +66,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
-        void Create(CacheModel asset)
+        private void Create(CacheModel asset)
         {
             asset.name = Path.GetFileNameWithoutExtension(filePath);
             AssetDatabase.CreateAsset(asset, filePath);
@@ -69,7 +75,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             cacheAsset = asset;
         }
 
-        bool IsEnableCache()
+        private bool IsCacheValid()
         {
             if (!cacheAsset) return false;
             if (!cacheAsset.locomotionLayer) return false;
@@ -125,17 +131,17 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         public CacheModel LoadAsset()
         {
-            if (!IsEnableCache())
+            if (!IsCacheValid())
             {
                 return null;
             }
-            CacheModel asset = ScriptableObject.CreateInstance<CacheModel>();
+            var asset = ScriptableObject.CreateInstance<CacheModel>();
             asset.locomotionLayer = cacheAsset.locomotionLayer;
             asset.paramLayer = cacheAsset.paramLayer;
             asset.trackingLayer = cacheAsset.trackingLayer;
-            asset.menuObject = GameObject.Instantiate(cacheAsset.menuObject);
+            asset.menuObject = Object.Instantiate(cacheAsset.menuObject);
             asset.menuObject.name = cacheAsset.libraryName;
-            asset.paramObject = GameObject.Instantiate(cacheAsset.paramObject);
+            asset.paramObject = Object.Instantiate(cacheAsset.paramObject);
             return asset;
         }
 
@@ -143,13 +149,13 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             if (asset == null)
             {
-                Debug.LogError($"AvatarPoseLibrary.CacheSave: Asset is null {asset.name}");
+                Debug.LogError("AvatarPoseLibrary.CacheSave: Cannot save a null cache asset.");
                 return false;
             }
 
             try
             {
-                Deleate();
+                Delete();
                 Create(asset);
 
                 asset.version = DynamicVariables.CurrentVersion.ToString();
@@ -157,8 +163,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                 SaveAnimator(asset.locomotionLayer, filePath);
                 SaveAnimator(asset.paramLayer, filePath);
                 SaveAnimator(asset.trackingLayer, filePath);
-                asset.menuObject = SaveGameObject(asset.menuObject, filePath);
-                asset.paramObject = SaveGameObject(asset.paramObject, filePath);
+                asset.menuObject = SaveGameObject(asset.menuObject);
+                asset.paramObject = SaveGameObject(asset.paramObject);
 
                 EditorUtility.SetDirty(asset);
                 AssetDatabase.SaveAssets();
@@ -174,60 +180,52 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         }
 
-        GameObject SaveGameObject(GameObject go, string path)
+        private GameObject SaveGameObject(GameObject gameObject)
         {
             var prefabName = System.Guid.NewGuid().ToString("N").Substring(0, ConstVariables.HashLong);
             var prefabPath = EnsureFilePath(Path.ChangeExtension(prefabName, "prefab"));
-            var prefab = PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
-            GameObject.DestroyImmediate(go);
+            var prefab = PrefabUtility.SaveAsPrefabAsset(gameObject, prefabPath);
+            Object.DestroyImmediate(gameObject);
             return prefab;
         }
 
-        void SaveAnimator(AnimatorController ac, string path)
+        private static void SaveAnimator(AnimatorController controller, string path)
         {
-            if (ac == null) return;
-            AddAsset(ac, path);
-            foreach (var l in ac.layers)
+            if (controller == null) return;
+            AddAsset(controller, path);
+            foreach (var layer in controller.layers)
             {
-                SaveStateMachine(l.stateMachine, path);
+                SaveStateMachine(layer.stateMachine, path);
             }
         }
 
-        void SaveStateMachine(AnimatorStateMachine st, string path)
+        private static void SaveStateMachine(AnimatorStateMachine stateMachine, string path)
         {
-            if (st == null) return;
-            AddAsset(st, path);
-            foreach (var t in st.anyStateTransitions)
+            if (stateMachine == null) return;
+            AddAsset(stateMachine, path);
+            foreach (var transition in stateMachine.anyStateTransitions)
             {
-                AddAsset(t, path);
+                AddAsset(transition, path);
             }
-            foreach (var t in st.entryTransitions)
+            foreach (var transition in stateMachine.entryTransitions)
             {
-                AddAsset(t, path);
+                AddAsset(transition, path);
             }
-            foreach (var s in st.stateMachines)
+            foreach (var childStateMachine in stateMachine.stateMachines)
             {
-                SaveStateMachine(s.stateMachine, path);
+                SaveStateMachine(childStateMachine.stateMachine, path);
             }
-            foreach (var s in st.states)
+            foreach (var childState in stateMachine.states)
             {
-                SaveState(s.state, path);
+                SaveState(childState.state, path);
             }
-            foreach (var t in st.anyStateTransitions)
+            foreach (var behaviour in stateMachine.behaviours)
             {
-                AddAsset(t, path);
-            }
-            foreach (var t in st.entryTransitions)
-            {
-                AddAsset(t, path);
-            }
-            foreach (var b in st.behaviours)
-            {
-                AddAsset(b, path);
+                AddAsset(behaviour, path);
             }
         }
 
-        void SaveState(AnimatorState st, string path)
+        private static void SaveState(AnimatorState st, string path)
         {
             if (st == null) return;
             AddAsset(st, path);
@@ -242,7 +240,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             SaveMotion(st.motion, path);
         }
 
-        void SaveMotion(Motion mt, string path)
+        private static void SaveMotion(Motion mt, string path)
         {
             if (mt == null) return;
             AddAsset(mt, path);
@@ -255,7 +253,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             }
         }
 
-        void AddAsset(Object o, string path)
+        private static void AddAsset(Object o, string path)
         {
             if (o == null) return;
             var existingPath = AssetDatabase.GetAssetPath(o);
@@ -265,7 +263,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             EditorUtility.SetDirty(o);
         }
 
-        string EnsureFilePath(string fileName)
+        private static string EnsureFilePath(string fileName)
         {
             var folderPath = DynamicVariables.Settings.cachePath;
             if (!Directory.Exists(folderPath))

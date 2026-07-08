@@ -20,5 +20,7 @@ jobs:
     needs: increment-version
     if: github.event.pull_request.merged == true
     uses: ./.github/workflows/release.yml
+    with:
+      checkout_ref: main
     secrets:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}

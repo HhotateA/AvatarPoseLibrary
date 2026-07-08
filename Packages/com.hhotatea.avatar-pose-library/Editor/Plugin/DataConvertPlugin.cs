@@ -8,8 +8,6 @@ using nadena.dev.modular_avatar.core;
 using nadena.dev.ndmf;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
-using UnityEditor.Animations;
-using UnityEditor.VersionControl;
 using AnimatorUtility = com.hhotatea.avatar_pose_library.logic.AnimatorUtility;
 
 [assembly: ExportsPlugin(typeof(DataConvertPlugin))]
@@ -39,7 +37,10 @@ namespace com.hhotatea.avatar_pose_library.editor
                         go.transform.SetParent(root?.transform ?? ctx.AvatarRootObject.transform);
 
                         var assets = GetAssetCache(d, d.enableUseCache);
-                        if (d.EnableAudioMode) BuildAudioSource(ctx.AvatarRootObject.transform, d);
+                        if (d.EnableAudioMode)
+                        {
+                            BuildAudioSource(ctx.AvatarRootObject.transform, d);
+                        }
                         BuildRuntimeAnimator(go, assets, d, ctx.AvatarRootObject);
                         BuildRuntimeMenu(go, assets, root?.transform, ctx.AvatarRootObject.transform);
                         BuildRuntimeParameter(go, assets);
@@ -67,15 +68,12 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 return cache.LoadAsset();
             }
-            else
-            {
-                return asset;
-            }
+            return asset;
         }
 
         CacheModel CreateAssets(AvatarPoseData data)
         {
-            bool overrideWriteDefault = (data.writeDefaultType == WriteDefaultType.OverrideTrue);
+            var overrideWriteDefault = data.writeDefaultType == WriteDefaultType.OverrideTrue;
 
             var cache = ScriptableObject.CreateInstance<CacheModel>();
             cache.locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data, overrideWriteDefault);
@@ -93,37 +91,38 @@ namespace com.hhotatea.avatar_pose_library.editor
         void BuildRuntimeAnimator(GameObject obj, CacheModel assets, AvatarPoseData data, GameObject root)
         {
             var result = new GameObject();
-            bool matchAvatarWriteDefaults = (data.writeDefaultType == WriteDefaultType.MatchAvatar);
+            var matchAvatarWriteDefaults = data.writeDefaultType == WriteDefaultType.MatchAvatar;
 
             var ma_base = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_base.layerPriority = 1;
-            ma_base.animator = assets.locomotionLayer;
-            ma_base.pathMode = MergeAnimatorPathMode.Absolute;
-            ma_base.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
-            ma_base.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
+            ConfigureMergeAnimator(
+                ma_base,
+                assets.locomotionLayer,
+                VRCAvatarDescriptor.AnimLayerType.Base,
+                matchAvatarWriteDefaults);
 
             var ma_action = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_action.layerPriority = 1;
-            ma_action.animator = assets.locomotionLayer;
-            ma_action.pathMode = MergeAnimatorPathMode.Absolute;
-            ma_action.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
-            ma_action.layerType = VRCAvatarDescriptor.AnimLayerType.Action;
+            ConfigureMergeAnimator(
+                ma_action,
+                assets.locomotionLayer,
+                VRCAvatarDescriptor.AnimLayerType.Action,
+                matchAvatarWriteDefaults);
 
             var ma_fx = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_fx.layerPriority = 1;
-            ma_fx.animator = data.enableAutoResetAnim ?
-                AnimatorUtility.ReplaceResetAnimation(assets.paramLayer, data, root) :
-                assets.paramLayer;
-            ma_fx.pathMode = MergeAnimatorPathMode.Absolute;
-            ma_fx.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
-            ma_fx.layerType = VRCAvatarDescriptor.AnimLayerType.FX;
+            var fxAnimator = data.enableAutoResetAnim
+                ? AnimatorUtility.ReplaceResetAnimation(assets.paramLayer, data, root)
+                : assets.paramLayer;
+            ConfigureMergeAnimator(
+                ma_fx,
+                fxAnimator,
+                VRCAvatarDescriptor.AnimLayerType.FX,
+                matchAvatarWriteDefaults);
 
             var ma_tracking = result.AddComponent<ModularAvatarMergeAnimator>();
-            ma_tracking.layerPriority = 1;
-            ma_tracking.animator = assets.trackingLayer;
-            ma_tracking.pathMode = MergeAnimatorPathMode.Absolute;
-            ma_tracking.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
-            ma_tracking.layerType = VRCAvatarDescriptor.AnimLayerType.Base;
+            ConfigureMergeAnimator(
+                ma_tracking,
+                assets.trackingLayer,
+                VRCAvatarDescriptor.AnimLayerType.Base,
+                matchAvatarWriteDefaults);
 
             result.transform.SetParent(obj.transform);
         }
@@ -147,7 +146,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 return;
             }
 
-            if (IsItenRoot(main))
+            if (IsItemRoot(main))
             {
                 // 親オブジェクトがMAMenuGroup等の場合
                 var parent = main.parent;
@@ -182,7 +181,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             audio.pitch = DynamicVariables.Settings.audioPitch;
         }
 
-        bool IsItenRoot(Transform root)
+        private static bool IsItemRoot(Transform root)
         {
             if (root == null)
             {
@@ -208,7 +207,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 if (item.Control.type == VRCExpressionsMenu.Control.ControlType.SubMenu &&
                     item.MenuSource == SubmenuSource.Children)
+                {
                     return true;
+                }
             }
 
             return false;
@@ -223,6 +224,19 @@ namespace com.hhotatea.avatar_pose_library.editor
         {
             var result = assets.paramObject;
             result.transform.SetParent(obj.transform);
+        }
+
+        private static void ConfigureMergeAnimator(
+            ModularAvatarMergeAnimator mergeAnimator,
+            RuntimeAnimatorController animator,
+            VRCAvatarDescriptor.AnimLayerType layerType,
+            bool matchAvatarWriteDefaults)
+        {
+            mergeAnimator.layerPriority = 1;
+            mergeAnimator.animator = animator;
+            mergeAnimator.pathMode = MergeAnimatorPathMode.Absolute;
+            mergeAnimator.matchAvatarWriteDefaults = matchAvatarWriteDefaults;
+            mergeAnimator.layerType = layerType;
         }
     }
 }

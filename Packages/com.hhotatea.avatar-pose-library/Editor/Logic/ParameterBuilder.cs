@@ -1,5 +1,4 @@
 using com.hhotatea.avatar_pose_library.model;
-using com.hhotatea.avatar_pose_library.editor;
 using nadena.dev.modular_avatar.core;
 using UnityEngine;
 
@@ -7,193 +6,140 @@ namespace com.hhotatea.avatar_pose_library.logic
 {
     public static class ParameterBuilder
     {
-        public static GameObject BuildPoseParameter(AvatarPoseData poseLibrary)
+        public static GameObject BuildPoseParameter(AvatarPoseData library)
         {
             var result = new GameObject("");
-            var mResult = result.AddComponent<ModularAvatarParameters>();
-            foreach (var parameter in poseLibrary.Parameters)
+            var parameters = result.AddComponent<ModularAvatarParameters>();
+
+            foreach (var parameter in library.Parameters)
             {
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = parameter,
-                    syncType = ParameterSyncType.Int,
-                    localOnly = true,
-                    defaultValue = 0,
-                    saved = false,
-                });
+                AddParameter(parameters, parameter, ParameterSyncType.Int, true);
             }
 
-            for (int i = 0; i < ConstVariables.PoseFlagCount; i++)
+            for (var index = 0; index < ConstVariables.PoseFlagCount; index++)
             {
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = $"{ConstVariables.FlagParamPrefix}_{poseLibrary.Guid}_{i}",
-                    syncType = ParameterSyncType.Int,
-                    localOnly = poseLibrary.PoseCount < (1 << i * 8),
-                    defaultValue = 0,
-                    saved = false,
-                });
+                AddParameter(
+                    parameters,
+                    $"{ConstVariables.FlagParamPrefix}_{library.Guid}_{index}",
+                    ParameterSyncType.Int,
+                    library.PoseCount < 1 << index * 8);
             }
 
-            if (poseLibrary.enableHeightParam)
+            if (library.enableHeightParam)
             {
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = $"{ConstVariables.HeightParamPrefix}_{poseLibrary.Guid}",
-                    syncType = ParameterSyncType.Float,
-                    localOnly = false,
-                    defaultValue = 0.5f,
-                    saved = true,
-                });
+                AddParameter(
+                    parameters,
+                    Name(ConstVariables.HeightParamPrefix, library.Guid),
+                    ParameterSyncType.Float,
+                    false,
+                    0.5f,
+                    true);
             }
 
-            if (poseLibrary.enableSpeedParam)
+            if (library.enableSpeedParam)
             {
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.Guid}",
-                    syncType = ParameterSyncType.Float,
-                    localOnly = false,
-                    defaultValue = 0.5f,
-                    saved = false,
-                });
+                AddParameter(
+                    parameters,
+                    Name(ConstVariables.SpeedParamPrefix, library.Guid),
+                    ParameterSyncType.Float,
+                    false,
+                    0.5f);
             }
 
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = true,
-                defaultValue = 0,
-                saved = false,
-            });
+            AddParameter(parameters, Name(ConstVariables.BaseParamPrefix, library.Guid), ParameterSyncType.Bool, true);
+            AddParameter(parameters, Name(ConstVariables.HeadParamPrefix, library.Guid), ParameterSyncType.Bool, true);
+            AddParameter(parameters, Name(ConstVariables.ArmParamPrefix, library.Guid), ParameterSyncType.Bool, true);
+            AddParameter(parameters, Name(ConstVariables.FootParamPrefix, library.Guid), ParameterSyncType.Bool, true);
+            AddParameter(
+                parameters,
+                Name(ConstVariables.FingerParamPrefix, library.Guid),
+                ParameterSyncType.Bool,
+                !library.enableDeepSync);
+            AddParameter(
+                parameters,
+                Name(ConstVariables.FaceParamPrefix, library.Guid),
+                ParameterSyncType.Bool,
+                !library.enableFxAnimator || !library.enableDeepSync);
+            AddParameter(
+                parameters,
+                Name(ConstVariables.ActionParamPrefix, library.Guid),
+                ParameterSyncType.Bool,
+                !library.enableDeepSync);
+            AddParameter(parameters, Name(ConstVariables.ResetParamPrefix, library.Guid), ParameterSyncType.Bool, true);
 
-            mResult.parameters.Add(new ParameterConfig
+            if (library.enableMirrorParam)
             {
-                nameOrPrefix = $"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = true,
-                defaultValue = 0,
-                saved = false,
-            });
-
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = true,
-                defaultValue = 0,
-                saved = false,
-            });
-
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.FootParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = true,
-                defaultValue = 0,
-                saved = false,
-            });
-
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.FingerParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = !poseLibrary.enableDeepSync,
-                defaultValue = 0,
-                saved = false,
-            });
-
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.FaceParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = !poseLibrary.enableFxAnimator || !poseLibrary.enableDeepSync,
-                defaultValue = 0,
-                saved = false,
-            });
-
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = !poseLibrary.enableDeepSync,
-                defaultValue = 0,
-                saved = false,
-            });
-
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = true,
-                defaultValue = 0,
-                saved = false,
-            });
-
-            if (poseLibrary.enableMirrorParam)
-            {
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.Guid}",
-                    syncType = ParameterSyncType.Bool,
-                    localOnly = false,
-                    defaultValue = 0,
-                    saved = true,
-                });
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{poseLibrary.Guid}",
-                    syncType = ParameterSyncType.Float,
-                    localOnly = true,
-                    defaultValue = 0,
-                    saved = false,
-                });
+                AddParameter(
+                    parameters,
+                    Name(ConstVariables.MirrorParamPrefix, library.Guid),
+                    ParameterSyncType.Bool,
+                    false,
+                    saved: true);
+                AddParameter(
+                    parameters,
+                    Name(ConstVariables.MirrorCycleOffsetParamPrefix, library.Guid),
+                    ParameterSyncType.Float,
+                    true);
             }
 
-            if (poseLibrary.enablePoseSpace)
+            if (library.enablePoseSpace)
             {
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = $"{ConstVariables.PoseSpaceParamPrefix}_{poseLibrary.Guid}",
-                    syncType = ParameterSyncType.Bool,
-                    localOnly = true,
-                    defaultValue = 1,
-                    saved = true,
-                });
+                AddParameter(
+                    parameters,
+                    Name(ConstVariables.PoseSpaceParamPrefix, library.Guid),
+                    ParameterSyncType.Bool,
+                    true,
+                    1f,
+                    true);
             }
 
-            if (poseLibrary.EnableAudioMode)
+            if (library.EnableAudioMode)
             {
-                mResult.parameters.Add(new ParameterConfig
-                {
-                    nameOrPrefix = $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
-                    syncType = ParameterSyncType.Float,
-                    localOnly = false,
-                    defaultValue = 1,
-                    saved = true,
-                });
+                AddParameter(
+                    parameters,
+                    Name(ConstVariables.AudioParamPrefix, library.Guid),
+                    ParameterSyncType.Float,
+                    false,
+                    1f,
+                    true);
             }
 
-            // 特殊変数
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = !poseLibrary.enableDeepSync,
-                defaultValue = 0,
-                saved = false,
-            });
-            mResult.parameters.Add(new ParameterConfig
-            {
-                nameOrPrefix = $"{ConstVariables.HeightUpdateParamPrefix}_{poseLibrary.Guid}",
-                syncType = ParameterSyncType.Bool,
-                localOnly = true,
-                defaultValue = 0,
-                saved = false,
-            });
+            // 生成したAnimatorレイヤー間の連携に使用する実行時専用パラメーター。
+            AddParameter(
+                parameters,
+                Name(ConstVariables.OnPlayParamPrefix, library.Guid),
+                ParameterSyncType.Bool,
+                !library.enableDeepSync);
+            AddParameter(
+                parameters,
+                Name(ConstVariables.HeightUpdateParamPrefix, library.Guid),
+                ParameterSyncType.Bool,
+                true);
 
             return result;
+        }
+
+        private static void AddParameter(
+            ModularAvatarParameters parameters,
+            string name,
+            ParameterSyncType syncType,
+            bool localOnly,
+            float defaultValue = 0f,
+            bool saved = false)
+        {
+            parameters.parameters.Add(new ParameterConfig
+            {
+                nameOrPrefix = name,
+                syncType = syncType,
+                localOnly = localOnly,
+                defaultValue = defaultValue,
+                saved = saved,
+            });
+        }
+
+        private static string Name(string prefix, string guid)
+        {
+            return $"{prefix}_{guid}";
         }
     }
 }

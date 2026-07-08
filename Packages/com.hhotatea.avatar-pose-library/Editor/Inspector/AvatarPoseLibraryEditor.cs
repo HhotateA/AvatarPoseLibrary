@@ -375,9 +375,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 if (combine.Count == 1)
                 {
                     var hash = combine[0].ToHash();
-                    Debug.Log($"AssetPoseLibrary.Editor: Deleate Cache {hash}");
+                    Debug.Log($"AvatarPoseLibrary.Editor: Delete cache {hash}");
                     var cache = new CacheSave(hash);
-                    cache.Deleate();
+                    cache.Delete();
                 }
             }
 

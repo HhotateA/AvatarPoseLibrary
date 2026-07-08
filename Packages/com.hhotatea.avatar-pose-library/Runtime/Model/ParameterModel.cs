@@ -31,23 +31,23 @@ namespace com.hhotatea.avatar_pose_library.model
         public AnimationClip afterAnimationClip;
         public AnimationClip animationClip;
         public AudioClip audioClip;
-        public VRCExpressionsMenu target = null;
+        public VRCExpressionsMenu target;
 
-        // 固定するパラメーターの選択
-        public TrackingSetting tracking;
+        // このポーズの再生中に適用するトラッキング設定。
+        public TrackingSetting tracking = new TrackingSetting();
 
-        // システムが使用
+        // AnimatorとExpression Menuの生成処理で使用する値。
         public string Parameter { get; set; }
         public int Value { get; set; }
         public int Index { get; set; }
 
+        /// <summary>ポーズのインデックスをAnimatorで扱える8ビット単位のフラグに分割します。</summary>
         public int[] GetAnimatorFlag()
         {
-            return new[] {
-                Index & 0xFF, // 0‒7 ビット目
-                    (Index >> 8) & 0xFF, // 8‒15 ビット目
-                    /*(Index >> 16) & 0xFF,  // 16‒23 ビット目
-                    (Index >> 24) & 0xFF   // 24‒31 ビット目*/
+            return new[]
+            {
+                Index & 0xFF,
+                (Index >> 8) & 0xFF,
             };
         }
     }
@@ -58,9 +58,9 @@ namespace com.hhotatea.avatar_pose_library.model
         public string name;
         public Texture2D thumbnail;
         public List<PoseEntry> poses = new List<PoseEntry>();
-        public VRCExpressionsMenu target = null;
+        public VRCExpressionsMenu target;
 
-        // システムが使用
+        // このカテゴリ内のポーズで共有する生成済みパラメーター名。
         public string Parameter { get; set; }
     }
 
@@ -73,105 +73,112 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableHeightParam = true;
         public bool enableSpeedParam = true;
         public bool enableMirrorParam = true;
-        public bool enableTrackingParam = true; // メニューにトラッキング項目を表示する
-        public bool enableDeepSync = true; // 同期を安定させる（ON推奨）
-        public bool enablePoseSpace = true; // 視線追従の機能を有効にする
-        public bool enableUseCache = false; // キャッシュを使用してビルド時間を短縮する
-        public bool enableAutoResetAnim = true; // リセット用アニメーションを自動生成する
+        public bool enableTrackingParam = true;
+        public bool enableDeepSync = true;
+        public bool enablePoseSpace = true;
+        public bool enableUseCache;
+        public bool enableAutoResetAnim = true;
         public bool enableLocomotionAnimator = true;
         public bool enableFxAnimator = true;
-        public bool suppressAdditiveAnimator = true; // additiveレイヤーの抑制設定
+        public bool suppressAdditiveAnimator = true;
 
-        public VRCExpressionsMenu target = null; // メニューの登録先を上書きする
-        public VRCExpressionsMenu settings = null; // 設定メニューのみ分離する
+        public VRCExpressionsMenu target;
+        public VRCExpressionsMenu settings;
         public WriteDefaultType writeDefaultType = WriteDefaultType.MatchAvatar;
 
-        // システムが使用
+        // ビルド時に生成する値のため、Unityのシリアライズ対象には含めません。
         public string Guid { get; set; }
-        public List<string> Parameters => categories
-            .SelectMany(category => category.poses)
-            .Select(pose => pose.Parameter)
+
+        public List<string> Parameters => Categories
+            .SelectMany(category => category.poses ?? Enumerable.Empty<PoseEntry>())
+            .Select(pose => pose?.Parameter)
+            .Where(parameter => !string.IsNullOrEmpty(parameter))
             .Distinct()
             .ToList();
 
-        public int PoseCount => categories.Sum(cat => cat.poses.Count);
-        public bool EnableAudioMode => categories
-            .Any(category => category.poses.Any(pose => pose.audioClip != null));
+        public int PoseCount => Categories.Sum(category => category.poses?.Count ?? 0);
 
-        /// <summary>
-        /// パラメーターの最適化
-        /// 0906コミットにより、決定論的に動作
-        /// </summary>
+        public bool EnableAudioMode => Categories
+            .Any(category => category.poses?.Any(pose => pose?.audioClip != null) == true);
+
+        private IEnumerable<PoseCategory> Categories =>
+            categories?.Where(category => category != null) ?? Enumerable.Empty<PoseCategory>();
+
+        /// <summary>安定したIDと各ポーズのAnimator用の値を再生成します。</summary>
         public AvatarPoseData UpdateParameter()
         {
             Guid = ToHash();
-            var paramCount = 999;
-            var paramIndex = 1;
-            var paramName = "";
-            foreach (var category in categories)
-            {
-                foreach (var pose in category.poses)
-                {
-                    if (paramCount > ConstVariables.MaxAnimationState)
-                    {
-                        paramName = $"AnimPose_{Guid}_{paramIndex}";
-                        paramCount = 1;
-                    }
+            var value = ConstVariables.MaxAnimationState + 1;
+            var poseIndex = 1;
+            var parameterName = "";
 
-                    pose.Parameter = paramName;
-                    pose.Value = paramCount;
-                    pose.Index = paramIndex;
-                    paramCount++;
-                    paramIndex++;
-                }
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// 複数のデータを統合するスタティックメソッド
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static List<AvatarPoseData> Combine(AvatarPoseData[] data)
-        {
-            var result = new List<AvatarPoseData>();
-            var names = data.Select(item => item.name).Distinct();
-            foreach (var name in names)
+            foreach (var category in Categories)
             {
-                var combined = new AvatarPoseData { name = name };
-                foreach (var source in data)
+                foreach (var pose in category.poses ?? Enumerable.Empty<PoseEntry>())
                 {
-                    if (source.name != combined.name || source.target != null)
+                    if (pose == null)
                     {
                         continue;
                     }
 
-                    if (!combined.thumbnail)
+                    if (value > ConstVariables.MaxAnimationState)
                     {
-                        combined.CopySettingsFrom(source);
+                        parameterName = $"AnimPose_{Guid}_{poseIndex}";
+                        value = 1;
                     }
-                    combined.categories.AddRange(source.categories);
-                }
 
-                if (combined.categories.Count == 0)
-                {
-                    continue;
+                    pose.Parameter = parameterName;
+                    pose.Value = value++;
+                    pose.Index = poseIndex++;
                 }
-
-                combined.UpdateParameter();
-                result.Add(combined);
             }
 
-            foreach (var item in data)
+            return this;
+        }
+
+        /// <summary>
+        /// 明示的なExpression Menuが指定されていない同名のデータを統合します。
+        /// </summary>
+        public static List<AvatarPoseData> Combine(AvatarPoseData[] data)
+        {
+            if (data == null)
             {
-                if (item.target == null)
+                return new List<AvatarPoseData>();
+            }
+
+            var sources = data.Where(item => item != null).ToArray();
+            var result = new List<AvatarPoseData>();
+
+            foreach (var libraryName in sources.Select(item => item.name).Distinct())
+            {
+                var combined = new AvatarPoseData { name = libraryName };
+                var hasSettings = false;
+
+                foreach (var source in sources)
                 {
-                    continue;
+                    if (source.name != libraryName || source.target != null)
+                    {
+                        continue;
+                    }
+
+                    if (!hasSettings)
+                    {
+                        combined.CopySettingsFrom(source);
+                        hasSettings = true;
+                    }
+
+                    combined.categories.AddRange(source.categories ?? Enumerable.Empty<PoseCategory>());
                 }
 
-                item.UpdateParameter();
-                result.Add(item);
+                if (combined.categories.Count > 0)
+                {
+                    result.Add(combined.UpdateParameter());
+                }
+            }
+
+            foreach (var source in sources.Where(item => item.target != null))
+            {
+                result.Add(source.UpdateParameter());
             }
 
             return result;
@@ -179,7 +186,6 @@ namespace com.hhotatea.avatar_pose_library.model
 
         private void CopySettingsFrom(AvatarPoseData source)
         {
-            // 変数の同期
             thumbnail = source.thumbnail;
             enableHeightParam = source.enableHeightParam;
             enableSpeedParam = source.enableSpeedParam;
@@ -194,19 +200,24 @@ namespace com.hhotatea.avatar_pose_library.model
             enableFxAnimator = source.enableFxAnimator;
             suppressAdditiveAnimator = source.suppressAdditiveAnimator;
         }
+
+        /// <summary>生成アセット名とキャッシュキーに使用する短いコンテンツハッシュを返します。</summary>
         public string ToHash()
         {
-            string json;
 #if UNITY_EDITOR
-            json = UnityEditor.EditorJsonUtility.ToJson(this, false);
+            var json = UnityEditor.EditorJsonUtility.ToJson(this, false);
 #else
-            json = JsonUtility.ToJson(this, false);
+            var json = JsonUtility.ToJson(this, false);
 #endif
             using var sha = SHA256.Create();
             var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(json ?? ""));
-            var sb = new StringBuilder(bytes.Length * 2);
-            foreach (var b in bytes) sb.AppendFormat("{0:x2}", b);
-            return sb.ToString().Substring(0, ConstVariables.HashLong);
+            var hash = new StringBuilder(bytes.Length * 2);
+            foreach (var value in bytes)
+            {
+                hash.Append(value.ToString("x2"));
+            }
+
+            return hash.ToString(0, ConstVariables.HashLong);
         }
     }
 
