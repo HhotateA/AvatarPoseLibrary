@@ -168,7 +168,17 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 EditorUtility.SetDirty(asset);
                 AssetDatabase.SaveAssets();
-                AssetDatabase.ImportAsset(filePath);
+                AssetDatabase.ImportAsset(filePath, ImportAssetOptions.ForceSynchronousImport);
+
+                // ImportAsset can replace the imported main asset and its sub-assets. Do not
+                // keep using the instances that were assigned before the import.
+                cacheAsset = AssetDatabase.LoadAssetAtPath<CacheModel>(filePath);
+                if (!IsCacheValid())
+                {
+                    Debug.LogWarning($"AvatarPoseLibrary.CacheSave: Saved cache is invalid at {filePath}");
+                    return false;
+                }
+
                 Debug.Log($"AvatarPoseLibrary.CacheSave: Save cache to {fileName}");
                 return true;
             }

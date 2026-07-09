@@ -71,9 +71,17 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             if (cache.SaveAsset(asset))
             {
-                return cache.LoadAsset();
+                var savedAsset = cache.LoadAsset();
+                if (savedAsset)
+                {
+                    return savedAsset;
+                }
             }
-            return asset;
+
+            // SaveAsset persists and imports the generated objects, so some of the references
+            // in asset may already have been replaced or destroyed. Generate a fully transient
+            // set instead of returning that potentially invalid instance.
+            return CreateAssets(data);
         }
 
         CacheModel CreateAssets(AvatarPoseData data)
@@ -247,6 +255,14 @@ namespace com.hhotatea.avatar_pose_library.editor
             AvatarPoseData data,
             GameObject root)
         {
+            var overrideWriteDefault = data.writeDefaultType == WriteDefaultType.OverrideTrue;
+            if (!cachedAnimator)
+            {
+                Debug.LogWarning(
+                    "AvatarPoseLibrary: The cached FX animator is missing. Rebuilding it for this build.");
+                cachedAnimator = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault);
+            }
+
             if (!data.enableAutoResetAnim)
             {
                 return cachedAnimator;
@@ -257,7 +273,6 @@ namespace com.hhotatea.avatar_pose_library.editor
             {
                 // The reset clip depends on the current avatar's default values. Never write it
                 // into the persistent cache asset, which may be reused by another avatar/build.
-                var overrideWriteDefault = data.writeDefaultType == WriteDefaultType.OverrideTrue;
                 animator = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault);
             }
 
