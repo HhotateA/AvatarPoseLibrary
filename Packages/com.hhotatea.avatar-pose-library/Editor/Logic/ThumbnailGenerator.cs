@@ -7,7 +7,6 @@ using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.model;
 using com.hhotatea.avatar_pose_library.component;
 using Object = UnityEngine.Object;
-using VRC.Dynamics;
 
 namespace com.hhotatea.avatar_pose_library.logic
 {
@@ -108,10 +107,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     AnimationMode.EndSampling();
                 }
-
-                // VRC constraints are normally evaluated by the player loop. Thumbnail capture is
-                // synchronous, so evaluate and complete them explicitly before rendering.
-                VRCConstraintManager.UpdateConstraints(true);
 
                 // 頭にカメラを合わせる
                 ApplyCameraPos(cameraSettings);

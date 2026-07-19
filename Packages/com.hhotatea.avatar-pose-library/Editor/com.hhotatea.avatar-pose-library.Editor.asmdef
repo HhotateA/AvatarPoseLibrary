@@ -18,8 +18,7 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "VRCSDKBase.dll",
-        "VRCSDK3A.dll",
-        "VRC.Dynamics.dll"
+        "VRCSDK3A.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [],
