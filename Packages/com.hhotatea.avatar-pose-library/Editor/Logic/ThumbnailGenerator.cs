@@ -3,16 +3,24 @@ using VRC.SDK3.Avatars.Components;
 using UnityEditor;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using com.hhotatea.avatar_pose_library.editor;
 using com.hhotatea.avatar_pose_library.model;
 using com.hhotatea.avatar_pose_library.component;
 using Object = UnityEngine.Object;
-using VRC.Dynamics;
 
 namespace com.hhotatea.avatar_pose_library.logic
 {
     public class ThumbnailGenerator : IDisposable
     {
+        private static readonly MethodInfo UpdateVrcConstraintsMethod =
+            Type.GetType("VRC.Dynamics.VRCConstraintManager, VRC.Dynamics", false)?.GetMethod(
+                "UpdateConstraints",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                new[] { typeof(bool) },
+                null);
+
         private float AvatarHeight = 1.5f;
 
         private GameObject avatarGO;
@@ -111,7 +119,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
                 // VRC constraints are normally evaluated by the player loop. Thumbnail capture is
                 // synchronous, so evaluate and complete them explicitly before rendering.
-                VRCConstraintManager.UpdateConstraints(true);
+                UpdateVrcConstraintsMethod?.Invoke(null, new object[] { true });
 
                 // 頭にカメラを合わせる
                 ApplyCameraPos(cameraSettings);
