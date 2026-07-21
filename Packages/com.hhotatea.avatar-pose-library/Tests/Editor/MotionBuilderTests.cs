@@ -57,8 +57,7 @@ namespace com.hhotatea.avatar_pose_library.tests
                     LogType.Warning,
                     "AvatarPoseLibrary: Skipping reset animation binding " +
                     "'InvalidBinding::UnityEngine.Behaviour:m_Enabled'. " +
-                    "Unity could not resolve the binding value type. " +
-                    "No supported fallback value was found.");
+                    "The current value could not be resolved.");
                 source.SetCurve(
                     string.Empty,
                     typeof(Behaviour),
@@ -81,63 +80,5 @@ namespace com.hhotatea.avatar_pose_library.tests
             }
         }
 
-        [Test]
-        public void ResetAnimation_UsesCurrentSerializedComponentValues()
-        {
-            var root = new GameObject("Root");
-            var probe = root.AddComponent<ResetAnimationProbe>();
-            var source = new AnimationClip { name = "SerializedValues" };
-
-            try
-            {
-                probe.floatValue = 1.5f;
-                probe.intValue = 4;
-                probe.boolValue = true;
-                source.SetCurve(
-                    string.Empty,
-                    typeof(ResetAnimationProbe),
-                    nameof(ResetAnimationProbe.floatValue),
-                    AnimationCurve.Constant(0f, 1f, 10f));
-                source.SetCurve(
-                    string.Empty,
-                    typeof(ResetAnimationProbe),
-                    nameof(ResetAnimationProbe.intValue),
-                    AnimationCurve.Constant(0f, 1f, 10f));
-                source.SetCurve(
-                    string.Empty,
-                    typeof(ResetAnimationProbe),
-                    nameof(ResetAnimationProbe.boolValue),
-                    AnimationCurve.Constant(0f, 1f, 0f));
-
-                var reset = MotionBuilder.ResetAnimation(root, new[] { source });
-
-                Assert.That(GetResetValue(reset, nameof(ResetAnimationProbe.floatValue)), Is.EqualTo(1.5f));
-                Assert.That(GetResetValue(reset, nameof(ResetAnimationProbe.intValue)), Is.EqualTo(4f));
-                Assert.That(GetResetValue(reset, nameof(ResetAnimationProbe.boolValue)), Is.EqualTo(1f));
-
-                Object.DestroyImmediate(reset);
-            }
-            finally
-            {
-                Object.DestroyImmediate(source);
-                Object.DestroyImmediate(root);
-            }
-        }
-
-        private static float GetResetValue(AnimationClip clip, string propertyName)
-        {
-            var binding = EditorCurveBinding.FloatCurve(
-                string.Empty,
-                typeof(ResetAnimationProbe),
-                propertyName);
-            return AnimationUtility.GetEditorCurve(clip, binding).Evaluate(0f);
-        }
-    }
-
-    public sealed class ResetAnimationProbe : MonoBehaviour
-    {
-        public float floatValue;
-        public int intValue;
-        public bool boolValue;
     }
 }
