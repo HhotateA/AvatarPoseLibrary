@@ -368,6 +368,121 @@ namespace com.hhotatea.avatar_pose_library.logic
             return result;
         }
 
+        static string DescribeBinding(string clipName, EditorCurveBinding binding)
+        {
+            return $"{clipName}:{binding.path}:" +
+                   $"{binding.type?.FullName ?? "<missing>"}:{binding.propertyName}";
+        }
+
+        static void LogSkippedBinding(
+            string clipName,
+            EditorCurveBinding binding,
+            string reason)
+        {
+            Debug.LogWarning(
+                $"AvatarPoseLibrary: Skipping reset animation binding " +
+                $"'{DescribeBinding(clipName, binding)}'. {reason}");
+        }
+
+        static bool TryGetAnimationUtilityValue(
+            GameObject root,
+            EditorCurveBinding binding,
+            out float value,
+            out string failureReason)
+        {
+            value = 0f;
+            failureReason = null;
+
+            try
+            {
+                if (UnityEditor.AnimationUtility.GetEditorCurveValueType(root, binding) == null)
+                {
+                    failureReason = "Unity could not resolve the binding value type.";
+                    return false;
+                }
+
+                if (binding.isDiscreteCurve)
+                {
+                    if (UnityEditor.AnimationUtility.GetDiscreteIntValue(root, binding, out var discreteValue))
+                    {
+                        value = discreteValue;
+                        return true;
+                    }
+                }
+                else if (UnityEditor.AnimationUtility.GetFloatValue(root, binding, out value))
+                {
+                    return true;
+                }
+
+                failureReason = "Unity could not read the current binding value.";
+                return false;
+            }
+            catch (UnityException exception)
+            {
+                failureReason = $"Unity could not read the current binding value: {exception.Message}";
+                return false;
+            }
+        }
+
+        static bool TryGetTransformValue(
+            Transform targetTransform,
+            EditorCurveBinding binding,
+            out float value)
+        {
+            value = 0f;
+            if (binding.type != typeof(Transform))
+            {
+                return false;
+            }
+
+            switch (binding.propertyName)
+            {
+                case "m_LocalPosition.x": value = targetTransform.localPosition.x; return true;
+                case "m_LocalPosition.y": value = targetTransform.localPosition.y; return true;
+                case "m_LocalPosition.z": value = targetTransform.localPosition.z; return true;
+
+                case "m_LocalRotation.x": value = targetTransform.localRotation.x; return true;
+                case "m_LocalRotation.y": value = targetTransform.localRotation.y; return true;
+                case "m_LocalRotation.z": value = targetTransform.localRotation.z; return true;
+                case "m_LocalRotation.w": value = targetTransform.localRotation.w; return true;
+
+                case "m_LocalScale.x": value = targetTransform.localScale.x; return true;
+                case "m_LocalScale.y": value = targetTransform.localScale.y; return true;
+                case "m_LocalScale.z": value = targetTransform.localScale.z; return true;
+                default: return false;
+            }
+        }
+
+        static bool TryGetBlendShapeValue(
+            Transform targetTransform,
+            EditorCurveBinding binding,
+            out float value)
+        {
+            value = 0f;
+            if (binding.type != typeof(SkinnedMeshRenderer) ||
+                !binding.propertyName.StartsWith("blendShape.", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var renderer = targetTransform.GetComponent<SkinnedMeshRenderer>();
+            var mesh = renderer != null ? renderer.sharedMesh : null;
+            if (renderer == null || mesh == null)
+            {
+                return false;
+            }
+
+            var blendShapeName = binding.propertyName.Substring("blendShape.".Length);
+            var index = mesh.GetBlendShapeIndex(blendShapeName);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            value = renderer.GetBlendShapeWeight(index);
+            return true;
+        }
+
         static bool TryGetSerializedValue(
             Transform targetTransform,
             EditorCurveBinding binding,
@@ -441,111 +556,45 @@ namespace com.hhotatea.avatar_pose_library.logic
         static bool TryGetDefaultValue(
             GameObject root,
             EditorCurveBinding binding,
-            string clipName,
-            out float value)
+            out float value,
+            out string failureReason)
         {
             value = 0f;
+            failureReason = null;
             if (root == null)
             {
+                failureReason = "The avatar root is missing.";
                 return false;
             }
 
             if (binding.type == null || string.IsNullOrEmpty(binding.propertyName))
             {
-                Debug.LogWarning(
-                    $"AvatarPoseLibrary: Animation binding " +
-                    $"'{clipName}:{binding.path}:{binding.type?.FullName ?? "<missing>"}:{binding.propertyName}' " +
-                    $"has no resolvable type or property. The binding will be skipped in the reset animation.");
+                failureReason = "The binding has no resolvable type or property.";
                 return false;
             }
 
-            try
+            if (TryGetAnimationUtilityValue(root, binding, out value, out var unityFailureReason))
             {
-                var valueType = UnityEditor.AnimationUtility.GetEditorCurveValueType(root, binding);
-                if (valueType != null)
-                {
-                    if (binding.isDiscreteCurve)
-                    {
-                        if (UnityEditor.AnimationUtility.GetDiscreteIntValue(root, binding, out var discreteValue))
-                        {
-                            value = discreteValue;
-                            return true;
-                        }
-                    }
-                    else if (UnityEditor.AnimationUtility.GetFloatValue(root, binding, out value))
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch (UnityException exception)
-            {
-                Debug.LogWarning(
-                    $"AvatarPoseLibrary: Could not read the default value for animation binding " +
-                    $"'{clipName}:{binding.path}:{binding.type?.FullName ?? "<missing>"}:{binding.propertyName}'. " +
-                    $"Using a fallback value instead. {exception.Message}");
+                return true;
             }
 
-            // Fallback (covers a few common cases when GetFloatValue fails)
             var targetTransform = string.IsNullOrEmpty(binding.path)
                 ? root.transform
                 : root.transform.Find(binding.path);
             if (targetTransform == null)
             {
-                Debug.LogWarning(
-                    $"AvatarPoseLibrary: Could not find the target for animation binding " +
-                    $"'{clipName}:{binding.path}:{binding.type.FullName}:{binding.propertyName}'. " +
-                    $"The binding will be skipped in the reset animation.");
+                failureReason = $"{unityFailureReason} The target transform was not found.";
                 return false;
             }
 
-            if (binding.type == typeof(Transform))
-            {
-                switch (binding.propertyName)
-                {
-                    case "m_LocalPosition.x": value = targetTransform.localPosition.x; return true;
-                    case "m_LocalPosition.y": value = targetTransform.localPosition.y; return true;
-                    case "m_LocalPosition.z": value = targetTransform.localPosition.z; return true;
-
-                    case "m_LocalRotation.x": value = targetTransform.localRotation.x; return true;
-                    case "m_LocalRotation.y": value = targetTransform.localRotation.y; return true;
-                    case "m_LocalRotation.z": value = targetTransform.localRotation.z; return true;
-                    case "m_LocalRotation.w": value = targetTransform.localRotation.w; return true;
-
-                    case "m_LocalScale.x": value = targetTransform.localScale.x; return true;
-                    case "m_LocalScale.y": value = targetTransform.localScale.y; return true;
-                    case "m_LocalScale.z": value = targetTransform.localScale.z; return true;
-                }
-            }
-
-            // BlendShape curve name pattern: "blendShape.<BlendShapeName>"
-            if (binding.type == typeof(SkinnedMeshRenderer) &&
-                binding.propertyName.StartsWith("blendShape.", StringComparison.Ordinal))
-            {
-                var renderer = targetTransform.GetComponent<SkinnedMeshRenderer>();
-                var mesh = renderer != null ? renderer.sharedMesh : null;
-                if (renderer != null && mesh != null)
-                {
-                    var blendShapeName = binding.propertyName.Substring("blendShape.".Length);
-                    var index = mesh.GetBlendShapeIndex(blendShapeName);
-                    if (index >= 0)
-                    {
-                        value = renderer.GetBlendShapeWeight(index);
-                        return true;
-                    }
-                }
-            }
-
-            if (TryGetSerializedValue(targetTransform, binding, out value))
+            if (TryGetTransformValue(targetTransform, binding, out value) ||
+                TryGetBlendShapeValue(targetTransform, binding, out value) ||
+                TryGetSerializedValue(targetTransform, binding, out value))
             {
                 return true;
             }
 
-            Debug.LogWarning(
-                $"AvatarPoseLibrary: Could not resolve the default value for animation binding " +
-                $"'{clipName}:{binding.path}:{binding.type?.FullName ?? "<missing>"}:{binding.propertyName}'. " +
-                $"The binding will be skipped in the reset animation.");
-
+            failureReason = $"{unityFailureReason} No supported fallback value was found.";
             return false;
         }
 
@@ -579,9 +628,10 @@ namespace com.hhotatea.avatar_pose_library.logic
 
                     if (!defaultValueCache.TryGetValue(key, out var v))
                     {
-                        if (!TryGetDefaultValue(root, binding, anim.name, out v))
+                        if (!TryGetDefaultValue(root, binding, out v, out var failureReason))
                         {
                             unresolvedBindings.Add(key);
+                            LogSkippedBinding(anim.name, binding, failureReason);
                             continue;
                         }
 
@@ -597,10 +647,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                     }
                     catch (UnityException exception)
                     {
-                        Debug.LogWarning(
-                            $"AvatarPoseLibrary: Could not create a reset curve for animation binding " +
-                            $"'{anim.name}:{binding.path}:{binding.type?.FullName ?? "<missing>"}:{binding.propertyName}'. " +
-                            $"The binding will be skipped. {exception.Message}");
+                        LogSkippedBinding(
+                            anim.name,
+                            binding,
+                            $"Unity could not create the reset curve: {exception.Message}");
                     }
                 }
             }

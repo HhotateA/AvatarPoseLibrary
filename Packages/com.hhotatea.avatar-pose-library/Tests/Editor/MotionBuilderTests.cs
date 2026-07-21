@@ -3,6 +3,7 @@ using com.hhotatea.avatar_pose_library.logic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace com.hhotatea.avatar_pose_library.tests
 {
@@ -52,6 +53,12 @@ namespace com.hhotatea.avatar_pose_library.tests
 
             try
             {
+                LogAssert.Expect(
+                    LogType.Warning,
+                    "AvatarPoseLibrary: Skipping reset animation binding " +
+                    "'InvalidBinding::UnityEngine.Behaviour:m_Enabled'. " +
+                    "Unity could not resolve the binding value type. " +
+                    "No supported fallback value was found.");
                 source.SetCurve(
                     string.Empty,
                     typeof(Behaviour),
@@ -63,6 +70,7 @@ namespace com.hhotatea.avatar_pose_library.tests
                     .Any(binding => binding.type == typeof(Behaviour) && binding.propertyName == "m_Enabled");
 
                 Assert.That(hasInvalidBinding, Is.False);
+                LogAssert.NoUnexpectedReceived();
 
                 Object.DestroyImmediate(reset);
             }
