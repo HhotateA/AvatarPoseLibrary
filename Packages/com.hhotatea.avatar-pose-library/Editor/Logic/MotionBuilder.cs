@@ -438,11 +438,26 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
         }
 
-        static float GetDefaultValue(GameObject root, EditorCurveBinding binding, string clipName)
+        static bool TryGetDefaultValue(
+            GameObject root,
+            EditorCurveBinding binding,
+            string clipName,
+            out float value)
         {
-            if (root == null) return 0f;
-            if (binding.type == null) return 0f;
-            if (string.IsNullOrEmpty(binding.propertyName)) return 0f;
+            value = 0f;
+            if (root == null)
+            {
+                return false;
+            }
+
+            if (binding.type == null || string.IsNullOrEmpty(binding.propertyName))
+            {
+                Debug.LogWarning(
+                    $"AvatarPoseLibrary: Animation binding " +
+                    $"'{clipName}:{binding.path}:{binding.type?.FullName ?? "<missing>"}:{binding.propertyName}' " +
+                    $"has no resolvable type or property. The binding will be skipped in the reset animation.");
+                return false;
+            }
 
             try
             {
@@ -453,12 +468,13 @@ namespace com.hhotatea.avatar_pose_library.logic
                     {
                         if (UnityEditor.AnimationUtility.GetDiscreteIntValue(root, binding, out var discreteValue))
                         {
-                            return discreteValue;
+                            value = discreteValue;
+                            return true;
                         }
                     }
-                    else if (UnityEditor.AnimationUtility.GetFloatValue(root, binding, out var value))
+                    else if (UnityEditor.AnimationUtility.GetFloatValue(root, binding, out value))
                     {
-                        return value;
+                        return true;
                     }
                 }
             }
@@ -474,24 +490,31 @@ namespace com.hhotatea.avatar_pose_library.logic
             var targetTransform = string.IsNullOrEmpty(binding.path)
                 ? root.transform
                 : root.transform.Find(binding.path);
-            if (targetTransform == null) return 0f;
+            if (targetTransform == null)
+            {
+                Debug.LogWarning(
+                    $"AvatarPoseLibrary: Could not find the target for animation binding " +
+                    $"'{clipName}:{binding.path}:{binding.type.FullName}:{binding.propertyName}'. " +
+                    $"The binding will be skipped in the reset animation.");
+                return false;
+            }
 
             if (binding.type == typeof(Transform))
             {
                 switch (binding.propertyName)
                 {
-                    case "m_LocalPosition.x": return targetTransform.localPosition.x;
-                    case "m_LocalPosition.y": return targetTransform.localPosition.y;
-                    case "m_LocalPosition.z": return targetTransform.localPosition.z;
+                    case "m_LocalPosition.x": value = targetTransform.localPosition.x; return true;
+                    case "m_LocalPosition.y": value = targetTransform.localPosition.y; return true;
+                    case "m_LocalPosition.z": value = targetTransform.localPosition.z; return true;
 
-                    case "m_LocalRotation.x": return targetTransform.localRotation.x;
-                    case "m_LocalRotation.y": return targetTransform.localRotation.y;
-                    case "m_LocalRotation.z": return targetTransform.localRotation.z;
-                    case "m_LocalRotation.w": return targetTransform.localRotation.w;
+                    case "m_LocalRotation.x": value = targetTransform.localRotation.x; return true;
+                    case "m_LocalRotation.y": value = targetTransform.localRotation.y; return true;
+                    case "m_LocalRotation.z": value = targetTransform.localRotation.z; return true;
+                    case "m_LocalRotation.w": value = targetTransform.localRotation.w; return true;
 
-                    case "m_LocalScale.x": return targetTransform.localScale.x;
-                    case "m_LocalScale.y": return targetTransform.localScale.y;
-                    case "m_LocalScale.z": return targetTransform.localScale.z;
+                    case "m_LocalScale.x": value = targetTransform.localScale.x; return true;
+                    case "m_LocalScale.y": value = targetTransform.localScale.y; return true;
+                    case "m_LocalScale.z": value = targetTransform.localScale.z; return true;
                 }
             }
 
@@ -505,21 +528,25 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     var blendShapeName = binding.propertyName.Substring("blendShape.".Length);
                     var index = mesh.GetBlendShapeIndex(blendShapeName);
-                    if (index >= 0) return renderer.GetBlendShapeWeight(index);
+                    if (index >= 0)
+                    {
+                        value = renderer.GetBlendShapeWeight(index);
+                        return true;
+                    }
                 }
             }
 
-            if (TryGetSerializedValue(targetTransform, binding, out var serializedValue))
+            if (TryGetSerializedValue(targetTransform, binding, out value))
             {
-                return serializedValue;
+                return true;
             }
 
             Debug.LogWarning(
                 $"AvatarPoseLibrary: Could not resolve the default value for animation binding " +
                 $"'{clipName}:{binding.path}:{binding.type?.FullName ?? "<missing>"}:{binding.propertyName}'. " +
-                $"The reset curve will use 0.");
+                $"The binding will be skipped in the reset animation.");
 
-            return 0f;
+            return false;
         }
 
         public static AnimationClip ResetAnimation(GameObject root, AnimationClip[] anims)
@@ -529,6 +556,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             if (root == null || anims == null) return result;
 
             var defaultValueCache = new Dictionary<CurveKey, float>();
+            var unresolvedBindings = new HashSet<CurveKey>();
 
             foreach (var anim in anims)
             {
@@ -544,9 +572,19 @@ namespace com.hhotatea.avatar_pose_library.logic
 
                     // rootにおける現在のValueを取得
                     var key = new CurveKey(binding.path, binding.type, binding.propertyName);
+                    if (unresolvedBindings.Contains(key))
+                    {
+                        continue;
+                    }
+
                     if (!defaultValueCache.TryGetValue(key, out var v))
                     {
-                        v = GetDefaultValue(root, binding, anim.name);
+                        if (!TryGetDefaultValue(root, binding, anim.name, out v))
+                        {
+                            unresolvedBindings.Add(key);
+                            continue;
+                        }
+
                         defaultValueCache[key] = v;
                     }
 
