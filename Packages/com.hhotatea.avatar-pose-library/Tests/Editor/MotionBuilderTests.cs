@@ -1,3 +1,4 @@
+using System.Linq;
 using com.hhotatea.avatar_pose_library.logic;
 using NUnit.Framework;
 using UnityEditor;
@@ -44,7 +45,7 @@ namespace com.hhotatea.avatar_pose_library.tests
         }
 
         [Test]
-        public void ResetAnimation_DoesNotThrowForUnresolvableBindingType()
+        public void ResetAnimation_SkipsUnresolvableBindingType()
         {
             var root = new GameObject("Root");
             var source = new AnimationClip { name = "InvalidBinding" };
@@ -57,11 +58,13 @@ namespace com.hhotatea.avatar_pose_library.tests
                     "m_Enabled",
                     AnimationCurve.Constant(0f, 1f, 1f));
 
-                Assert.DoesNotThrow(() =>
-                {
-                    var reset = MotionBuilder.ResetAnimation(root, new[] { source });
-                    Object.DestroyImmediate(reset);
-                });
+                var reset = MotionBuilder.ResetAnimation(root, new[] { source });
+                var hasInvalidBinding = AnimationUtility.GetCurveBindings(reset)
+                    .Any(binding => binding.type == typeof(Behaviour) && binding.propertyName == "m_Enabled");
+
+                Assert.That(hasInvalidBinding, Is.False);
+
+                Object.DestroyImmediate(reset);
             }
             finally
             {
