@@ -44,19 +44,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             if (driver == null)
             {
-                // Unity can fail to create a StateMachineBehaviour and return null. Create and
-                // attach it directly so animator generation can continue in that case.
-                driver = ScriptableObject.CreateInstance<VRCAvatarParameterDriver>();
-                if (driver == null)
-                {
-                    throw new InvalidOperationException(
-                        "Failed to create a VRCAvatarParameterDriver for the animator state.");
-                }
-
-                var behaviours = state.behaviours ?? Array.Empty<StateMachineBehaviour>();
-                Array.Resize(ref behaviours, behaviours.Length + 1);
-                behaviours[behaviours.Length - 1] = driver;
-                state.behaviours = behaviours;
+                driver = CreateAndAttachParameterDriverFallback(state);
             }
 
             if (driver.parameters == null)
@@ -64,6 +52,26 @@ namespace com.hhotatea.avatar_pose_library.logic
                 driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
             }
 
+            return driver;
+        }
+
+        private static VRCAvatarParameterDriver CreateAndAttachParameterDriverFallback(
+            AnimatorState state)
+        {
+            // TODO: Remove this fallback after the root cause of Unity returning null from
+            // AnimatorState.AddStateMachineBehaviour is identified and fixed. Keep the manual
+            // ScriptableObject creation isolated here because it is not the normal Unity path.
+            var driver = ScriptableObject.CreateInstance<VRCAvatarParameterDriver>();
+            if (driver == null)
+            {
+                throw new InvalidOperationException(
+                    "Failed to create a VRCAvatarParameterDriver for the animator state.");
+            }
+
+            var behaviours = state.behaviours ?? Array.Empty<StateMachineBehaviour>();
+            Array.Resize(ref behaviours, behaviours.Length + 1);
+            behaviours[behaviours.Length - 1] = driver;
+            state.behaviours = behaviours;
             return driver;
         }
 
