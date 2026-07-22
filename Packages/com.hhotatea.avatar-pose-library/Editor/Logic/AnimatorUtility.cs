@@ -36,7 +36,29 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static VRCAvatarParameterDriver AddSafeParameterDriver(this AnimatorState state)
         {
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
             var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+            if (driver == null)
+            {
+                // Unity can fail to create a StateMachineBehaviour and return null. Create and
+                // attach it directly so animator generation can continue in that case.
+                driver = ScriptableObject.CreateInstance<VRCAvatarParameterDriver>();
+                if (driver == null)
+                {
+                    throw new InvalidOperationException(
+                        "Failed to create a VRCAvatarParameterDriver for the animator state.");
+                }
+
+                var behaviours = state.behaviours ?? Array.Empty<StateMachineBehaviour>();
+                Array.Resize(ref behaviours, behaviours.Length + 1);
+                behaviours[behaviours.Length - 1] = driver;
+                state.behaviours = behaviours;
+            }
+
             if (driver.parameters == null)
             {
                 driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
