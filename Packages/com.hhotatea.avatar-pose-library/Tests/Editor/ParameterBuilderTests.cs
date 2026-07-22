@@ -6,6 +6,7 @@ using nadena.dev.modular_avatar.core;
 using NUnit.Framework;
 using UnityEditor.Animations;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
 
 namespace com.hhotatea.avatar_pose_library.tests
 {
@@ -141,6 +142,9 @@ namespace com.hhotatea.avatar_pose_library.tests
                 Assert.That(blendTree.blendParameter,
                     Is.EqualTo($"{ConstVariables.HeightParamPrefix}_{data.Guid}"));
                 Assert.That(blendTree.children, Has.Length.EqualTo(2));
+                Assert.That(poseState.cycleOffsetParameterActive, Is.True);
+                Assert.That(poseState.cycleOffsetParameter,
+                    Is.EqualTo($"{ConstVariables.MirrorCycleOffsetParamPrefix}_{data.Guid}"));
             }
             finally
             {
@@ -165,6 +169,42 @@ namespace com.hhotatea.avatar_pose_library.tests
                 }
 
                 Object.DestroyImmediate(clip);
+            }
+        }
+
+        [Test]
+        public void BuildFxAnimator_AttachesInitializedParameterDrivers()
+        {
+            var data = new AvatarPoseData
+            {
+                categories = new List<PoseCategory>
+                {
+                    new PoseCategory
+                    {
+                        poses = new List<PoseEntry> { new PoseEntry() },
+                    },
+                },
+            }.UpdateParameter();
+
+            AnimatorController controller = null;
+            try
+            {
+                controller = AnimatorBuilder.BuildFxAnimator(data, false);
+                var drivers = controller.layers
+                    .SelectMany(layer => layer.stateMachine.states)
+                    .SelectMany(child => child.state.behaviours)
+                    .OfType<VRCAvatarParameterDriver>()
+                    .ToArray();
+
+                Assert.That(drivers, Is.Not.Empty);
+                Assert.That(drivers.All(driver => driver.parameters != null), Is.True);
+            }
+            finally
+            {
+                if (controller != null)
+                {
+                    Object.DestroyImmediate(controller);
+                }
             }
         }
 

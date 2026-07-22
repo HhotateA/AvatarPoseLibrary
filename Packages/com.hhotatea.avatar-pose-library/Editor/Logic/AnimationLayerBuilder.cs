@@ -650,12 +650,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                if (pose.tracking.loop)
-                {
-                    // Unityの不具合対策でOffsetを入れる
-                    poseState.cycleOffsetParameterActive = true;
-                    poseState.cycleOffsetParameter = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{guid}";
-                }
+                ApplyLoopingMotionCycleOffsetWorkaround(
+                    poseState, pose.tracking.loop, guid);
             }
 
             var inTransition = flags.Select((flag, i) => new AnimatorCondition
@@ -746,6 +742,24 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
         }
 
+        private static void ApplyLoopingMotionCycleOffsetWorkaround(
+            AnimatorState state,
+            bool loop,
+            string guid)
+        {
+            if (!loop)
+            {
+                return;
+            }
+
+            // TODO: Remove this workaround when supported Unity versions no longer require a
+            // cycle-offset parameter to keep mirrored looping motion synchronized. Keep this
+            // Unity-specific behavior isolated here instead of duplicating it across builders.
+            state.cycleOffsetParameterActive = true;
+            state.cycleOffsetParameter =
+                $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{guid}";
+        }
+
         public void AddLocomotionLayer(
             PoseEntry pose,
             AnimatorControllerLayer layer,
@@ -769,12 +783,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 poseState.speed = pose.tracking.motionSpeed * 2f;
                 poseState.speedParameterActive = true;
                 poseState.speedParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                if (pose.tracking.loop)
-                {
-                    // Unityの不具合対策でOffsetを入れる
-                    poseState.cycleOffsetParameterActive = true;
-                    poseState.cycleOffsetParameter = $"{ConstVariables.MirrorCycleOffsetParamPrefix}_{guid}";
-                }
+                ApplyLoopingMotionCycleOffsetWorkaround(
+                    poseState, pose.tracking.loop, guid);
             }
 
             // 侵入経路

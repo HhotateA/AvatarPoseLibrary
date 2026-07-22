@@ -84,48 +84,49 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (!cacheAsset.menuObject) return false;
             if (!cacheAsset.paramObject) return false;
             if (cacheAsset.version != DynamicVariables.CurrentVersion.ToString()) return false;
-            if (CheckAnimatorError(cacheAsset.paramLayer)) return false;
+            if (HasInvalidTrackingControl(cacheAsset.paramLayer)) return false;
             return true;
         }
 
         /// <summary>
-        /// アニメーターの改竄をチェックする。
-        /// 本来は必要ないが、他ツールによってTrackingControlが無効化される場合があり、その対策。
+        /// Detects cached tracking controls that were removed or disabled after generation.
         /// </summary>
-        /// <param name="fxAnim"></param>
-        /// <returns></returns>
-        static bool CheckAnimatorError(AnimatorController fxAnim)
+        private static bool HasInvalidTrackingControl(AnimatorController fxAnimator)
         {
-            foreach (var layer in fxAnim.layers)
+            // TODO: Remove this heuristic after the source of external TrackingControl changes
+            // is identified and fixed. Until then, a missing control or Head=NoChange means the
+            // cache is unsafe to reuse and must be rebuilt.
+            foreach (var layer in fxAnimator.layers)
             {
                 if (!layer.name.Contains(ConstVariables.HeadParamPrefix))
                 {
                     continue;
                 }
-                bool isError = true;
-                foreach (var s in layer.stateMachine.states)
+
+                bool foundTrackingControl = false;
+                foreach (var state in layer.stateMachine.states)
                 {
-                    foreach (var beh in s.state.behaviours)
+                    foreach (var behaviour in state.state.behaviours)
                     {
-                        if (beh is VRCAnimatorTrackingControl ctrl)
+                        if (behaviour is not VRCAnimatorTrackingControl control)
                         {
-                            Debug.LogWarning(layer.name);
-                            if (ctrl.trackingHead == VRC_AnimatorTrackingControl.TrackingType.NoChange)
-                            {
-                                // TrackingがNoChangeになっていたら異常
-                                Debug.Log($"AssetPoseLibrary.CacheSave: Ditect animator's error");
-                                return true;
-                            }
-                            else
-                            {
-                                // 一つでも見つけないと異常なので、ここで代入
-                                isError = false;
-                            }
+                            continue;
                         }
+
+                        Debug.LogWarning(layer.name);
+                        if (control.trackingHead == VRC_AnimatorTrackingControl.TrackingType.NoChange)
+                        {
+                            Debug.Log("AvatarPoseLibrary.CacheSave: Invalid tracking control detected.");
+                            return true;
+                        }
+
+                        foundTrackingControl = true;
                     }
                 }
-                return isError;
+
+                return !foundTrackingControl;
             }
+
             return true;
         }
 

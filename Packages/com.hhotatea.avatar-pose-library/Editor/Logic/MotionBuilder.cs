@@ -310,15 +310,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 }
             }
 
-            // アニメーションの長さを一定にするために、空プロパティを入れておく
-            {
-                var curve = new AnimationCurve();
-                curve.AddKey(0f, 0f);
-                curve.AddKey(animTime, 0f);
-                // あり得ないアニメーションを1フレームだけ入れておく。
-                result.SetCurve("FakeAnimationKey",
-                    typeof(Transform), "localPosition.x", curve);
-            }
+            AddDurationMarkerCurveWorkaround(result, animTime);
 
             return result;
         }
@@ -358,14 +350,20 @@ namespace com.hhotatea.avatar_pose_library.logic
             var result = new AnimationClip();
             result.name = ($"None_{interval:C}Sec");
 
-            var curve = new AnimationCurve();
-            curve.AddKey(0f, 0f);
-            curve.AddKey(interval, 0f);
-            // あり得ないアニメーションを1フレームだけ入れておく。
-            result.SetCurve("FakeAnimationKey",
-                typeof(Transform), "localPosition.x", curve);
+            AddDurationMarkerCurveWorkaround(result, interval);
 
             return result;
+        }
+
+        private static void AddDurationMarkerCurveWorkaround(AnimationClip clip, float duration)
+        {
+            // TODO: Remove this synthetic binding if supported Unity versions gain a way to
+            // preserve AnimationClip duration without a real curve. The impossible transform
+            // path keeps the timing information without changing an avatar property.
+            var curve = new AnimationCurve();
+            curve.AddKey(0f, 0f);
+            curve.AddKey(duration, 0f);
+            clip.SetCurve("FakeAnimationKey", typeof(Transform), "localPosition.x", curve);
         }
 
         static void LogSkippedBinding(string clipName, EditorCurveBinding binding, string reason)

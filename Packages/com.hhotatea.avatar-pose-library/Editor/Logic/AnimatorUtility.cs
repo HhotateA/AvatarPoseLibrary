@@ -36,12 +36,42 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static VRCAvatarParameterDriver AddSafeParameterDriver(this AnimatorState state)
         {
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
             var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+            if (driver == null)
+            {
+                driver = CreateAndAttachParameterDriverFallback(state);
+            }
+
             if (driver.parameters == null)
             {
                 driver.parameters = new List<VRC_AvatarParameterDriver.Parameter>();
             }
 
+            return driver;
+        }
+
+        private static VRCAvatarParameterDriver CreateAndAttachParameterDriverFallback(
+            AnimatorState state)
+        {
+            // TODO: Remove this fallback after the root cause of Unity returning null from
+            // AnimatorState.AddStateMachineBehaviour is identified and fixed. Keep the manual
+            // ScriptableObject creation isolated here because it is not the normal Unity path.
+            var driver = ScriptableObject.CreateInstance<VRCAvatarParameterDriver>();
+            if (driver == null)
+            {
+                throw new InvalidOperationException(
+                    "Failed to create a VRCAvatarParameterDriver for the animator state.");
+            }
+
+            var behaviours = state.behaviours ?? Array.Empty<StateMachineBehaviour>();
+            Array.Resize(ref behaviours, behaviours.Length + 1);
+            behaviours[behaviours.Length - 1] = driver;
+            state.behaviours = behaviours;
             return driver;
         }
 
