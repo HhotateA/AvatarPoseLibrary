@@ -46,6 +46,28 @@ namespace com.hhotatea.avatar_pose_library.tests
         }
 
         [Test]
+        public void CreateFrameAnimation_PreservesDurationWithSyntheticBinding()
+        {
+            const float duration = 0.25f;
+            var clip = MotionBuilder.CreateFrameAnimation(duration);
+
+            try
+            {
+                var binding = AnimationUtility.GetCurveBindings(clip)
+                    .First(item => item.path == "FakeAnimationKey");
+                var curve = AnimationUtility.GetEditorCurve(clip, binding);
+
+                Assert.That(binding.path, Is.EqualTo("FakeAnimationKey"));
+                Assert.That(binding.type, Is.EqualTo(typeof(Transform)));
+                Assert.That(curve.keys.Last().time, Is.EqualTo(duration));
+                Assert.That(clip.length, Is.EqualTo(duration));
+            }
+            finally
+            {
+                Object.DestroyImmediate(clip);
+            }
+        }
+        [Test]
         public void ResetAnimation_SkipsUnresolvableBindingType()
         {
             var root = new GameObject("Root");

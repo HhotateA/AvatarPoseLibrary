@@ -142,6 +142,9 @@ namespace com.hhotatea.avatar_pose_library.tests
                 Assert.That(blendTree.blendParameter,
                     Is.EqualTo($"{ConstVariables.HeightParamPrefix}_{data.Guid}"));
                 Assert.That(blendTree.children, Has.Length.EqualTo(2));
+                Assert.That(poseState.cycleOffsetParameterActive, Is.True);
+                Assert.That(poseState.cycleOffsetParameter,
+                    Is.EqualTo($"{ConstVariables.MirrorCycleOffsetParamPrefix}_{data.Guid}"));
             }
             finally
             {
