@@ -78,7 +78,7 @@ const PATTERNS = Object.freeze({
   ERROR_BUILD_STAGE: /^[a-z0-9_]{1,40}$/,
   EVENT_EXCEPTION: /^[A-Za-z0-9_.+`]{0,100}$/,
   WRITE_DEFAULTS: /^[A-Za-z0-9_]{1,40}$/,
-  DISCORD_CHANNEL_ID: /^[0-9]{17,20}$/,
+  HTTPS_URL: /^https:\/\/[A-Za-z0-9.-]+(?::[0-9]{1,5})?\/[^\s#]+$/,
   ISO_UTC: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/,
 });
 
@@ -188,8 +188,7 @@ function settings_() {
       DEFAULTS.MAX_ERROR_TEXT_CHARACTERS
     ),
     maxStackFrames: integer("MAX_STACK_FRAMES", DEFAULTS.MAX_STACK_FRAMES),
-    discordBotToken: properties.getProperty("DISCORD_BOT_TOKEN"),
-    discordChannelId: properties.getProperty("DISCORD_CHANNEL_ID"),
+    errorWebhookUrl: properties.getProperty("ERROR_WEBHOOK_URL"),
     debugMode: String(properties.getProperty("GA4_DEBUG_MODE")).toLowerCase()
       === "true",
     legacyClientId: properties.getProperty("GA4_LEGACY_CLIENT_ID")
@@ -444,29 +443,26 @@ function hasGa4ValidationErrors_(response) {
 }
 
 function sendErrorReport_(report, settings) {
-  if (!settings.discordBotToken
-      || !matches_(settings.discordChannelId, PATTERNS.DISCORD_CHANNEL_ID)) {
-    return failure_("discord_not_configured");
+  const url = webhookUrl_(settings);
+  if (url === "") {
+    return failure_("webhook_not_configured");
   }
 
-  const safeReport = sanitizedErrorReport_(report);
-  const request = discordErrorRequest_(safeReport, settings.discordBotToken);
   const response = UrlFetchApp.fetch(
-    discordMessageUrl_(settings.discordChannelId),
-    request
+    url,
+    webhookErrorRequest_(sanitizedErrorReport_(report))
   );
   return isSuccessfulResponse_(response)
     ? success_()
-    : failure_("discord_upstream_error");
+    : failure_("webhook_upstream_error");
 }
 
-function discordMessageUrl_(channelId) {
-  return "https://discord.com/api/v10/channels/"
-    + encodeURIComponent(channelId)
-    + "/messages";
+function webhookUrl_(settings) {
+  const url = String(settings.errorWebhookUrl || "").trim();
+  return matches_(url, PATTERNS.HTTPS_URL) ? url : "";
 }
 
-function discordErrorRequest_(report, botToken) {
+function webhookErrorRequest_(report) {
   const fileName = "apl-error-" + report.report_id + ".json";
   const message = {
     content: [
@@ -480,10 +476,6 @@ function discordErrorRequest_(report, botToken) {
   };
   return {
     method: "post",
-    headers: {
-      Authorization: "Bot " + botToken,
-      "User-Agent": "DiscordBot (https://github.com/HhotateA/AvatarPoseLibrary, 1.0)",
-    },
     payload: {
       payload_json: JSON.stringify(message),
       "files[0]": Utilities.newBlob(
