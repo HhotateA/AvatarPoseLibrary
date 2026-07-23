@@ -94,6 +94,20 @@ namespace com.hhotatea.avatar_pose_library.component
 
         [Multiline] public string updateMessage = "最新版アップデートがあります。VCCを確認してください。";
 
+        public string telemetryPrivacyDialogTitle = "Avatar Pose Library - Privacy";
+        [Multiline] public string telemetryPrivacyDialogMessage = "Please help us improve APL by allowing usage data to be sent.\n\nEven if you choose Don't allow, only the minimum data required for usage statistics, such as an APL-specific random GUID and the APL version, is sent. If you choose Allow, data that helps improve APL, such as error logs and APL setting values, is also sent.\n\nNames, account information, avatar names, and other information that directly identifies a person or avatar are not included in the data fields collected by APL.\n\nYou can change this setting at any time from [Tools] > [Avatar Pose Library] > [Privacy Settings].";
+        public string telemetryDetailedConsentButton = "Allow";
+        public string telemetryMinimalConsentButton = "Don't allow";
+        public string telemetryPrivacyPolicyButton = "Privacy policy";
+        public string telemetryErrorDialogTitle = "Avatar Pose Library - Error report";
+        [Multiline] public string telemetryErrorDialogMessage = "Send settings and error details.\n\nChoosing Allow also enables automatic reports for future errors in APL processes.";
+        public string telemetryYesButton = "Allow";
+        public string telemetryNoButton = "Don't allow";
+        public string telemetryResetDialogTitle = "Avatar Pose Library";
+        [Multiline] public string telemetryResetDialogMessage = "Reset the APL analytics identifier and telemetry consent. The privacy choice will be shown again on the next Unity Editor launch. Previously sent data is not deleted.";
+        public string telemetryResetButton = "Reset";
+        public string telemetryCancelButton = "Cancel";
+
         public Texture2D thumbnailBg;
 
         public string headTrackingOption = "Head Lock";

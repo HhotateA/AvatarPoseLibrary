@@ -192,3 +192,42 @@ footer a:hover {
 .form-link a:hover::after {
   transform: scaleX(1); /* アニメーションで下線表示 */
 }
+/* Privacy policy */
+.logo { text-decoration: none; }
+.policy-page { padding: 3rem 0; }
+.policy-content {
+  max-width: 860px;
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  line-height: 1.8;
+}
+.policy-content h1 {
+  color: var(--accent-color);
+  margin-top: 0;
+  line-height: 1.4;
+}
+.policy-content h2 {
+  margin-top: 2.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(121, 211, 255, 0.35);
+}
+.policy-content h3 { margin-top: 1.75rem; }
+.policy-content p,
+.policy-content li { color: var(--subtext-color); }
+.policy-content a { color: var(--accent-color); }
+.policy-content code {
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  border-radius: 4px;
+  padding: 0.15rem 0.35rem;
+  overflow-wrap: anywhere;
+}
+.policy-updated { font-size: 0.9rem; }
+
+@media (max-width: 600px) {
+  .policy-page { padding: 1.5rem 0; }
+  .policy-content { padding: 1.5rem; }
+  .policy-content h1 { font-size: 1.6rem; }
+}

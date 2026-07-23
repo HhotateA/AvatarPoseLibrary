@@ -29,26 +29,38 @@ namespace com.hhotatea.avatar_pose_library.editor
                         .GetComponentsInChildren<AvatarPoseLibrary>()
                         .Where(setting => setting.data != null)
                         .ToArray();
-
-                    // ターゲット未指定のデータを統合して処理
-                    var combinedData = AvatarPoseData.Combine(
-                        settings.Select(e => e.data)
-                        .ToArray());
-
-                    foreach (var d in combinedData)
+                    APLTelemetry.BeginBuild(ctx.AvatarRootObject, settings);
+                    try
                     {
-                        var go = new GameObject(d.Guid);
-                        var root = FindRootComponent(settings, d);
-                        go.transform.SetParent(root?.transform ?? ctx.AvatarRootObject.transform);
+                        // ターゲット未指定のデータを統合して処理
+                        var combinedData = AvatarPoseData.Combine(
+                            settings.Select(e => e.data)
+                            .ToArray());
 
-                        var assets = GetAssetCache(d, d.enableUseCache);
-                        if (d.EnableAudioMode)
+                        foreach (var d in combinedData)
                         {
-                            BuildAudioSource(ctx.AvatarRootObject.transform, d);
+                            var go = new GameObject(d.Guid);
+                            var root = FindRootComponent(settings, d);
+                            go.transform.SetParent(root?.transform ?? ctx.AvatarRootObject.transform);
+
+                            var assets = GetAssetCache(d, d.enableUseCache);
+                            if (d.EnableAudioMode)
+                            {
+                                BuildAudioSource(ctx.AvatarRootObject.transform, d);
+                            }
+                            BuildRuntimeAnimator(go, assets, d, ctx.AvatarRootObject);
+                            BuildRuntimeMenu(go, assets, root?.transform, ctx.AvatarRootObject.transform);
+                            BuildRuntimeParameter(go, assets);
                         }
-                        BuildRuntimeAnimator(go, assets, d, ctx.AvatarRootObject);
-                        BuildRuntimeMenu(go, assets, root?.transform, ctx.AvatarRootObject.transform);
-                        BuildRuntimeParameter(go, assets);
+                    }
+                    catch (Exception exception)
+                    {
+                        APLTelemetry.FailBuild(
+                            ctx.AvatarRootObject,
+                            settings,
+                            exception,
+                            "data_convert");
+                        throw;
                     }
                 });
         }

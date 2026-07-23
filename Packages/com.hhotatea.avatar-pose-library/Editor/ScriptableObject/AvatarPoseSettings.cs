@@ -6,6 +6,9 @@ namespace com.hhotatea.avatar_pose_library.component
     // [CreateAssetMenu(menuName = "HhotateA/AvatarPoseSettings")]
     public class AvatarPoseSettings : ScriptableObject
     {
+        [SerializeField] APLTelemetryConfiguration telemetryConfiguration;
+        public APLTelemetryConfiguration TelemetryConfiguration => telemetryConfiguration;
+
         [SerializeField] MenuContext menuContext;
         public MenuContext Menu
         {

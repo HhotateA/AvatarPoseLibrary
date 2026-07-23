@@ -20,42 +20,55 @@ namespace com.hhotatea.avatar_pose_library.editor
                 .Run("AvatarPose: Replace thumbnail...", ctx =>
                 {
                     var settings = ctx.AvatarRootObject.GetComponentsInChildren<AvatarPoseLibrary>();
-                    foreach (var setting in settings)
+                    try
                     {
-                        var data = setting.data;
-                        if (data != null)
+                        foreach (var setting in settings)
                         {
-                            var cameraSettings = DynamicVariables.GetCameraSettings(data);
-                            using (var capture = new ThumbnailGenerator(ctx.AvatarRootObject))
+                            var data = setting.data;
+                            if (data != null)
                             {
-                                if (data.categories != null)
+                                var cameraSettings = DynamicVariables.GetCameraSettings(data);
+                                using (var capture = new ThumbnailGenerator(ctx.AvatarRootObject))
                                 {
-                                    foreach (var category in data.categories)
+                                    if (data.categories != null)
                                     {
-                                        if (category?.poses == null)
+                                        foreach (var category in data.categories)
                                         {
-                                            continue;
-                                        }
-
-                                        foreach (var pose in category.poses)
-                                        {
-                                            if (pose == null || !pose.autoThumbnail)
+                                            if (category?.poses == null)
                                             {
                                                 continue;
                                             }
 
-                                            var control = SearchMenu(ctx.AvatarDescriptor.expressionsMenu, pose);
-                                            if (control != null)
+                                            foreach (var pose in category.poses)
                                             {
-                                                control.icon = capture.Capture(pose.animationClip, cameraSettings);
+                                                if (pose == null || !pose.autoThumbnail)
+                                                {
+                                                    continue;
+                                                }
+
+                                                var control = SearchMenu(ctx.AvatarDescriptor.expressionsMenu, pose);
+                                                if (control != null)
+                                                {
+                                                    control.icon = capture.Capture(pose.animationClip, cameraSettings);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        Object.DestroyImmediate(setting);
+                            Object.DestroyImmediate(setting);
+                        }
+                        APLTelemetry.CompleteBuild(ctx.AvatarRootObject);
+                    }
+                    catch (Exception exception)
+                    {
+                        APLTelemetry.FailBuild(
+                            ctx.AvatarRootObject,
+                            settings,
+                            exception,
+                            "auto_thumbnail");
+                        throw;
                     }
                 });
         }
