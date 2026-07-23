@@ -12,6 +12,17 @@ namespace com.hhotatea.avatar_pose_library.editor
         private static readonly Dictionary<int, BuildState> ActiveBuilds =
             new Dictionary<int, BuildState>();
 
+        public static void SendFirstSession()
+        {
+            SendEvent(
+                DynamicVariables.TelemetryConfiguration?.FirstSessionEvent,
+                TelemetryBuildMetrics.Empty,
+                0,
+                string.Empty,
+                string.Empty,
+                string.Empty);
+        }
+
         public static void SendVersionChanged(string previousVersion)
         {
             SendEvent(

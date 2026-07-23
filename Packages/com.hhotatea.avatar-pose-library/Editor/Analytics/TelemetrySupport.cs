@@ -140,22 +140,37 @@ namespace com.hhotatea.avatar_pose_library.editor
                 return CreateBase<MinimalEvent>(configuration, eventName);
             }
 
-            var payload = CreateBase<DetailedEvent>(configuration, eventName);
+            DetailedSessionEvent payload;
+            if (!string.IsNullOrEmpty(previousAplVersion))
+            {
+                var version = CreateBase<DetailedVersionEvent>(configuration, eventName);
+                version.previous_apl_version = previousAplVersion;
+                payload = version;
+            }
+            else if (ReferenceEquals(metrics, TelemetryBuildMetrics.Empty))
+            {
+                payload = CreateBase<DetailedSessionEvent>(configuration, eventName);
+            }
+            else
+            {
+                DetailedBuildEvent build;
+                if (string.IsNullOrEmpty(buildStage) && string.IsNullOrEmpty(exceptionType))
+                {
+                    build = CreateBase<DetailedBuildEvent>(configuration, eventName);
+                }
+                else
+                {
+                    var failed = CreateBase<DetailedBuildFailedEvent>(configuration, eventName);
+                    failed.build_stage = buildStage ?? string.Empty;
+                    failed.exception_type = exceptionType ?? string.Empty;
+                    build = failed;
+                }
+
+                PopulateBuild(build, metrics, durationMilliseconds);
+                payload = build;
+            }
+
             PopulateEnvironment(payload);
-            payload.previous_apl_version = previousAplVersion ?? string.Empty;
-            payload.build_duration_ms = Math.Max(0, durationMilliseconds);
-            payload.component_count = metrics.component_count;
-            payload.library_count = metrics.library_count;
-            payload.category_count = metrics.category_count;
-            payload.pose_count = metrics.pose_count;
-            payload.humanoid = metrics.humanoid;
-            payload.audio_enabled = metrics.audio_enabled;
-            payload.locomotion_enabled = metrics.locomotion_enabled;
-            payload.fx_enabled = metrics.fx_enabled;
-            payload.cache_enabled = metrics.cache_enabled;
-            payload.auto_reset_enabled = metrics.auto_reset_enabled;
-            payload.build_stage = buildStage ?? string.Empty;
-            payload.exception_type = exceptionType ?? string.Empty;
             return payload;
         }
 
@@ -230,6 +245,24 @@ namespace com.hhotatea.avatar_pose_library.editor
             payload.engagement_time_msec = 1;
         }
 
+        private static void PopulateBuild(
+            DetailedBuildEvent payload,
+            TelemetryBuildMetrics metrics,
+            long durationMilliseconds)
+        {
+            payload.build_duration_ms = Math.Max(0, durationMilliseconds);
+            payload.component_count = metrics.component_count;
+            payload.library_count = metrics.library_count;
+            payload.category_count = metrics.category_count;
+            payload.pose_count = metrics.pose_count;
+            payload.humanoid = metrics.humanoid;
+            payload.audio_enabled = metrics.audio_enabled;
+            payload.locomotion_enabled = metrics.locomotion_enabled;
+            payload.fx_enabled = metrics.fx_enabled;
+            payload.cache_enabled = metrics.cache_enabled;
+            payload.auto_reset_enabled = metrics.auto_reset_enabled;
+        }
+
         private static string Escape(string value)
         {
             return UnityWebRequest.EscapeURL(value ?? string.Empty);
@@ -264,9 +297,14 @@ namespace com.hhotatea.avatar_pose_library.editor
         }
 
         [Serializable]
-        private sealed class DetailedEvent : DetailedSessionEvent
+        private sealed class DetailedVersionEvent : DetailedSessionEvent
         {
             public string previous_apl_version;
+        }
+
+        [Serializable]
+        private class DetailedBuildEvent : DetailedSessionEvent
+        {
             public long build_duration_ms;
             public int component_count;
             public int library_count;
@@ -278,6 +316,11 @@ namespace com.hhotatea.avatar_pose_library.editor
             public int fx_enabled;
             public int cache_enabled;
             public int auto_reset_enabled;
+        }
+
+        [Serializable]
+        private sealed class DetailedBuildFailedEvent : DetailedBuildEvent
+        {
             public string build_stage;
             public string exception_type;
         }

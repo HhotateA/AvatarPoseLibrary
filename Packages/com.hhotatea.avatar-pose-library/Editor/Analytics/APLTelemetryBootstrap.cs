@@ -149,6 +149,11 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         private static void StartSession()
         {
+            if (TelemetryPreferences.ConsumeFirstSessionPending())
+            {
+                APLTelemetry.SendFirstSession();
+            }
+
             _ = DynamicVariables.LatestVersion;
 
             var current = DynamicVariables.CurrentVersion.ToString();
