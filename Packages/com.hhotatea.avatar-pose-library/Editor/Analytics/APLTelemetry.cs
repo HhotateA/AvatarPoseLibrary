@@ -133,7 +133,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 }
 
                 TelemetryRequestDispatcher.PostJson(
-                    configuration.LatestVersionEndpoint,
+                    configuration.ServiceEndpoint,
                     body,
                     configuration.RequestTimeoutSeconds,
                     false);

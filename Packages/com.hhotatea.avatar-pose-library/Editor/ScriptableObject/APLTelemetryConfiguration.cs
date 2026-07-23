@@ -5,7 +5,7 @@ namespace com.hhotatea.avatar_pose_library.component
     public sealed class APLTelemetryConfiguration : ScriptableObject
     {
         [Header("Endpoints")]
-        [SerializeField] string latestVersionEndpoint;
+        [SerializeField] string serviceEndpoint;
 
         [Header("Public links")]
         [SerializeField] string privacyPolicyUrl;
@@ -27,7 +27,7 @@ namespace com.hhotatea.avatar_pose_library.component
         [SerializeField] string buildCompletedEvent = "apl_build_completed";
         [SerializeField] string buildFailedEvent = "apl_build_failed";
 
-        public string LatestVersionEndpoint => latestVersionEndpoint;
+        public string ServiceEndpoint => serviceEndpoint;
         public string PrivacyPolicyUrl => privacyPolicyUrl;
         public int PrivacyPolicyVersion => Mathf.Max(1, privacyPolicyVersion);
         public int SchemaVersion => Mathf.Max(1, schemaVersion);
@@ -42,10 +42,10 @@ namespace com.hhotatea.avatar_pose_library.component
         public string BuildFailedEvent => buildFailedEvent;
 
         public bool CanSendLogs =>
-            logEventsEnabled && IsHttpsUrl(latestVersionEndpoint);
+            logEventsEnabled && IsHttpsUrl(serviceEndpoint);
 
         public bool CanSendErrors =>
-            errorReportsEnabled && IsHttpsUrl(latestVersionEndpoint);
+            errorReportsEnabled && IsHttpsUrl(serviceEndpoint);
 
         private static bool IsHttpsUrl(string value)
         {

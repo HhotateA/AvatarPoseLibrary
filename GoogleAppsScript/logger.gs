@@ -63,7 +63,7 @@ const PATTERNS = Object.freeze({
   ERROR_BUILD_STAGE: /^[a-z0-9_]{1,40}$/,
   EVENT_EXCEPTION: /^[A-Za-z0-9_.+`]{0,100}$/,
   WRITE_DEFAULTS: /^[A-Za-z0-9_]{1,40}$/,
-  GCP_PROJECT_ID: /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/,
+  DISCORD_CHANNEL_ID: /^[0-9]{17,20}$/,
   ISO_UTC: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/,
 });
 
@@ -73,8 +73,6 @@ const DEFAULTS = Object.freeze({
   MAX_ERROR_BYTES: 65536,
   MAX_ERROR_TEXT_CHARACTERS: 24000,
   MAX_STACK_FRAMES: 32,
-  MAX_ERROR_REPORTS_PER_HOUR: 10,
-  ERROR_SERVICE_NAME: "avatar-pose-library-editor",
   LEGACY_CLIENT_ID: "00000000000000000000000000000000",
   LEGACY_APL_VERSION: "1.2.35",
 });
@@ -175,13 +173,8 @@ function settings_() {
       DEFAULTS.MAX_ERROR_TEXT_CHARACTERS
     ),
     maxStackFrames: integer("MAX_STACK_FRAMES", DEFAULTS.MAX_STACK_FRAMES),
-    maxErrorReportsPerHour: integer(
-      "MAX_ERROR_REPORTS_PER_CLIENT_PER_HOUR",
-      DEFAULTS.MAX_ERROR_REPORTS_PER_HOUR
-    ),
-    gcpProjectId: properties.getProperty("GCP_PROJECT_ID"),
-    errorServiceName: properties.getProperty("ERROR_SERVICE_NAME")
-      || DEFAULTS.ERROR_SERVICE_NAME,
+    discordBotToken: properties.getProperty("DISCORD_BOT_TOKEN"),
+    discordChannelId: properties.getProperty("DISCORD_CHANNEL_ID"),
     debugMode: String(properties.getProperty("GA4_DEBUG_MODE")).toLowerCase()
       === "true",
     legacyClientId: properties.getProperty("GA4_LEGACY_CLIENT_ID")
@@ -449,72 +442,52 @@ function hasGa4ValidationErrors_(response) {
 }
 
 function sendErrorReport_(report, settings) {
-  if (!matches_(settings.gcpProjectId, PATTERNS.GCP_PROJECT_ID)) {
-    return failure_("error_reporting_not_configured");
-  }
-  if (!allowErrorReport_(report.client_id, settings.maxErrorReportsPerHour)) {
-    return failure_("rate_limited");
+  if (!settings.discordBotToken
+      || !matches_(settings.discordChannelId, PATTERNS.DISCORD_CHANNEL_ID)) {
+    return failure_("discord_not_configured");
   }
 
   const safeReport = sanitizedErrorReport_(report);
-  writeStructuredErrorLog_(safeReport);
-
-  const response = UrlFetchApp.fetch(errorReportingUrl_(settings.gcpProjectId), {
-    method: "post",
-    contentType: "application/json",
-    headers: {
-      Authorization: "Bearer " + ScriptApp.getOAuthToken(),
-    },
-    payload: JSON.stringify(errorReportingPayload_(safeReport, settings)),
-    muteHttpExceptions: true,
-  });
+  const fileName = "apl-error-" + safeReport.report_id + ".json";
+  const message = {
+    content: [
+      "AvatarPoseLibrary error report",
+      "APL: " + safeReport.apl_version,
+      "Stage: " + safeReport.build_stage,
+      "Exception: " + safeReport.exception_type,
+    ].join("\n"),
+    allowed_mentions: { parse: [] },
+    attachments: [{ id: 0, filename: fileName }],
+  };
+  const response = UrlFetchApp.fetch(
+    discordMessageUrl_(settings.discordChannelId),
+    {
+      method: "post",
+      headers: {
+        Authorization: "Bot " + settings.discordBotToken,
+        "User-Agent": "DiscordBot (https://github.com/HhotateA/AvatarPoseLibrary, 1.0)",
+      },
+      payload: {
+        payload_json: JSON.stringify(message),
+        "files[0]": Utilities.newBlob(
+          JSON.stringify(safeReport, null, 2),
+          "application/json",
+          fileName
+        ),
+      },
+      muteHttpExceptions: true,
+    }
+  );
   return isSuccessfulResponse_(response)
     ? success_()
-    : failure_("error_reporting_upstream_error");
+    : failure_("discord_upstream_error");
 }
 
-function errorReportingUrl_(projectId) {
-  return "https://clouderrorreporting.googleapis.com/v1beta1/projects/"
-    + encodeURIComponent(projectId)
-    + "/events:report";
+function discordMessageUrl_(channelId) {
+  return "https://discord.com/api/v10/channels/"
+    + encodeURIComponent(channelId)
+    + "/messages";
 }
-
-function errorReportingPayload_(report, settings) {
-  return {
-    eventTime: report.occurred_at_utc,
-    serviceContext: {
-      service: settings.errorServiceName,
-      version: report.apl_version,
-    },
-    message: errorMessage_(report),
-    context: {
-      user: report.client_id,
-      reportLocation: {
-        filePath: "AvatarPoseLibrary",
-        lineNumber: 1,
-        functionName: report.build_stage + ":" + report.exception_type,
-      },
-    },
-  };
-}
-
-function errorMessage_(report) {
-  if (/\n\s*at\s/.test(report.error_text) || report.stack_frames.length === 0) {
-    return report.error_text;
-  }
-  return report.error_text + "\n" + report.stack_frames
-    .map((frame) => "    at " + frame)
-    .join("\n");
-}
-
-function writeStructuredErrorLog_(report) {
-  console.log({
-    message: "APL error report " + report.report_id,
-    report_type: "apl_error_report",
-    report: report,
-  });
-}
-
 function sanitizedErrorReport_(report) {
   const safe = JSON.parse(JSON.stringify(report));
   delete safe.request_type;
@@ -526,18 +499,6 @@ function redactLocalPaths_(value) {
   return String(value || "")
     .replace(/[A-Za-z]:\\[^\r\n]*/g, "[local-path]")
     .replace(/\/(?:Users|home)\/[^/\r\n]+\/[^\r\n]*/g, "[local-path]");
-}
-
-function allowErrorReport_(clientId, maximumPerHour) {
-  const cache = CacheService.getScriptCache();
-  const hour = Utilities.formatDate(new Date(), "UTC", "yyyyMMddHH");
-  const key = "apl-error:" + hour + ":" + clientId;
-  const count = Number(cache.get(key) || 0);
-  if (!Number.isSafeInteger(count) || count >= maximumPerHour) {
-    return false;
-  }
-  cache.put(key, String(count + 1), 3600);
-  return true;
 }
 
 function isSuccessfulResponse_(response) {

@@ -108,7 +108,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             APLTelemetryConfiguration configuration)
         {
             return CreateGetUrl(
-                configuration.LatestVersionEndpoint,
+                configuration.ServiceEndpoint,
                 CreateSession(configuration));
         }
 
@@ -452,7 +452,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 }
 
                 TelemetryRequestDispatcher.PostJson(
-                    configuration.LatestVersionEndpoint,
+                    configuration.ServiceEndpoint,
                     Encoding.UTF8.GetBytes(json),
                     configuration.RequestTimeoutSeconds,
                     true);
