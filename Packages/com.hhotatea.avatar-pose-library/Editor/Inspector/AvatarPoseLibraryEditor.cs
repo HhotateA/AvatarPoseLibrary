@@ -47,6 +47,7 @@ namespace com.hhotatea.avatar_pose_library.editor
         private int _libraryTagIndex;
         private string _instanceIdPathBuffer = string.Empty;
         private string[] _trackingOptions;
+        private bool _debugFoldout;
         #endregion
 
         #region ===== Foldout/Cache helpers =====
@@ -489,6 +490,40 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             DrawMainHeader();
             _categoryList.DoLayoutList();
+            DrawDebugOptions();
+        }
+
+        private void DrawDebugOptions()
+        {
+            EditorGUILayout.Space();
+            _debugFoldout = EditorGUILayout.Foldout(
+                _debugFoldout,
+                "Debug",
+                true);
+            if (!_debugFoldout)
+            {
+                return;
+            }
+
+            var forceBuildError = EditorGUILayout.ToggleLeft(
+                new GUIContent(
+                    "Force build error",
+                    "Throws a test exception during the APL build pipeline."),
+                Data.debugForceBuildError);
+            if (forceBuildError != Data.debugForceBuildError)
+            {
+                Apply("Toggle forced build error", () =>
+                {
+                    FindData("debugForceBuildError").boolValue = forceBuildError;
+                });
+            }
+
+            if (forceBuildError)
+            {
+                EditorGUILayout.HelpBox(
+                    "APL builds will fail until this debug option is disabled.",
+                    MessageType.Warning);
+            }
         }
         #endregion
 

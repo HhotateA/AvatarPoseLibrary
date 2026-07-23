@@ -32,6 +32,11 @@ namespace com.hhotatea.avatar_pose_library.editor
                     APLTelemetry.BeginBuild(ctx.AvatarRootObject, settings);
                     try
                     {
+                        if (settings.Any(setting => setting.data.debugForceBuildError))
+                        {
+                            throw new InvalidOperationException(
+                                "AvatarPoseLibrary: Forced build error for debugging.");
+                        }
                         // ターゲット未指定のデータを統合して処理
                         var combinedData = AvatarPoseData.Combine(
                             settings.Select(e => e.data)

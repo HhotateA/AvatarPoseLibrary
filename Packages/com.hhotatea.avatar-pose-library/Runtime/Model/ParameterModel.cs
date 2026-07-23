@@ -82,6 +82,9 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableFxAnimator = true;
         public bool suppressAdditiveAnimator = true;
 
+        [Tooltip("Throws a test exception during the APL build pipeline.")]
+        public bool debugForceBuildError;
+
         public VRCExpressionsMenu target;
         public VRCExpressionsMenu settings;
         public WriteDefaultType writeDefaultType = WriteDefaultType.MatchAvatar;

@@ -11,8 +11,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 15bd5cd70d1a4bcd8ffea8e1d8bca8dd, type: 3}
   m_Name: TelemetryConfiguration
-  m_EditorClassIdentifier:
-  discordWebhookUrl:
+  m_EditorClassIdentifier: 
+  discordWebhookUrl: https://discord.com/api/webhooks/1529823961356177419/tx8Bh31SvPCo_sLv3RsP6A6Y5xwEc6Dcc4MlXydk7e9CQTUQX-6bfNvD4IMUTJ6OjEbv
   latestVersionEndpoint: https://script.google.com/macros/s/AKfycbyIJ6zUa0LHzdZU5GSO7h0pDWUPCZ1xAKQxWNST88Y9KpgCSsw0fE2u00xHLWW9_S-eng/exec
   privacyPolicyUrl: https://hhotatea.github.io/AvatarPoseLibrary/privacy.html
   logEventsEnabled: 1
