@@ -55,6 +55,21 @@ const ERROR_REPORT_ALLOWED_FIELDS = FIELDS.ERROR_REPORT.concat(["request_type"])
 const GET_INTEGER_FIELDS = [
   "schema_version", "session_id", "engagement_time_msec",
 ];
+const METRIC_INTEGER_LIMITS = Object.freeze({
+  build_duration_ms: [0, 86400000],
+  component_count: [0, 10000],
+  library_count: [0, 10000],
+  category_count: [0, 100000],
+  pose_count: [0, 1000000],
+});
+const LIBRARY_INTEGER_LIMITS = Object.freeze({
+  category_count: METRIC_INTEGER_LIMITS.category_count,
+  pose_count: METRIC_INTEGER_LIMITS.pose_count,
+});
+const BUILD_FLAG_FIELDS = Object.freeze([
+  "humanoid", "audio_enabled", "locomotion_enabled", "fx_enabled",
+  "cache_enabled", "auto_reset_enabled",
+]);
 const PATTERNS = Object.freeze({
   ID: /^[a-f0-9]{32}$/,
   VERSION: /^[0-9A-Za-z][0-9A-Za-z._+\-]{0,63}$/,
@@ -181,6 +196,7 @@ function settings_() {
       || DEFAULTS.LEGACY_CLIENT_ID,
   };
 }
+
 function sessionInputFromGet_(e) {
   const parameters = e && isObject_(e.parameter) ? e.parameter : {};
   if (!hasFields_(parameters, FIELDS.MINIMAL)) {
@@ -271,17 +287,8 @@ function validateEnvironment_(input) {
 
 function validateBuildFields_(input) {
   return optionalVersion_(input.previous_apl_version)
-    && integerInRange_(input.build_duration_ms, 0, 86400000)
-    && integerInRange_(input.component_count, 0, 10000)
-    && integerInRange_(input.library_count, 0, 10000)
-    && integerInRange_(input.category_count, 0, 100000)
-    && integerInRange_(input.pose_count, 0, 1000000)
-    && binary_(input.humanoid)
-    && binary_(input.audio_enabled)
-    && binary_(input.locomotion_enabled)
-    && binary_(input.fx_enabled)
-    && binary_(input.cache_enabled)
-    && binary_(input.auto_reset_enabled)
+    && validateIntegerFields_(input, METRIC_INTEGER_LIMITS)
+    && validateBinaryFields_(input, BUILD_FLAG_FIELDS)
     && matches_(input.build_stage, PATTERNS.BUILD_STAGE)
     && matches_(input.exception_type, PATTERNS.EVENT_EXCEPTION);
 }
@@ -315,11 +322,7 @@ function validateErrorReport_(input, settings) {
     && stringInRange_(input.exception_type, 1, 256)
     && stringInRange_(input.error_text, 1, settings.maxErrorTextCharacters)
     && binary_(input.error_text_truncated)
-    && integerInRange_(input.build_duration_ms, 0, 86400000)
-    && integerInRange_(input.component_count, 0, 10000)
-    && integerInRange_(input.library_count, 0, 10000)
-    && integerInRange_(input.category_count, 0, 100000)
-    && integerInRange_(input.pose_count, 0, 1000000)
+    && validateIntegerFields_(input, METRIC_INTEGER_LIMITS)
     && binary_(input.humanoid)
     && validateStackFrames_(input.stack_frames, settings.maxStackFrames)
     && Array.isArray(input.libraries)
@@ -335,10 +338,9 @@ function validateStackFrames_(frames, maximum) {
 
 function validateErrorLibrary_(library) {
   return hasExactFields_(library, FIELDS.ERROR_LIBRARY)
-    && integerInRange_(library.category_count, 0, 100000)
-    && integerInRange_(library.pose_count, 0, 1000000)
+    && validateIntegerFields_(library, LIBRARY_INTEGER_LIMITS)
     && matches_(library.write_defaults, PATTERNS.WRITE_DEFAULTS)
-    && FIELDS.ERROR_LIBRARY_FLAGS.every((field) => binary_(library[field]));
+    && validateBinaryFields_(library, FIELDS.ERROR_LIBRARY_FLAGS);
 }
 
 function ga4Payload_(input) {
@@ -448,35 +450,10 @@ function sendErrorReport_(report, settings) {
   }
 
   const safeReport = sanitizedErrorReport_(report);
-  const fileName = "apl-error-" + safeReport.report_id + ".json";
-  const message = {
-    content: [
-      "AvatarPoseLibrary error report",
-      "APL: " + safeReport.apl_version,
-      "Stage: " + safeReport.build_stage,
-      "Exception: " + safeReport.exception_type,
-    ].join("\n"),
-    allowed_mentions: { parse: [] },
-    attachments: [{ id: 0, filename: fileName }],
-  };
+  const request = discordErrorRequest_(safeReport, settings.discordBotToken);
   const response = UrlFetchApp.fetch(
     discordMessageUrl_(settings.discordChannelId),
-    {
-      method: "post",
-      headers: {
-        Authorization: "Bot " + settings.discordBotToken,
-        "User-Agent": "DiscordBot (https://github.com/HhotateA/AvatarPoseLibrary, 1.0)",
-      },
-      payload: {
-        payload_json: JSON.stringify(message),
-        "files[0]": Utilities.newBlob(
-          JSON.stringify(safeReport, null, 2),
-          "application/json",
-          fileName
-        ),
-      },
-      muteHttpExceptions: true,
-    }
+    request
   );
   return isSuccessfulResponse_(response)
     ? success_()
@@ -488,6 +465,37 @@ function discordMessageUrl_(channelId) {
     + encodeURIComponent(channelId)
     + "/messages";
 }
+
+function discordErrorRequest_(report, botToken) {
+  const fileName = "apl-error-" + report.report_id + ".json";
+  const message = {
+    content: [
+      "AvatarPoseLibrary error report",
+      "APL: " + report.apl_version,
+      "Stage: " + report.build_stage,
+      "Exception: " + report.exception_type,
+    ].join("\n"),
+    allowed_mentions: { parse: [] },
+    attachments: [{ id: 0, filename: fileName }],
+  };
+  return {
+    method: "post",
+    headers: {
+      Authorization: "Bot " + botToken,
+      "User-Agent": "DiscordBot (https://github.com/HhotateA/AvatarPoseLibrary, 1.0)",
+    },
+    payload: {
+      payload_json: JSON.stringify(message),
+      "files[0]": Utilities.newBlob(
+        JSON.stringify(report, null, 2),
+        "application/json",
+        fileName
+      ),
+    },
+    muteHttpExceptions: true,
+  };
+}
+
 function sanitizedErrorReport_(report) {
   const safe = JSON.parse(JSON.stringify(report));
   delete safe.request_type;
@@ -559,6 +567,15 @@ function stringInRange_(value, minimum, maximum) {
 
 function integerInRange_(value, minimum, maximum) {
   return Number.isSafeInteger(value) && value >= minimum && value <= maximum;
+}
+
+function validateIntegerFields_(input, limits) {
+  return Object.keys(limits).every((field) =>
+    integerInRange_(input[field], limits[field][0], limits[field][1]));
+}
+
+function validateBinaryFields_(input, fields) {
+  return fields.every((field) => binary_(input[field]));
 }
 
 function binary_(value) {

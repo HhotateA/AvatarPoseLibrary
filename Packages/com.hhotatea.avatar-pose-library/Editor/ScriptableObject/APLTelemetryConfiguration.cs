@@ -42,10 +42,12 @@ namespace com.hhotatea.avatar_pose_library.component
         public string BuildFailedEvent => buildFailedEvent;
 
         public bool CanSendLogs =>
-            logEventsEnabled && IsHttpsUrl(serviceEndpoint);
+            logEventsEnabled && HasValidServiceEndpoint;
 
         public bool CanSendErrors =>
-            errorReportsEnabled && IsHttpsUrl(serviceEndpoint);
+            errorReportsEnabled && HasValidServiceEndpoint;
+
+        private bool HasValidServiceEndpoint => IsHttpsUrl(serviceEndpoint);
 
         private static bool IsHttpsUrl(string value)
         {

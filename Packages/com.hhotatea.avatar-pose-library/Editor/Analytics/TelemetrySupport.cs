@@ -403,8 +403,9 @@ namespace com.hhotatea.avatar_pose_library.editor
             Exception exception,
             string stage)
         {
+            var fullErrorText = exception?.ToString() ?? "UnknownException";
             var errorText = LimitText(
-                exception?.ToString() ?? "UnknownException",
+                fullErrorText,
                 configuration.MaxErrorTextCharacters);
 
             return new TelemetryErrorReport
@@ -425,7 +426,10 @@ namespace com.hhotatea.avatar_pose_library.editor
                 build_duration_ms = Math.Max(0, durationMilliseconds),
                 exception_type = exception?.GetType().FullName ?? "UnknownException",
                 error_text = errorText,
-                stack_frames = StackFrames(exception, configuration.MaxStackFrames),
+                error_text_truncated = errorText.Length < fullErrorText.Length ? 1 : 0,
+                stack_frames = CreateStackFrames(
+                    exception,
+                    configuration.MaxStackFrames),
                 component_count = metrics.component_count,
                 library_count = metrics.library_count,
                 category_count = metrics.category_count,
@@ -472,7 +476,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                 : value.Substring(0, maximumCharacters);
         }
 
-        private static string[] StackFrames(Exception exception, int maximum)
+        private static string[] CreateStackFrames(
+            Exception exception,
+            int maximum)
         {
             if (exception == null)
             {
@@ -503,26 +509,34 @@ namespace com.hhotatea.avatar_pose_library.editor
             TelemetryErrorReport report,
             int maximumBytes)
         {
-            var json = JsonUtility.ToJson(report, true);
-            while (Encoding.UTF8.GetByteCount(json) > maximumBytes
+            var json = Serialize(report);
+            while (!Fits(json, maximumBytes)
                    && report.error_text.Length > 1024)
             {
                 report.error_text =
                     report.error_text.Substring(0, report.error_text.Length / 2);
                 report.error_text_truncated = 1;
-                json = JsonUtility.ToJson(report, true);
+                json = Serialize(report);
             }
 
-            if (Encoding.UTF8.GetByteCount(json) > maximumBytes)
+            if (!Fits(json, maximumBytes))
             {
                 report.stack_frames = Array.Empty<string>();
                 report.error_text_truncated = 1;
-                json = JsonUtility.ToJson(report, true);
+                json = Serialize(report);
             }
 
-            return Encoding.UTF8.GetByteCount(json) <= maximumBytes
-                ? json
-                : string.Empty;
+            return Fits(json, maximumBytes) ? json : string.Empty;
+        }
+
+        private static string Serialize(TelemetryErrorReport report)
+        {
+            return JsonUtility.ToJson(report, true);
+        }
+
+        private static bool Fits(string value, int maximumBytes)
+        {
+            return Encoding.UTF8.GetByteCount(value) <= maximumBytes;
         }
     }
 
