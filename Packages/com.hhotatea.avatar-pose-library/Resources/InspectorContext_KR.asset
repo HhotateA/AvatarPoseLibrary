@@ -105,9 +105,9 @@ MonoBehaviour:
   presetNames: []
   updateMessage: A new update is available. Please check the VCC.
   telemetryPrivacyDialogTitle: "Avatar Pose Library - 개인정보"
-  telemetryPrivacyDialogMessage: "APL 개선을 위해 사용 현황 데이터 전송에 협조해 주세요.\n\n「허용 안 함」을 선택해도 APL 전용 무작위 GUID와 APL 버전 등 사용 현황 집계에 필요한 최소한의 데이터만 전송됩니다. 「허용」을 선택하면 오류 발생 시의 로그 정보와 APL 설정값 등 개선에 도움이 되는 데이터도 전송됩니다.\n\n이름, 계정 정보, 아바타 이름 등 개인이나 아바타를 직접 식별하는 정보는 APL의 수집 항목에 포함되지 않습니다.\n\n이 설정은 [Tools] > [Avatar Pose Library] > [Privacy Settings]에서 언제든지 변경할 수 있습니다."
-  telemetryDetailedConsentButton: "허용"
-  telemetryMinimalConsentButton: "허용 안 함"
+  telemetryPrivacyDialogMessage: "APL 개선을 위해 사용 현황 데이터 전송에 협조해 주세요.\n\n「최소한만」을 선택하면 APL 전용 무작위 GUID와 APL 버전 등 사용 현황 집계에 필요한 최소한의 데이터만 전송됩니다. 「모두 허용」을 선택하면 오류 발생 시의 로그 정보와 APL 설정값 등 개선에 도움이 되는 데이터도 전송됩니다.\n\n이름, 계정 정보, 아바타 이름 등 개인이나 아바타를 직접 식별하는 정보는 APL의 수집 항목에 포함되지 않습니다.\n\n이 설정은 [Tools] > [Avatar Pose Library] > [Privacy Settings]에서 언제든지 변경할 수 있습니다."
+  telemetryDetailedConsentButton: "모두 허용"
+  telemetryMinimalConsentButton: "최소한만"
   telemetryPrivacyPolicyButton: "개인정보 처리방침"
   telemetryErrorDialogTitle: "Avatar Pose Library - 오류 보고서"
   telemetryErrorDialogMessage: "설정값과 오류 내용을 전송합니다.\n\n「허용」을 선택하면 이후 APL 처리에서 발생하는 오류도 자동으로 전송됩니다."

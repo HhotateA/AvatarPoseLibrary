@@ -109,9 +109,9 @@ MonoBehaviour:
   presetNames: []
   updateMessage: A new update is available. Please check the VCC.
   telemetryPrivacyDialogTitle: "Avatar Pose Library - 隱私"
-  telemetryPrivacyDialogMessage: "為了改善 APL，敬請協助傳送使用情況資料。\n\n即使選擇「不允許」，也只會傳送統計使用情況所需的最低限度資料，例如 APL 專用隨機 GUID 及 APL 版本。選擇「允許」後，還會傳送錯誤發生時的日誌資訊、APL 設定值等有助於改善的資料。\n\n姓名、帳號資訊、虛擬化身名稱等可直接識別個人或虛擬化身的資訊不包含在 APL 的收集項目中。\n\n可隨時從 [Tools] > [Avatar Pose Library] > [Privacy Settings] 變更此設定。"
-  telemetryDetailedConsentButton: "允許"
-  telemetryMinimalConsentButton: "不允許"
+  telemetryPrivacyDialogMessage: "為了改善 APL，敬請協助傳送使用情況資料。\n\n選擇「僅最低限度」時，只會傳送統計使用情況所需的最低限度資料，例如 APL 專用隨機 GUID 及 APL 版本。選擇「全部允許」後，還會傳送錯誤發生時的日誌資訊、APL 設定值等有助於改善的資料。\n\n姓名、帳號資訊、虛擬化身名稱等可直接識別個人或虛擬化身的資訊不包含在 APL 的收集項目中。\n\n可隨時從 [Tools] > [Avatar Pose Library] > [Privacy Settings] 變更此設定。"
+  telemetryDetailedConsentButton: "全部允許"
+  telemetryMinimalConsentButton: "僅最低限度"
   telemetryPrivacyPolicyButton: "隱私權政策"
   telemetryErrorDialogTitle: "Avatar Pose Library - 錯誤報告"
   telemetryErrorDialogMessage: "傳送設定值及錯誤內容。\n\n選擇「允許」後，今後 APL 處理發生的錯誤也會自動傳送。"

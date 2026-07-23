@@ -95,9 +95,9 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string updateMessage = "最新版アップデートがあります。VCCを確認してください。";
 
         public string telemetryPrivacyDialogTitle = "Avatar Pose Library - Privacy";
-        [Multiline] public string telemetryPrivacyDialogMessage = "Please help us improve APL by allowing usage data to be sent.\n\nEven if you choose Don't allow, only the minimum data required for usage statistics, such as an APL-specific random GUID and the APL version, is sent. If you choose Allow, data that helps improve APL, such as error logs and APL setting values, is also sent.\n\nNames, account information, avatar names, and other information that directly identifies a person or avatar are not included in the data fields collected by APL.\n\nYou can change this setting at any time from [Tools] > [Avatar Pose Library] > [Privacy Settings].";
-        public string telemetryDetailedConsentButton = "Allow";
-        public string telemetryMinimalConsentButton = "Don't allow";
+        [Multiline] public string telemetryPrivacyDialogMessage = "Please help us improve APL by allowing usage data to be sent.\n\nIf you choose Minimal only, APL sends only the minimum data required for usage statistics, such as an APL-specific random GUID and the APL version, is sent. If you choose Allow all, data that helps improve APL, such as error logs and APL setting values, is also sent.\n\nNames, account information, avatar names, and other information that directly identifies a person or avatar are not included in the data fields collected by APL.\n\nYou can change this setting at any time from [Tools] > [Avatar Pose Library] > [Privacy Settings].";
+        public string telemetryDetailedConsentButton = "Allow all";
+        public string telemetryMinimalConsentButton = "Minimal only";
         public string telemetryPrivacyPolicyButton = "Privacy policy";
         public string telemetryErrorDialogTitle = "Avatar Pose Library - Error report";
         [Multiline] public string telemetryErrorDialogMessage = "Send settings and error details.\n\nChoosing Allow also enables automatic reports for future errors in APL processes.";
