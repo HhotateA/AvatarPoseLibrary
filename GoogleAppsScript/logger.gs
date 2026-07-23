@@ -1,4 +1,5 @@
 const EVENTS = Object.freeze({
+  FIRST_SESSION: "apl_first_session",
   SESSION_STARTED: "apl_editor_session_started",
   VERSION_CHANGED: "apl_version_changed",
   BUILD_COMPLETED: "apl_build_completed",
@@ -10,6 +11,7 @@ const REQUEST_TYPES = Object.freeze({
 });
 
 const POST_EVENTS = Object.freeze([
+  EVENTS.FIRST_SESSION,
   EVENTS.VERSION_CHANGED,
   EVENTS.BUILD_COMPLETED,
   EVENTS.BUILD_FAILED,

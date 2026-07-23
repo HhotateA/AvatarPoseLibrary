@@ -18,6 +18,8 @@ namespace com.hhotatea.avatar_pose_library.editor
         private const string ModeKey = Prefix + "mode";
         private const string PolicyVersionKey = Prefix + "policy-version";
         private const string ClientIdKey = Prefix + "client-id";
+        private const string FirstSessionPendingKey =
+            Prefix + "first-session-pending";
         private const string LastAplVersionKey = Prefix + "last-apl-version";
 
         public static TelemetryMode Mode
@@ -75,7 +77,15 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             value = Guid.NewGuid().ToString("N");
             EditorPrefs.SetString(ClientIdKey, value);
+            EditorPrefs.SetBool(FirstSessionPendingKey, true);
             return value;
+        }
+
+        public static bool ConsumeFirstSessionPending()
+        {
+            var pending = EditorPrefs.GetBool(FirstSessionPendingKey, false);
+            EditorPrefs.DeleteKey(FirstSessionPendingKey);
+            return pending;
         }
 
         public static string LastAplVersion
@@ -105,6 +115,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             SetMode(TelemetryMode.Unknown, null);
             EditorPrefs.DeleteKey(ClientIdKey);
+            EditorPrefs.DeleteKey(FirstSessionPendingKey);
 
             Debug.Log(
                 "AvatarPoseLibrary: Analytics identifier and telemetry consent were reset. "

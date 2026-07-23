@@ -23,6 +23,7 @@ MonoBehaviour:
   maxErrorReportBytes: 65536
   maxErrorTextCharacters: 24000
   maxStackFrames: 32
+  firstSessionEvent: apl_first_session
   editorSessionStartedEvent: apl_editor_session_started
   versionChangedEvent: apl_version_changed
   buildCompletedEvent: apl_build_completed

@@ -22,6 +22,7 @@ namespace com.hhotatea.avatar_pose_library.component
         [SerializeField] int maxStackFrames = 32;
 
         [Header("Event names")]
+        [SerializeField] string firstSessionEvent = "apl_first_session";
         [SerializeField] string editorSessionStartedEvent = "apl_editor_session_started";
         [SerializeField] string versionChangedEvent = "apl_version_changed";
         [SerializeField] string buildCompletedEvent = "apl_build_completed";
@@ -36,6 +37,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public int MaxErrorReportBytes => Mathf.Clamp(maxErrorReportBytes, 4096, 1048576);
         public int MaxErrorTextCharacters => Mathf.Clamp(maxErrorTextCharacters, 1024, 100000);
         public int MaxStackFrames => Mathf.Clamp(maxStackFrames, 1, 128);
+        public string FirstSessionEvent => firstSessionEvent;
         public string EditorSessionStartedEvent => editorSessionStartedEvent;
         public string VersionChangedEvent => versionChangedEvent;
         public string BuildCompletedEvent => buildCompletedEvent;
