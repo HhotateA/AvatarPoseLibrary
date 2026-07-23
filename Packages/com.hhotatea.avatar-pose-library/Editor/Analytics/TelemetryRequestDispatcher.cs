@@ -50,33 +50,6 @@ namespace com.hhotatea.avatar_pose_library.editor
                 }
             }
         }
-        public static void PostMultipart(
-            string url,
-            List<IMultipartFormSection> sections,
-            int timeoutSeconds,
-            bool warnOnFailure)
-        {
-            if (string.IsNullOrWhiteSpace(url) || sections == null)
-            {
-                return;
-            }
-
-            try
-            {
-                var request = UnityWebRequest.Post(url, sections);
-                request.timeout = Math.Max(1, timeoutSeconds);
-                Start(request, warnOnFailure);
-            }
-            catch (Exception exception)
-            {
-                if (warnOnFailure)
-                {
-                    Debug.LogWarning(
-                        $"AvatarPoseLibrary: Error report request could not start: "
-                        + exception.GetType().Name);
-                }
-            }
-        }
 
         private static void Start(UnityWebRequest request, bool warnOnFailure)
         {

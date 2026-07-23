@@ -4,11 +4,10 @@ namespace com.hhotatea.avatar_pose_library.component
 {
     public sealed class APLTelemetryConfiguration : ScriptableObject
     {
-        [Header("Destinations")]
-        [SerializeField] string discordWebhookUrl;
+        [Header("Endpoints")]
+        [SerializeField] string latestVersionEndpoint;
 
         [Header("Public links")]
-        [SerializeField] string latestVersionEndpoint;
         [SerializeField] string privacyPolicyUrl;
 
         [Header("Protocol")]
@@ -28,7 +27,6 @@ namespace com.hhotatea.avatar_pose_library.component
         [SerializeField] string buildCompletedEvent = "apl_build_completed";
         [SerializeField] string buildFailedEvent = "apl_build_failed";
 
-        public string DiscordWebhookUrl => discordWebhookUrl;
         public string LatestVersionEndpoint => latestVersionEndpoint;
         public string PrivacyPolicyUrl => privacyPolicyUrl;
         public int PrivacyPolicyVersion => Mathf.Max(1, privacyPolicyVersion);
@@ -47,7 +45,7 @@ namespace com.hhotatea.avatar_pose_library.component
             logEventsEnabled && IsHttpsUrl(latestVersionEndpoint);
 
         public bool CanSendErrors =>
-            errorReportsEnabled && IsHttpsUrl(discordWebhookUrl);
+            errorReportsEnabled && IsHttpsUrl(latestVersionEndpoint);
 
         private static bool IsHttpsUrl(string value)
         {

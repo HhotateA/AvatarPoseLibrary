@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -410,6 +409,7 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             return new TelemetryErrorReport
             {
+                request_type = "error_report",
                 schema_version = configuration.SchemaVersion,
                 report_id = Guid.NewGuid().ToString("N"),
                 occurred_at_utc = DateTime.UtcNow.ToString("O"),
@@ -451,29 +451,9 @@ namespace com.hhotatea.avatar_pose_library.editor
                     return;
                 }
 
-                var message = JsonUtility.ToJson(new WebhookMessage
-                {
-                    content =
-                        $"AvatarPoseLibrary error report: APL {report.apl_version}, "
-                        + $"stage {report.build_stage}",
-                    allowed_mentions = new AllowedMentions
-                    {
-                        parse = Array.Empty<string>()
-                    }
-                });
-                var sections = new List<IMultipartFormSection>
-                {
-                    new MultipartFormDataSection("payload_json", message),
-                    new MultipartFormFileSection(
-                        "files[0]",
-                        Encoding.UTF8.GetBytes(json),
-                        $"apl-error-{report.report_id}.json",
-                        "application/json")
-                };
-
-                TelemetryRequestDispatcher.PostMultipart(
-                    configuration.DiscordWebhookUrl,
-                    sections,
+                TelemetryRequestDispatcher.PostJson(
+                    configuration.LatestVersionEndpoint,
+                    Encoding.UTF8.GetBytes(json),
                     configuration.RequestTimeoutSeconds,
                     true);
             }
@@ -544,24 +524,12 @@ namespace com.hhotatea.avatar_pose_library.editor
                 ? json
                 : string.Empty;
         }
-
-        [Serializable]
-        private sealed class WebhookMessage
-        {
-            public string content;
-            public AllowedMentions allowed_mentions;
-        }
-
-        [Serializable]
-        private sealed class AllowedMentions
-        {
-            public string[] parse;
-        }
     }
 
     [Serializable]
     internal sealed class TelemetryErrorReport
     {
+        public string request_type;
         public int schema_version;
         public string report_id;
         public string occurred_at_utc;
