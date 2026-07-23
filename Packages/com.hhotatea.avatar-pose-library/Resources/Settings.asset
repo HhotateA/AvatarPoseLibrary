@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0590e1b030db8b84195bb25ea9128bd2, type: 3}
   m_Name: Settings
   m_EditorClassIdentifier: 
+  telemetryConfiguration: {fileID: 11400000, guid: fe5109fa79cf41e4b9c672ae3555153a, type: 2}
   menuContext: {fileID: 11400000, guid: a379b4378865fdd44a067a6d733fc5f0, type: 2}
   inspectorContext: {fileID: 11400000, guid: e93ff86eafc589649aa3d6cc401a5719, type: 2}
   localContexts:

@@ -152,6 +152,12 @@ https://meronfarm.booth.pm/
 
 ---
 
+## 🔒 プライバシーと利用状況データ
+
+APLが送信する利用状況データ、エラーレポート、送信先、設定変更方法については、[プライバシーポリシー](https://hhotatea.github.io/AvatarPoseLibrary/privacy.html)を参照してください。
+
+---
+
 ## 📞 連絡先
 
 質問は、以下の連絡先にお願いします。

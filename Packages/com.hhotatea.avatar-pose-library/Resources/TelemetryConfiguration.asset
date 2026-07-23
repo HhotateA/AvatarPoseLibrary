@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15bd5cd70d1a4bcd8ffea8e1d8bca8dd, type: 3}
+  m_Name: TelemetryConfiguration
+  m_EditorClassIdentifier: 
+  serviceEndpoint: https://script.google.com/macros/s/AKfycbyIJ6zUa0LHzdZU5GSO7h0pDWUPCZ1xAKQxWNST88Y9KpgCSsw0fE2u00xHLWW9_S-eng/exec
+  privacyPolicyUrl: https://hhotatea.github.io/AvatarPoseLibrary/privacy.html
+  logEventsEnabled: 1
+  errorReportsEnabled: 1
+  privacyPolicyVersion: 1
+  schemaVersion: 1
+  requestTimeoutSeconds: 10
+  maxLogRequestBytes: 8192
+  maxErrorReportBytes: 65536
+  maxErrorTextCharacters: 24000
+  maxStackFrames: 32
+  editorSessionStartedEvent: apl_editor_session_started
+  versionChangedEvent: apl_version_changed
+  buildCompletedEvent: apl_build_completed
+  buildFailedEvent: apl_build_failed

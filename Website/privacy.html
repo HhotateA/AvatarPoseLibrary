@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="Avatar Pose Libraryの利用状況データとエラーレポートに関するプライバシーポリシー"
+  >
+  <title>プライバシーポリシー | AvatarPoseLibrary</title>
+  <link rel="icon" href="icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+Antique&display=swap"
+    rel="stylesheet"
+  >
+</head>
+<body>
+  <header class="header">
+    <div class="container header-container">
+      <a class="logo" href="./">
+        <img src="icon.ico" alt="APL Logo" class="icon">
+        <span>AvatarPoseLibrary</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="./">ホーム</a></li>
+          <li><a href="https://github.com/HhotateA/AvatarPoseLibrary">GitHub</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="policy-page">
+    <article class="container policy-content">
+      <h1>Avatar Pose Library プライバシーポリシー</h1>
+      <p class="policy-updated">最終更新日: 2026年7月23日</p>
+
+      <p>
+        Avatar Pose Library（以下「APL」）は、利用状況の把握、品質改善、不具合調査のために、
+        Unity Editor上から次の情報を送信します。APLは、送信先が設定されていない場合や、
+        初回の選択が完了する前には情報を送信しません。
+      </p>
+
+      <section>
+        <h2>1. 送信モード</h2>
+        <p>
+          初回起動時に、次のいずれかを選択できます。選択内容は
+          <code>Tools &gt; Avatar Pose Library &gt; Privacy Settings</code>
+          から変更できます。
+        </p>
+
+        <h3>最小限のみ</h3>
+        <ul>
+          <li>APL専用のランダム識別子</li>
+          <li>APLバージョン</li>
+          <li>イベント種別（起動、バージョン変更、ビルド成功、ビルド失敗）</li>
+        </ul>
+        <p>
+          識別子はUnity Editorの設定領域に保存され、月間利用環境数を重複なく集計する目的で使用します。
+          VRChatアカウント、端末名、プロジェクト名、アバター名、ファイル名は送信しません。
+          識別子と許諾状態は
+          <code>Tools &gt; Avatar Pose Library &gt; Reset analytics and consent</code>
+          からリセットできます。
+        </p>
+
+        <h3>詳細送信を許可</h3>
+        <p>最小限の情報に加えて、次の情報を送信します。</p>
+        <ul>
+          <li>Unity、VRChat SDK、NDMFのバージョン</li>
+          <li>セッションID、ビルド時間</li>
+          <li>APLコンポーネント、ライブラリ、カテゴリ、ポーズの件数</li>
+          <li>Humanoid、Audio、Locomotion、FX、Cache、Auto Reset機能の利用有無</li>
+          <li>ビルド失敗時の処理段階と例外の種類</li>
+        </ul>
+
+        <p>APLの処理中に捕捉した例外については、さらに次のエラーレポートを自動送信します。</p>
+        <ul>
+          <li>発生日時、APL専用ランダム識別子、各ソフトウェアのバージョン、Editorのプラットフォーム</li>
+          <li>ビルド統計と、APL設定値のうち機能の利用有無および件数</li>
+          <li>例外の種類、エラー文字列、型名とメソッド名からなるスタックトレース</li>
+        </ul>
+        <p>
+          エラーレポートには、APLが収集項目として追加するプロジェクト名、アバター名、
+          オブジェクト名、アセットパスは含みません。ただし、外部ライブラリが生成した
+          例外メッセージ自体に、利用環境の情報やパスが含まれる可能性があります。
+        </p>
+        <p>
+          「最小限のみ」を選択中にAPLの例外が発生した場合は、設定値とエラー内容を送信するか
+          再確認します。同意すると、そのレポートを送信し、以後は「詳細送信を許可」として扱います。
+        </p>
+      </section>
+
+      <section>
+        <h2>2. 送信のタイミング</h2>
+        <ul>
+          <li>Unity EditorでAPLが読み込まれたとき</li>
+          <li>APLのバージョン変更を検出したとき</li>
+          <li>APLコンポーネントを含むアバターのビルドが成功または失敗したとき</li>
+          <li>APLの対象処理で例外を捕捉したとき（詳細送信のみ）</li>
+        </ul>
+        <p>
+          Unity Editor自体のクラッシュや、APLの対象外で発生した例外は収集しません。
+        </p>
+      </section>
+
+      <section>
+        <h2>3. 送信先と利用目的</h2>
+        <ul>
+          <li>
+            起動時の利用状況は最新版確認のGETに付加し、それ以外の通常の利用状況は
+            Google Apps ScriptへPOSTして、Google Analytics 4へ転送します。
+            中継処理はSpreadsheetへ保存しません。
+          </li>
+          <li>
+            詳細なエラーレポートはGoogle Apps ScriptへPOSTし、
+            運営者が管理する非公開のエラーレポート受信先へ転送します。
+            中継処理はSpreadsheetへ保存しません。
+          </li>
+          <li>
+            地域、広告識別子、広告目的の情報はAPLの送信項目に含めません。
+            GA4への送信では広告ユーザーデータおよび広告パーソナライズを拒否として指定します。
+          </li>
+        </ul>
+        <p>
+          収集した情報は、利用環境数と機能利用傾向の集計、互換性の確認、
+          不具合の再現および修正にのみ使用します。
+        </p>
+      </section>
+
+      <section>
+        <h2>4. 保管と第三者サービス</h2>
+        <p>
+          通常ログの保管と処理にはGoogle Analytics 4、エラーレポートの保管と処理には運営者が管理する非公開の受信先を利用します。
+          各サービスによる処理には、それぞれの利用規約およびプライバシーポリシーが適用されます。
+        </p>
+        <p>
+          運営者は、エラーレポートを不具合調査に必要な期間に限り保管し、
+          不要になったものから削除します。法令上必要な場合を除き、収集した情報を広告、
+          販売、または本ポリシーに記載のない目的で第三者へ提供しません。
+        </p>
+      </section>
+
+      <section>
+        <h2>5. お問い合わせ</h2>
+        <p>
+          本ポリシーおよび送信データに関する問い合わせは、
+          <a href="https://github.com/HhotateA/AvatarPoseLibrary/issues">
+            AvatarPoseLibraryのGitHub Issues
+          </a>
+          から連絡してください。
+        </p>
+      </section>
+    </article>
+  </main>
+
+  <footer>
+    <p><small>Site created by <a href="https://www.hhotatea.com/">ほたてねこまじん</a></small></p>
+    <p><small><a href="./">AvatarPoseLibraryへ戻る</a></small></p>
+  </footer>
+</body>
+</html>
