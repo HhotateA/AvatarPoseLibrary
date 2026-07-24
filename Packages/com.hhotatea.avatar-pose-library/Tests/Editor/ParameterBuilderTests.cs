@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using com.hhotatea.avatar_pose_library.logic;
 using com.hhotatea.avatar_pose_library.model;
 using nadena.dev.modular_avatar.core;
 using NUnit.Framework;
 using UnityEditor.Animations;
 using UnityEngine;
+using VRC.SDKBase;
 using VRC.SDK3.Avatars.Components;
 
 namespace com.hhotatea.avatar_pose_library.tests
@@ -205,6 +207,85 @@ namespace com.hhotatea.avatar_pose_library.tests
                 {
                     Object.DestroyImmediate(controller);
                 }
+            }
+        }
+
+        [Test]
+        public void BuildFxAnimator_WithReportedPoseCount_AttachesActionControls()
+        {
+            var poses = Enumerable.Range(0, 45)
+                .Select(_ => new PoseEntry())
+                .ToList();
+            var data = new AvatarPoseData
+            {
+                suppressAdditiveAnimator = true,
+                categories = new List<PoseCategory>
+                {
+                    new PoseCategory { poses = poses },
+                },
+            }.UpdateParameter();
+
+            AnimatorController controller = null;
+            try
+            {
+                controller = AnimatorBuilder.BuildFxAnimator(data, false);
+                var reserveStates = controller.layers
+                    .SelectMany(layer => layer.stateMachine.states)
+                    .Select(child => child.state)
+                    .Where(state => state.name.StartsWith("Reserve_", System.StringComparison.Ordinal))
+                    .ToArray();
+
+                Assert.That(reserveStates, Has.Length.EqualTo(45));
+                Assert.That(reserveStates.All(state => state.behaviours
+                    .OfType<VRCPlayableLayerControl>()
+                    .Any(control =>
+                        control.layer == VRC_PlayableLayerControl.BlendableLayer.Action
+                        && control.goalWeight == 1f)), Is.True);
+            }
+            finally
+            {
+                if (controller != null)
+                {
+                    Object.DestroyImmediate(controller);
+                }
+            }
+        }
+
+        [Test]
+        public void StateMachineBehaviourFallback_AttachesWithoutReplacingExistingBehaviours()
+        {
+            var state = new AnimatorState { name = "Fallback" };
+            var existing = ScriptableObject.CreateInstance<VRCAvatarParameterDriver>();
+            state.behaviours = new StateMachineBehaviour[] { existing };
+            VRCPlayableLayerControl created = null;
+
+            try
+            {
+                var utilityType = typeof(AnimatorBuilder).Assembly.GetType(
+                    "com.hhotatea.avatar_pose_library.logic.AnimatorUtility",
+                    true);
+                var fallback = utilityType.GetMethod(
+                    "CreateAndAttachStateMachineBehaviourFallback",
+                    BindingFlags.NonPublic | BindingFlags.Static);
+                Assert.That(fallback, Is.Not.Null);
+
+                created = (VRCPlayableLayerControl)fallback
+                    .MakeGenericMethod(typeof(VRCPlayableLayerControl))
+                    .Invoke(null, new object[] { state });
+
+                Assert.That(created, Is.Not.Null);
+                Assert.That(state.behaviours, Has.Length.EqualTo(2));
+                Assert.That(state.behaviours[0], Is.SameAs(existing));
+                Assert.That(state.behaviours[1], Is.SameAs(created));
+            }
+            finally
+            {
+                if (created != null)
+                {
+                    Object.DestroyImmediate(created);
+                }
+                Object.DestroyImmediate(existing);
+                Object.DestroyImmediate(state);
             }
         }
 

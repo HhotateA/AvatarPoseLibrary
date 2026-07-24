@@ -215,7 +215,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     name = $"{ConstVariables.ActionParamPrefix}_{poseLibrary.Guid}",
                     value = 0f,
                 });
-                var actionOff = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                var actionOff = resetState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                 actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 actionOff.goalWeight = 0f;
 
