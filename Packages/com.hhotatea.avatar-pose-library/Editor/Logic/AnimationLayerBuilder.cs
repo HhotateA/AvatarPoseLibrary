@@ -117,11 +117,11 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
             }
 
-            var action = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+            var action = resetState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
             action.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
             action.goalWeight = 0f;
 
-            var gesture = resetState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+            var gesture = resetState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
             gesture.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
             gesture.goalWeight = 1f;
 
@@ -204,9 +204,9 @@ namespace com.hhotatea.avatar_pose_library.logic
             switch (type)
             {
                 case TrackingType.Base:
-                    var locoOn = offConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl>();
+                    var locoOn = offConState.AddSafeStateMachineBehaviour<VRCAnimatorLocomotionControl>();
                     locoOn.disableLocomotion = false;
-                    var locoOff = onConState.AddStateMachineBehaviour<VRCAnimatorLocomotionControl>();
+                    var locoOff = onConState.AddSafeStateMachineBehaviour<VRCAnimatorLocomotionControl>();
                     locoOff.disableLocomotion = true;
                     break;
 
@@ -247,10 +247,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                     break;
 
                 case TrackingType.Finger:
-                    var gestureOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    var gestureOff = offConState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                     gestureOff.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
                     gestureOff.goalWeight = 1f;
-                    var gestureOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    var gestureOn = onConState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                     gestureOn.layer = VRC_PlayableLayerControl.BlendableLayer.Gesture;
                     gestureOn.goalWeight = 0f;
                     ApplyTrackingLayer(offConState, onConState,
@@ -267,11 +267,11 @@ namespace com.hhotatea.avatar_pose_library.logic
                     break;
 
                 case TrackingType.Face:
-                    var fxOff = offConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
+                    var fxOff = offConState.AddSafeStateMachineBehaviour<VRCAnimatorLayerControl>();
                     fxOff.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
                     fxOff.layer = 1;
                     fxOff.goalWeight = 0f;
-                    var fxOn = onConState.AddStateMachineBehaviour<VRCAnimatorLayerControl>();
+                    var fxOn = onConState.AddSafeStateMachineBehaviour<VRCAnimatorLayerControl>();
                     fxOn.playable = VRC_AnimatorLayerControl.BlendableLayer.FX;
                     fxOn.layer = 1;
                     fxOn.goalWeight = 1f;
@@ -280,24 +280,24 @@ namespace com.hhotatea.avatar_pose_library.logic
                 case TrackingType.Action:
                     if (poseLibrary_.suppressAdditiveAnimator)
                     {
-                        var additiveOff = offConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                        var additiveOff = offConState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                         additiveOff.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                         additiveOff.goalWeight = 1f;
-                        var additiveOn = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                        var additiveOn = onConState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                         additiveOn.layer = VRC_PlayableLayerControl.BlendableLayer.Additive;
                         additiveOn.goalWeight = 0f;
                     }
 
-                    var actionOff = onConState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    var actionOff = onConState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                     actionOff.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                     actionOff.goalWeight = 0f;
 
                     break;
 
                 case TrackingType.Space:
-                    var spaceEnter = onConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace>();
+                    var spaceEnter = onConState.AddSafeStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace>();
                     spaceEnter.enterPoseSpace = true;
-                    var spaceExit = offConState.AddStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace>();
+                    var spaceExit = offConState.AddSafeStateMachineBehaviour<VRCAnimatorTemporaryPoseSpace>();
                     spaceExit.enterPoseSpace = false;
 
                     break;
@@ -357,8 +357,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             Action<VRCAnimatorTrackingControl> configureOff,
             Action<VRCAnimatorTrackingControl> configureOn)
         {
-            var offCon = offState.AddStateMachineBehaviour<VRCAnimatorTrackingControl>();
-            var onCon = onState.AddStateMachineBehaviour<VRCAnimatorTrackingControl>();
+            var offCon = offState.AddSafeStateMachineBehaviour<VRCAnimatorTrackingControl>();
+            var onCon = onState.AddSafeStateMachineBehaviour<VRCAnimatorTrackingControl>();
             configureOff(offCon);
             configureOn(onCon);
         }
@@ -413,7 +413,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
                 if (poseLibrary_.suppressAdditiveAnimator)
                 {
-                    var action = reserveState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                    var action = reserveState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                     action.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                     action.goalWeight = 1f;
                 }
@@ -432,7 +432,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
             if (pose.audioClip)
             {
-                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
+                var vapa = poseState.AddSafeStateMachineBehaviour<VRCAnimatorPlayAudio>();
                 vapa.SourcePath = $"{ConstVariables.AudioParamPrefix}_{guid}";
                 vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
                 vapa.PitchApplySettings = VRC_AnimatorPlayAudio.ApplySettings.NeverApply;
@@ -540,7 +540,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 poseState.writeDefaultValues = writeDefault_;
                 poseState.motion = noneClip;
 
-                var vapa = poseState.AddStateMachineBehaviour<VRCAnimatorPlayAudio>();
+                var vapa = poseState.AddSafeStateMachineBehaviour<VRCAnimatorPlayAudio>();
                 vapa.SourcePath = obj;
                 vapa.VolumeApplySettings = VRC_AnimatorPlayAudio.ApplySettings.AlwaysApply;
                 vapa.Volume = new Vector2(v * volume, v * volume);
@@ -680,7 +680,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 bypassTransition.duration = 0.1f;
 
                 // レイヤーの設定
-                var actionOn = beforeState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                var actionOn = beforeState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                 actionOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 actionOn.goalWeight = 1f;
             }
@@ -691,7 +691,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 joinTransition.conditions = inTransition.ToArray();
 
                 // レイヤーの設定
-                var actionOn = poseState.AddStateMachineBehaviour<VRCPlayableLayerControl>();
+                var actionOn = poseState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
                 actionOn.layer = VRC_PlayableLayerControl.BlendableLayer.Action;
                 actionOn.goalWeight = 1f;
             }

@@ -36,16 +36,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static VRCAvatarParameterDriver AddSafeParameterDriver(this AnimatorState state)
         {
-            if (state == null)
-            {
-                throw new ArgumentNullException(nameof(state));
-            }
-
-            var driver = state.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
-            if (driver == null)
-            {
-                driver = CreateAndAttachParameterDriverFallback(state);
-            }
+            var driver = state.AddSafeStateMachineBehaviour<VRCAvatarParameterDriver>();
 
             if (driver.parameters == null)
             {
@@ -55,24 +46,57 @@ namespace com.hhotatea.avatar_pose_library.logic
             return driver;
         }
 
-        private static VRCAvatarParameterDriver CreateAndAttachParameterDriverFallback(
-            AnimatorState state)
+        public static T AddSafeStateMachineBehaviour<T>(this AnimatorState state)
+            where T : StateMachineBehaviour
         {
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
+            var behaviour = state.AddStateMachineBehaviour<T>();
+            return behaviour != null
+                ? behaviour
+                : CreateAndAttachStateMachineBehaviourFallback<T>(state);
+        }
+
+        private static T CreateAndAttachStateMachineBehaviourFallback<T>(AnimatorState state)
+            where T : StateMachineBehaviour
+        {
+            var behaviourType = typeof(T);
             // TODO: Remove this fallback after the root cause of Unity returning null from
             // AnimatorState.AddStateMachineBehaviour is identified and fixed. Keep the manual
             // ScriptableObject creation isolated here because it is not the normal Unity path.
-            var driver = ScriptableObject.CreateInstance<VRCAvatarParameterDriver>();
-            if (driver == null)
+            var behaviour = ScriptableObject.CreateInstance<T>();
+            if (behaviour == null)
             {
                 throw new InvalidOperationException(
-                    "Failed to create a VRCAvatarParameterDriver for the animator state.");
+                    $"Failed to create {behaviourType.FullName} for animator state '{state.name}'.");
             }
 
-            var behaviours = state.behaviours ?? Array.Empty<StateMachineBehaviour>();
-            Array.Resize(ref behaviours, behaviours.Length + 1);
-            behaviours[behaviours.Length - 1] = driver;
-            state.behaviours = behaviours;
-            return driver;
+            try
+            {
+                var behaviours = state.behaviours ?? Array.Empty<StateMachineBehaviour>();
+                Array.Resize(ref behaviours, behaviours.Length + 1);
+                behaviours[behaviours.Length - 1] = behaviour;
+                state.behaviours = behaviours;
+
+                if (state.behaviours == null
+                    || !state.behaviours.Any(candidate => ReferenceEquals(candidate, behaviour)))
+                {
+                    throw new InvalidOperationException(
+                        $"Unity did not attach {behaviourType.FullName} to animator state '{state.name}'.");
+                }
+
+                return behaviour;
+            }
+            catch (Exception exception)
+            {
+                UnityEngine.Object.DestroyImmediate(behaviour);
+                throw new InvalidOperationException(
+                    $"Failed to attach {behaviourType.FullName} to animator state '{state.name}'.",
+                    exception);
+            }
         }
 
         public static Motion MakeFxAnim(this AnimationClip anim, bool loop)
