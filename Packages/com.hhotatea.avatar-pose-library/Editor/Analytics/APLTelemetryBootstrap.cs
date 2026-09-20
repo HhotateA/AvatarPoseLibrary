@@ -49,13 +49,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                 return;
             }
 
-            if (TelemetryPreferences.RequiresChoice(configuration))
-            {
-                ShowPrivacyChoice();
-                return;
-            }
-
-            FinishInitialization(true);
+            FinishInitialization(TelemetryPreferences.HasSelection);
         }
 
         public static void ShowPrivacyChoice()
