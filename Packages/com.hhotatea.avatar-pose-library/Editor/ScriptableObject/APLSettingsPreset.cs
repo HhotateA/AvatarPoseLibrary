@@ -17,6 +17,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public bool poseSpace = true;
         public bool locomotionAnimator = true;
         public bool fxAnimator = true;
+        public bool variationSlider = false;
 
         public bool Is(AvatarPoseData data)
         {
@@ -28,6 +29,7 @@ namespace com.hhotatea.avatar_pose_library.component
             if (data.enablePoseSpace != poseSpace) return false;
             if (data.enableLocomotionAnimator != locomotionAnimator) return false;
             if (data.enableFxAnimator != fxAnimator) return false;
+            if (data.enableVariationSlider != variationSlider) return false;
             return true;
         }
 
@@ -41,6 +43,7 @@ namespace com.hhotatea.avatar_pose_library.component
             data.enablePoseSpace = poseSpace;
             data.enableLocomotionAnimator = locomotionAnimator;
             data.enableFxAnimator = fxAnimator;
+            data.enableVariationSlider = variationSlider;
         }
     }
 }

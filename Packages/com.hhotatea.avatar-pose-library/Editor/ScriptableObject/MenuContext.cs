@@ -24,6 +24,7 @@ namespace com.hhotatea.avatar_pose_library.component
         public MenuItem mirror;
         public MenuItem poseSpace;
         public MenuItem volume;
+        public MenuItem variation;
 
         [Serializable]
         public class MenuItem

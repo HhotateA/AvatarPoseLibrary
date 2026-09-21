@@ -57,41 +57,79 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
 
-            // メニューの構造を作る
-            foreach (var category in poseLibrary.categories)
+            if (poseLibrary.enableVariationSlider)
             {
-                var folder = new GameObject(category.name);
-                folder.transform.SetParent(result.transform);
-                if (category.target != null)
+                // Variation mode: if single category, use category name (+count) like "Pose 1 (10)" so it matches inspector's [Category Name]
+                // If multiple categories, create one radial per category so each radial name == category name
+                var varMenu = DynamicVariables.Settings.Menu.variation;
+                if (poseLibrary.categories != null && poseLibrary.categories.Count == 1)
                 {
-                    var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
-                    installer.installTargetMenu = category.target;
+                    var cat = poseLibrary.categories[0];
+                    string catTitle = cat != null && !string.IsNullOrWhiteSpace(cat.name) ? cat.name : (varMenu != null && !string.IsNullOrWhiteSpace(varMenu.title) ? varMenu.title : "Pose Variation");
+                    // Append count if user hasn't already typed it like "Pose 1 (10)"
+                    if (cat != null && cat.poses != null && catTitle.IndexOf("(") < 0)
+                        catTitle = $"{catTitle} ({cat.poses.Count})";
+                    Texture2D thumb = varMenu != null ? varMenu.thumbnail : null;
+                    if (thumb == null) thumb = cat != null && cat.thumbnail ? cat.thumbnail : (poseLibrary.thumbnail ? poseLibrary.thumbnail : DynamicVariables.Settings.Menu.pose.thumbnail);
+                    string varParam = $"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}";
+                    CreateRadialMenu(result.transform, catTitle, thumb, varParam);
                 }
-
-                var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
-                mFolder.MenuSource = SubmenuSource.Children;
-                mFolder.Control.icon = category.thumbnail;
-                mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-
-                // 各ポーズステート
-                foreach (var pose in category.poses)
+                else if (poseLibrary.categories != null && poseLibrary.categories.Count > 1)
                 {
-                    var item = new GameObject(pose.GetDisplayName(DynamicVariables.Settings.Menu.pose.title));
-                    item.transform.SetParent(folder.transform);
-                    if (pose.target != null)
+                    // Multiple categories: keep single global radial named after library (all poses flattened). Per-category radials would duplicate same param.
+                    string varTitle = !string.IsNullOrWhiteSpace(poseLibrary.name) ? poseLibrary.name : (varMenu != null && !string.IsNullOrWhiteSpace(varMenu.title) ? varMenu.title : "Pose Variation");
+                    Texture2D varThumb = varMenu != null ? varMenu.thumbnail : null;
+                    if (varThumb == null) varThumb = poseLibrary.thumbnail ? poseLibrary.thumbnail : DynamicVariables.Settings.Menu.pose.thumbnail;
+                    string varParam = $"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}";
+                    CreateRadialMenu(result.transform, varTitle, varThumb, varParam);
+                }
+                else
+                {
+                    string varTitle = !string.IsNullOrWhiteSpace(poseLibrary.name) ? poseLibrary.name : (varMenu != null && !string.IsNullOrWhiteSpace(varMenu.title) ? varMenu.title : "Pose Variation");
+                    Texture2D varThumb = varMenu != null ? varMenu.thumbnail : null;
+                    if (varThumb == null) varThumb = poseLibrary.thumbnail ? poseLibrary.thumbnail : DynamicVariables.Settings.Menu.pose.thumbnail;
+                    string varParam = $"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}";
+                    CreateRadialMenu(result.transform, varTitle, varThumb, varParam);
+                }
+            }
+            else
+            {
+                // メニューの構造を作る
+                foreach (var category in poseLibrary.categories)
+                {
+                    var folder = new GameObject(category.name);
+                    folder.transform.SetParent(result.transform);
+                    if (category.target != null)
                     {
-                        var installer = item.AddComponent<ModularAvatarMenuInstaller>();
-                        installer.installTargetMenu = pose.target;
+                        var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
+                        installer.installTargetMenu = category.target;
                     }
 
-                    var mItem = item.AddComponent<ModularAvatarMenuItem>();
-                    mItem.Control.icon = pose.thumbnail;
-                    mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
-                    mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
+                    var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
+                    mFolder.MenuSource = SubmenuSource.Children;
+                    mFolder.Control.icon = category.thumbnail;
+                    mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
+
+                    // 各ポーズステート
+                    foreach (var pose in category.poses)
                     {
-                        name = pose.Parameter
-                    };
-                    mItem.Control.value = pose.Value;
+                        var item = new GameObject(pose.GetDisplayName(DynamicVariables.Settings.Menu.pose.title));
+                        item.transform.SetParent(folder.transform);
+                        if (pose.target != null)
+                        {
+                            var installer = item.AddComponent<ModularAvatarMenuInstaller>();
+                            installer.installTargetMenu = pose.target;
+                        }
+
+                        var mItem = item.AddComponent<ModularAvatarMenuItem>();
+                        mItem.Control.icon = pose.thumbnail;
+                        mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
+                        mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
+                        {
+                            name = pose.Parameter
+                        };
+                        mItem.Control.value = pose.Value;
+                    }
                 }
             }
 

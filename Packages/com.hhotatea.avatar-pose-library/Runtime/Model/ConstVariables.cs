@@ -25,6 +25,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public const string FlagParamPrefix = "AnimPoseFlag";
         public const string AudioParamPrefix = "AnimPoseAudio";
         public const string PoseSpaceParamPrefix = "AnimPoseSpace";
+        public const string VariationParamPrefix = "AnimPoseVariation";
 
         /// <summary>
         /// State名

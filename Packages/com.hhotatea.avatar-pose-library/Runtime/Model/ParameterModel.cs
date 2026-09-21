@@ -87,6 +87,7 @@ namespace com.hhotatea.avatar_pose_library.model
         public bool enableLocomotionAnimator = true;
         public bool enableFxAnimator = true;
         public bool suppressAdditiveAnimator = true;
+        public bool enableVariationSlider;
         public string parameterOverride = "";
 
         [Tooltip("Throws a test exception during the APL build pipeline.")]
@@ -217,6 +218,7 @@ namespace com.hhotatea.avatar_pose_library.model
             enableLocomotionAnimator = source.enableLocomotionAnimator;
             enableFxAnimator = source.enableFxAnimator;
             suppressAdditiveAnimator = source.suppressAdditiveAnimator;
+            enableVariationSlider = source.enableVariationSlider;
             parameterOverride = source.parameterOverride;
         }
 

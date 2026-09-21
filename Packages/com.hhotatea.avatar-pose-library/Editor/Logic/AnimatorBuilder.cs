@@ -324,6 +324,11 @@ namespace com.hhotatea.avatar_pose_library.logic
                 result.AddParameter(param, AnimatorControllerParameterType.Int);
             }
 
+            if (poseLibrary.enableVariationSlider)
+            {
+                result.AddParameter($"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Float);
+            }
+
             // Tracking制御ノード
             result.AddParameter($"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);

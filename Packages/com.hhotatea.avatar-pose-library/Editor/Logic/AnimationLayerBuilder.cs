@@ -100,6 +100,15 @@ namespace com.hhotatea.avatar_pose_library.logic
                 name = $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
                 value = 1f,
             });
+            if (poseLibrary.enableVariationSlider)
+            {
+                paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
+                {
+                    type = VRC_AvatarParameterDriver.ChangeType.Set,
+                    name = $"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}",
+                    value = 0f,
+                });
+            }
             paramReset.parameters.Add(new VRC_AvatarParameterDriver.Parameter
             {
                 type = VRC_AvatarParameterDriver.ChangeType.Set,
@@ -363,6 +372,41 @@ namespace com.hhotatea.avatar_pose_library.logic
             configureOn(onCon);
         }
 
+        // Variation slider helpers
+        private bool IsVariationMode => poseLibrary_ != null && poseLibrary_.enableVariationSlider;
+        private string VariationParam(string guid) => $"{ConstVariables.VariationParamPrefix}_{guid}";
+        private (float low, float high, float shift) GetVariationInterval(PoseEntry pose, string guid)
+        {
+            int total = Mathf.Max(1, poseLibrary_?.PoseCount ?? 1);
+            float segment = 1f / total;
+            float shift = 1f / 512f;
+            float idleOffset = shift * 2f;
+            int idx = Mathf.Clamp(pose.Index - 1, 0, total - 1);
+            float low = idx * segment + idleOffset;
+            float high = (idx + 1) * segment + idleOffset;
+            if (high > 1f) high = 1f + shift;
+            return (low, high, shift);
+        }
+        private AnimatorCondition[] VariationEntryConditions(PoseEntry pose, string guid)
+        {
+            var (low, high, shift) = GetVariationInterval(pose, guid);
+            string vp = VariationParam(guid);
+            return new[]
+            {
+                new AnimatorCondition { mode = AnimatorConditionMode.Greater, parameter = vp, threshold = low - shift },
+                new AnimatorCondition { mode = AnimatorConditionMode.Less, parameter = vp, threshold = high + shift }
+            };
+        }
+        private void AddVariationExitTransitions(AnimatorState poseState, AnimatorState target, PoseEntry pose, string guid)
+        {
+            var (low, high, shift) = GetVariationInterval(pose, guid);
+            string vp = VariationParam(guid);
+            var t1 = poseState.MakeTransition(target, false);
+            t1.conditions = new[] { new AnimatorCondition { mode = AnimatorConditionMode.Less, parameter = vp, threshold = low - shift } };
+            var t2 = poseState.MakeTransition(target, false);
+            t2.conditions = new[] { new AnimatorCondition { mode = AnimatorConditionMode.Greater, parameter = vp, threshold = high + shift } };
+        }
+
         public void AddParamLayer(
             AnimatorControllerLayer layer, PoseEntry pose,
             List<string> parameters, string guid,
@@ -411,6 +455,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                     name = $"{ConstVariables.OnPlayParamPrefix}_{guid}",
                     value = 1f,
                 });
+                if (IsVariationMode)
+                {
+                    // Mirror current variation state into legacy Int/Flag for Fx/Locomotion layers driven by variation — driver already flag-set, keep add but also ensure OnPlay flag
+                }
                 if (poseLibrary_.suppressAdditiveAnimator)
                 {
                     var action = reserveState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
@@ -448,13 +496,20 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             // 遷移を作成
             var joinTransition = defaultState.MakeTransition(reserveState, false);
-            joinTransition.conditions = new AnimatorCondition[] {
-                new AnimatorCondition () {
-                mode = AnimatorConditionMode.Equals,
-                parameter = pose.Parameter,
-                threshold = pose.Value
-                }
-            };
+            if (IsVariationMode)
+            {
+                joinTransition.conditions = VariationEntryConditions(pose, guid);
+            }
+            else
+            {
+                joinTransition.conditions = new AnimatorCondition[] {
+                    new AnimatorCondition () {
+                    mode = AnimatorConditionMode.Equals,
+                    parameter = pose.Parameter,
+                    threshold = pose.Value
+                    }
+                };
+            }
 
             // 侵入経路
             if (pose.beforeAnimationClip)
@@ -480,31 +535,41 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
             // 脱出経路
-            var leftTransition = poseState.MakeTransition(resetState, false);
-            leftTransition.conditions = new[]
+            if (IsVariationMode)
             {
-                new AnimatorCondition
-                {
-                    mode = AnimatorConditionMode.NotEqual,
-                    parameter = pose.Parameter,
-                    threshold = pose.Value
-                }
-            };
-
-            // パラメーターリストを作成
-            parameters.Remove(pose.Parameter);
-            foreach (var parameter in parameters)
+                AddVariationExitTransitions(poseState, resetState, pose, guid);
+            }
+            else
             {
-                var preResetTransition = poseState.MakeTransition(preResetState, false);
-                preResetTransition.conditions = new[]
+                var leftTransition = poseState.MakeTransition(resetState, false);
+                leftTransition.conditions = new[]
                 {
                     new AnimatorCondition
                     {
                         mode = AnimatorConditionMode.NotEqual,
-                        parameter = parameter,
-                        threshold = 0
+                        parameter = pose.Parameter,
+                        threshold = pose.Value
                     }
                 };
+            }
+
+            // パラメーターリストを作成 - skip in variation mode (variation slider exclusively selects, so non-zero other Ints are not used)
+            if (!IsVariationMode)
+            {
+                parameters.Remove(pose.Parameter);
+                foreach (var parameter in parameters)
+                {
+                    var preResetTransition = poseState.MakeTransition(preResetState, false);
+                    preResetTransition.conditions = new[]
+                    {
+                        new AnimatorCondition
+                        {
+                            mode = AnimatorConditionMode.NotEqual,
+                            parameter = parameter,
+                            threshold = 0
+                        }
+                    };
+                }
             }
 
             if (!pose.tracking.loop)
@@ -654,12 +719,20 @@ namespace com.hhotatea.avatar_pose_library.logic
                     poseState, pose.tracking.loop, guid);
             }
 
-            var inTransition = flags.Select((flag, i) => new AnimatorCondition
+            AnimatorCondition[] inTransition;
+            if (IsVariationMode)
             {
-                mode = AnimatorConditionMode.Equals,
-                parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                threshold = flag,
-            }).ToList();
+                inTransition = VariationEntryConditions(pose, guid);
+            }
+            else
+            {
+                inTransition = flags.Select((flag, i) => new AnimatorCondition
+                {
+                    mode = AnimatorConditionMode.Equals,
+                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                    threshold = flag,
+                }).ToArray();
+            }
 
             // 侵入経路
             if (pose.beforeAnimationClip)
@@ -673,7 +746,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
                 // 遷移を作成
                 var joinTransition = defaultState.MakeTransition(beforeState, false);
-                joinTransition.conditions = inTransition.ToArray();
+                joinTransition.conditions = inTransition;
 
                 // バイパスの作成
                 var bypassTransition = beforeState.MakeTransition(poseState, true);
@@ -688,7 +761,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 // 遷移を作成
                 var joinTransition = defaultState.MakeTransition(poseState, false);
-                joinTransition.conditions = inTransition.ToArray();
+                joinTransition.conditions = inTransition;
 
                 // レイヤーの設定
                 var actionOn = poseState.AddSafeStateMachineBehaviour<VRCPlayableLayerControl>();
@@ -707,17 +780,23 @@ namespace com.hhotatea.avatar_pose_library.logic
                 afterState.motion = pose.afterAnimationClip.MakeFxAnim(pose.tracking.loop);
 
                 // 遷移を作成
-                for (int i = 0; i < flags.Length; i++)
+                if (IsVariationMode)
                 {
-                    // Preからリセットへの遷移
-                    var leftTransition = poseState.MakeTransition(afterState, false);
-                    leftTransition.conditions = new AnimatorCondition[] {
-                        new AnimatorCondition {
-                        mode = AnimatorConditionMode.NotEqual,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                        threshold = flags[i],
-                        }
-                    };
+                    AddVariationExitTransitions(poseState, afterState, pose, guid);
+                }
+                else
+                {
+                    for (int i = 0; i < flags.Length; i++)
+                    {
+                        var leftTransition = poseState.MakeTransition(afterState, false);
+                        leftTransition.conditions = new AnimatorCondition[] {
+                            new AnimatorCondition {
+                            mode = AnimatorConditionMode.NotEqual,
+                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                            threshold = flags[i],
+                            }
+                        };
+                    }
                 }
 
                 // バイパスを作成
@@ -727,17 +806,23 @@ namespace com.hhotatea.avatar_pose_library.logic
             else
             {
                 // 遷移を作成
-                for (int i = 0; i < flags.Length; i++)
+                if (IsVariationMode)
                 {
-                    // Preからリセットへの遷移
-                    var leftTransition = poseState.MakeTransition(resetState, false);
-                    leftTransition.conditions = new AnimatorCondition[] {
-                        new AnimatorCondition {
-                        mode = AnimatorConditionMode.NotEqual,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                        threshold = flags[i],
-                        }
-                    };
+                    AddVariationExitTransitions(poseState, resetState, pose, guid);
+                }
+                else
+                {
+                    for (int i = 0; i < flags.Length; i++)
+                    {
+                        var leftTransition = poseState.MakeTransition(resetState, false);
+                        leftTransition.conditions = new AnimatorCondition[] {
+                            new AnimatorCondition {
+                            mode = AnimatorConditionMode.NotEqual,
+                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                            threshold = flags[i],
+                            }
+                        };
+                    }
                 }
             }
         }
@@ -798,13 +883,15 @@ namespace com.hhotatea.avatar_pose_library.logic
 
                 // 遷移を作成
                 var joinTransition = defaultState.MakeTransition(beforeState, false);
-                joinTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
-                {
-                    mode = AnimatorConditionMode.Equals,
-                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                    threshold = flag
-                })
-                    .ToArray();
+                if (IsVariationMode)
+                    joinTransition.conditions = VariationEntryConditions(pose, guid);
+                else
+                    joinTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
+                    {
+                        mode = AnimatorConditionMode.Equals,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                        threshold = flag
+                    }).ToArray();
 
                 // バイパスの作成
                 var bypassTransition = beforeState.MakeTransition(poseState, true);
@@ -814,13 +901,15 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 // 遷移を作成
                 var joinTransition = defaultState.MakeTransition(poseState, false);
-                joinTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
-                {
-                    mode = AnimatorConditionMode.Equals,
-                    parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                    threshold = flag
-                })
-                    .ToArray();
+                if (IsVariationMode)
+                    joinTransition.conditions = VariationEntryConditions(pose, guid);
+                else
+                    joinTransition.conditions = flags.Select((flag, i) => new AnimatorCondition
+                    {
+                        mode = AnimatorConditionMode.Equals,
+                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                        threshold = flag
+                    }).ToArray();
             }
 
             // 脱出経路
@@ -834,16 +923,21 @@ namespace com.hhotatea.avatar_pose_library.logic
                 afterState.motion = pose.afterAnimationClip.MakeLocomotionAnim(pose.tracking.loop, height, speed, guid);
 
                 // 遷移を作成
-                for (int i = 0; i < flags.Length; i++)
+                if (IsVariationMode)
+                    AddVariationExitTransitions(poseState, afterState, pose, guid);
+                else
                 {
-                    var leftTransition = poseState.MakeTransition(afterState, false);
-                    leftTransition.conditions = new AnimatorCondition[] {
-                        new AnimatorCondition {
-                        mode = AnimatorConditionMode.NotEqual,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                        threshold = flags[i],
-                        }
-                    };
+                    for (int i = 0; i < flags.Length; i++)
+                    {
+                        var leftTransition = poseState.MakeTransition(afterState, false);
+                        leftTransition.conditions = new AnimatorCondition[] {
+                            new AnimatorCondition {
+                            mode = AnimatorConditionMode.NotEqual,
+                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                            threshold = flags[i],
+                            }
+                        };
+                    }
                 }
 
                 // バイパスを作成
@@ -853,16 +947,21 @@ namespace com.hhotatea.avatar_pose_library.logic
             else
             {
                 // 遷移を作成
-                for (int i = 0; i < flags.Length; i++)
+                if (IsVariationMode)
+                    AddVariationExitTransitions(poseState, defaultState, pose, guid);
+                else
                 {
-                    var leftTransition = poseState.MakeTransition(defaultState, false);
-                    leftTransition.conditions = new AnimatorCondition[] {
-                        new AnimatorCondition {
-                        mode = AnimatorConditionMode.NotEqual,
-                        parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
-                        threshold = flags[i],
-                        }
-                    };
+                    for (int i = 0; i < flags.Length; i++)
+                    {
+                        var leftTransition = poseState.MakeTransition(defaultState, false);
+                        leftTransition.conditions = new AnimatorCondition[] {
+                            new AnimatorCondition {
+                            mode = AnimatorConditionMode.NotEqual,
+                            parameter = $"{ConstVariables.FlagParamPrefix}_{guid}_{i}",
+                            threshold = flags[i],
+                            }
+                        };
+                    }
                 }
             }
         }

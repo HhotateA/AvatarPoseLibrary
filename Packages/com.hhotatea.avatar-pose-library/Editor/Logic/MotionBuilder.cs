@@ -295,11 +295,12 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 var curve = AnimationUtility.GetEditorCurve(anim, binding);
                 bool isLocomotionAnimation = binding.type == typeof(Animator);
+                bool isVRCViseme = AnimatorUtility.IsVRCShapeKey(binding.type, binding.path, binding.propertyName);
                 if (isLocomotionAnimation && part == AnimationPart.Locomotion)
                 {
                     result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
                 }
-                else if (!isLocomotionAnimation && part == AnimationPart.Fx)
+                else if (!isLocomotionAnimation && part == AnimationPart.Fx && !isVRCViseme)
                 {
                     result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
                 }
@@ -462,6 +463,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     bool isLocomotionAnimation = binding.type == typeof(Animator);
                     if (isLocomotionAnimation)
+                    {
+                        continue;
+                    }
+                    if (AnimatorUtility.IsVRCShapeKey(binding.type, binding.path, binding.propertyName))
                     {
                         continue;
                     }

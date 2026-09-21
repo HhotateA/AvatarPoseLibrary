@@ -54,6 +54,8 @@ namespace com.hhotatea.avatar_pose_library.component
         [Multiline] public string enablePoseSpaceTooltip = "カメラをアニメーションに追従する。";
         public string enableUseCache = "Enable Use Cache";
         [Multiline] public string enableUseCacheTooltip = "キャッシュを使用してビルドを高速化する。";
+        public string enableVariationLabel = "Enable Variation Slider";
+        [Multiline] public string enableVariationTooltip = "All poses are controlled by one radial slider (variation) instead of per-pose toggles. 0 = idle/reset, 1..N steps selects poses sequentially.";
 
         public string createCategoryLabel = "Create Category";
         [Multiline] public string createCategoryTooltip = "カテゴリーを新規作成。";

@@ -11,18 +11,45 @@ namespace com.hhotatea.avatar_pose_library.logic
             var result = new GameObject("");
             var parameters = result.AddComponent<ModularAvatarParameters>();
 
-            foreach (var parameter in library.Parameters)
-            {
-                AddParameter(parameters, parameter, ParameterSyncType.Int, true);
-            }
-
-            for (var index = 0; index < ConstVariables.PoseFlagCount; index++)
+            if (library.enableVariationSlider)
             {
                 AddParameter(
                     parameters,
-                    $"{ConstVariables.FlagParamPrefix}_{library.Guid}_{index}",
-                    ParameterSyncType.Int,
-                    library.PoseCount < 1 << index * 8);
+                    Name(ConstVariables.VariationParamPrefix, library.Guid),
+                    ParameterSyncType.Float,
+                    false,
+                    0f,
+                    true);
+                // Flags still needed internally for Fx/Locomotion layer signalling but keep them localOnly when in variation mode
+                for (var index = 0; index < ConstVariables.PoseFlagCount; index++)
+                {
+                    AddParameter(
+                        parameters,
+                        $"{ConstVariables.FlagParamPrefix}_{library.Guid}_{index}",
+                        ParameterSyncType.Int,
+                        true);
+                }
+                // Legacy Int pose selectors are driven internally by variation driver — keep localOnly to save synced memory
+                foreach (var parameter in library.Parameters)
+                {
+                    AddParameter(parameters, parameter, ParameterSyncType.Int, true);
+                }
+            }
+            else
+            {
+                foreach (var parameter in library.Parameters)
+                {
+                    AddParameter(parameters, parameter, ParameterSyncType.Int, true);
+                }
+
+                for (var index = 0; index < ConstVariables.PoseFlagCount; index++)
+                {
+                    AddParameter(
+                        parameters,
+                        $"{ConstVariables.FlagParamPrefix}_{library.Guid}_{index}",
+                        ParameterSyncType.Int,
+                        library.PoseCount < 1 << index * 8);
+                }
             }
 
             if (library.enableHeightParam)
