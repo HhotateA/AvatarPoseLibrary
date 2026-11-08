@@ -111,39 +111,154 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         public static Motion MakeLocomotionAnim(this AnimationClip anim, bool loop, bool height, bool speed, string guid)
         {
-            var blendTree = new BlendTree();
-            var isMoveAnimation = MotionBuilder.IsMoveAnimation(anim);
-            anim = MotionBuilder.SetAnimationLoop(anim, loop);
-            anim = MotionBuilder.PartAnimation(anim, MotionBuilder.AnimationPart.Locomotion);
+            return anim.MakeLocomotionAnim(loop, height, speed, guid, false, Vector3.zero);
+        }
 
+        /// <summary>
+        /// ポーズをブレンドツリー化します。rotation が true の場合は X/Y/Z の3軸を
+        /// それぞれ1Dブレンドツリーで合成するため、クリップ数が BodyRotationSteps^3 倍になります。
+        /// </summary>
+        public static Motion MakeLocomotionAnim(
+            this AnimationClip anim,
+            bool loop,
+            bool height,
+            bool speed,
+            string guid,
+            bool rotation,
+            Vector3 baseRotation)
+        {
+            var isMoveAnimation = MotionBuilder.IsMoveAnimation(anim);
+            MotionBuilder.WarnIfNoRootCurves(anim);
+            var clip = MotionBuilder.SetAnimationLoop(anim, loop);
+            clip = MotionBuilder.PartAnimation(clip, MotionBuilder.AnimationPart.Locomotion);
+
+            if (!rotation)
+            {
+                return BuildLocomotionBlendTree(
+                    MotionBuilder.BuildBodyRotation(clip, baseRotation),
+                    isMoveAnimation, height, speed, guid);
+            }
+
+            // 回転は軸ごとに独立して補間できないため、全組み合わせのクリップが必要になる。
+            var steps = Mathf.Max(2, ConstVariables.BodyRotationSteps);
+            var xAxis = ConstVariables.BodyRotationAxisX;
+            var yAxis = ConstVariables.BodyRotationAxisY;
+            var zAxis = ConstVariables.BodyRotationAxisZ;
+            // 警告は無回転の組み合わせでだけ出し、steps^3 回ぶん重複しないようにします。
+            var neutralX = NeutralStepIndex(xAxis, steps);
+            var neutralY = NeutralStepIndex(yAxis, steps);
+            var neutralZ = NeutralStepIndex(zAxis, steps);
+            var xTree = CreateRotationBlendTree($"{ConstVariables.BodyRotationXParamPrefix}_{guid}");
+            for (var xi = 0; xi < steps; xi++)
+            {
+                var xAngle = RotationStepAngle(xi, steps, xAxis);
+                var yTree = CreateRotationBlendTree($"{ConstVariables.BodyRotationYParamPrefix}_{guid}");
+                for (var yi = 0; yi < steps; yi++)
+                {
+                    var yAngle = RotationStepAngle(yi, steps, yAxis);
+                    var zTree = CreateRotationBlendTree($"{ConstVariables.BodyRotationZParamPrefix}_{guid}");
+                    for (var zi = 0; zi < steps; zi++)
+                    {
+                        var zAngle = RotationStepAngle(zi, steps, zAxis);
+                        var rotated = MotionBuilder.BuildBodyRotation(
+                            clip,
+                            baseRotation + new Vector3(xAngle, yAngle, zAngle),
+                            xi == neutralX && yi == neutralY && zi == neutralZ);
+                        zTree.AddChild(
+                            BuildLocomotionBlendTree(rotated, isMoveAnimation, height, speed, guid),
+                            RotationStepThreshold(zi, steps));
+                    }
+
+                    yTree.AddChild(zTree, RotationStepThreshold(yi, steps));
+                }
+
+                xTree.AddChild(yTree, RotationStepThreshold(xi, steps));
+            }
+
+            return xTree;
+        }
+
+        static BlendTree CreateRotationBlendTree(string parameter)
+        {
+            return new BlendTree
+            {
+                blendType = BlendTreeType.Simple1D,
+                blendParameter = parameter,
+                useAutomaticThresholds = false,
+            };
+        }
+
+        static float RotationStepThreshold(int index, int steps)
+        {
+            return steps <= 1 ? 0.5f : index / (float)(steps - 1);
+        }
+
+        static float RotationStepAngle(int index, int steps, ConstVariables.BodyRotationAxis axis)
+        {
+            // ラジアルの 0..1 を MinAngle..MaxAngle に割り当てます。
+            // 無回転の位置は軸ごとに違うため、角度は軸の定義から引きます
+            // （X/Z は左端が無回転、Y は中央が無回転）。
+            return axis.AngleAt(RotationStepThreshold(index, steps));
+        }
+
+        /// <summary>無回転に対応するステップ番号。</summary>
+        static int NeutralStepIndex(ConstVariables.BodyRotationAxis axis, int steps)
+        {
+            return Mathf.RoundToInt(axis.NeutralValue * (steps - 1));
+        }
+
+        static Motion BuildLocomotionBlendTree(
+            AnimationClip anim, bool isMoveAnimation, bool height, bool speed, string guid)
+        {
             if (isMoveAnimation)
             {
-                // アニメーションの生成
-                AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel(anim, DynamicVariables.Settings.minMaxHeight) : anim;
-                AnimationClip motionClip1 = height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim;
-                blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
-                blendTree.AddChild(motionClip0, 0);
-                blendTree.AddChild(motionClip1, 1);
-            }
-            else
-            {
-                // アニメーションの生成
-                var motionClip0 = speed ? MotionBuilder.IdleAnimation(anim, 0f) : anim;
-                var motionClip1 = speed ? MotionBuilder.IdleAnimation(anim, DynamicVariables.Settings.motionNoiseScale) : anim;
-                var motionClip00 = height ? MotionBuilder.BuildMotionLevel(motionClip0, DynamicVariables.Settings.minMaxHeight) : motionClip0;
-                var motionClip01 = height ? MotionBuilder.BuildMotionLevel(motionClip0, -DynamicVariables.Settings.minMaxHeight) : motionClip0;
-                var motionClip10 = height ? MotionBuilder.BuildMotionLevel(motionClip1, DynamicVariables.Settings.minMaxHeight) : motionClip1;
-                var motionClip11 = height ? MotionBuilder.BuildMotionLevel(motionClip1, -DynamicVariables.Settings.minMaxHeight) : motionClip1;
-                blendTree.blendType = BlendTreeType.FreeformCartesian2D;
-                blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
-                blendTree.blendParameterY = $"{ConstVariables.SpeedParamPrefix}_{guid}";
-                blendTree.AddChild(motionClip00, new Vector2(0f, 0f));
-                blendTree.AddChild(motionClip01, new Vector2(1f, 0f));
-                blendTree.AddChild(motionClip10, new Vector2(0f, 1f));
-                blendTree.AddChild(motionClip11, new Vector2(1f, 1f));
+                var moveTree = new BlendTree();
+                moveTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
+                moveTree.useAutomaticThresholds = false;
+                moveTree.AddChild(height ? MotionBuilder.BuildMotionLevel(anim, DynamicVariables.Settings.minMaxHeight) : anim, 0);
+                moveTree.AddChild(height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim, 1);
+                if (!height) return moveTree;
+                // ポーズ未選択時（AnimPosePlay=0）は高さをニュートラルに固定し、選択時だけ効かせます。
+                return BuildPlayGate(guid, anim, moveTree);
             }
 
-            return blendTree;
+            var motionClipIdle0 = speed ? MotionBuilder.IdleAnimation(anim, 0f) : anim;
+            var motionClipIdle1 = speed ? MotionBuilder.IdleAnimation(anim, DynamicVariables.Settings.motionNoiseScale) : anim;
+            var motionClip00 = height ? MotionBuilder.BuildMotionLevel(motionClipIdle0, DynamicVariables.Settings.minMaxHeight) : motionClipIdle0;
+            var motionClip01 = height ? MotionBuilder.BuildMotionLevel(motionClipIdle0, -DynamicVariables.Settings.minMaxHeight) : motionClipIdle0;
+            var motionClip10 = height ? MotionBuilder.BuildMotionLevel(motionClipIdle1, DynamicVariables.Settings.minMaxHeight) : motionClipIdle1;
+            var motionClip11 = height ? MotionBuilder.BuildMotionLevel(motionClipIdle1, -DynamicVariables.Settings.minMaxHeight) : motionClipIdle1;
+
+            var blendTree = new BlendTree();
+            blendTree.blendType = BlendTreeType.FreeformCartesian2D;
+            blendTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
+            blendTree.blendParameterY = $"{ConstVariables.SpeedParamPrefix}_{guid}";
+            blendTree.AddChild(motionClip00, new Vector2(0f, 0f));
+            blendTree.AddChild(motionClip01, new Vector2(1f, 0f));
+            blendTree.AddChild(motionClip10, new Vector2(0f, 1f));
+            blendTree.AddChild(motionClip11, new Vector2(1f, 1f));
+            if (!height) return blendTree;
+
+            // 未選択時は高さオフセットを 0 にし、速度だけを残したニュートラル側を用意します。
+            var neutralIdle = new BlendTree();
+            neutralIdle.blendType = BlendTreeType.Simple1D;
+            neutralIdle.blendParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
+            neutralIdle.useAutomaticThresholds = false;
+            neutralIdle.AddChild(motionClipIdle0, 0f);
+            neutralIdle.AddChild(motionClipIdle1, 1f);
+            return BuildPlayGate(guid, neutralIdle, blendTree);
+        }
+
+        // ポーズ選択中だけ onMotion を反映し、未選択時は offMotion（ニュートラル）に戻すゲート。
+        static BlendTree BuildPlayGate(string guid, Motion offMotion, Motion onMotion)
+        {
+            var gate = new BlendTree();
+            gate.blendType = BlendTreeType.Simple1D;
+            gate.blendParameter = $"{ConstVariables.OnPlayParamPrefix}_{guid}";
+            gate.useAutomaticThresholds = false;
+            gate.AddChild(offMotion, 0f);
+            gate.AddChild(onMotion, 1f);
+            return gate;
         }
 
         public static AnimatorStateTransition CreateLoopTransition(AnimatorState state, string param, bool invert)

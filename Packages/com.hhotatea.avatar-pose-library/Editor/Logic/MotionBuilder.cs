@@ -126,6 +126,138 @@ namespace com.hhotatea.avatar_pose_library.logic
             return result;
         }
 
+        // HumanoidクリップにおけるHips（ルートボーン）の回転カーブ名。
+        static readonly string[] RootRotationProperties = { "RootQ.x", "RootQ.y", "RootQ.z", "RootQ.w" };
+
+        /// <summary>
+        /// ポーズ全体をHips基準で回転させます。
+        /// HumanoidクリップのRootQ（Hipsの回転）を回転させた複製を返すため、
+        /// 体の向きだけを変えたい用途（傾斜したベッドに寝かせる等）で使えます。
+        /// </summary>
+        /// <param name="anim">元のアニメーション</param>
+        /// <param name="euler">回転量（度）</param>
+        /// <returns>回転を適用した複製。回転が不要な場合は元のアニメーション</returns>
+        public static AnimationClip BuildBodyRotation(AnimationClip anim, Vector3 euler, bool warn = true)
+        {
+            if (anim == null) return null;
+
+            if (Mathf.Abs(euler.x) < 0.001f &&
+                Mathf.Abs(euler.y) < 0.001f &&
+                Mathf.Abs(euler.z) < 0.001f)
+            {
+                return anim;
+            }
+
+            var bindings = AnimationUtility.GetCurveBindings(anim);
+            if (bindings.Length == 0)
+            {
+                // 空のクリップ（NoneAnimation等）は対象外。
+                return anim;
+            }
+
+            var rootBindings = new Dictionary<string, EditorCurveBinding>();
+            foreach (var binding in bindings)
+            {
+                if (binding.type == typeof(Animator) &&
+                    binding.propertyName.StartsWith("RootQ.", StringComparison.Ordinal))
+                {
+                    rootBindings[binding.propertyName] = binding;
+                }
+            }
+
+            if (!RootRotationProperties.All(rootBindings.ContainsKey))
+            {
+                // ラジアル生成時は同じクリップを何度も変換するため、警告は代表の1回だけ出す。
+                if (warn)
+                {
+                    Debug.LogWarning(
+                        $"AvatarPoseLibrary: Body rotation was skipped for '{anim.name}' because the clip has no " +
+                        "humanoid root rotation curves (RootQ). Set the clip's Animation Type to Humanoid, " +
+                        "or clear the Body Rotation of the pose.");
+                }
+                return anim;
+            }
+
+            var source = new AnimationCurve[RootRotationProperties.Length];
+            for (var index = 0; index < RootRotationProperties.Length; index++)
+            {
+                source[index] = AnimationUtility.GetEditorCurve(anim, rootBindings[RootRotationProperties[index]]);
+                if (source[index] == null || source[index].keys.Length == 0)
+                {
+                    if (warn)
+                    {
+                        Debug.LogWarning(
+                            $"AvatarPoseLibrary: Body rotation was skipped for '{anim.name}' because " +
+                            $"'{RootRotationProperties[index]}' has no keys.");
+                    }
+                    return anim;
+                }
+            }
+
+            var result = Object.Instantiate(anim);
+            result.name = $"{anim.name}_rot{euler.x:0.##}_{euler.y:0.##}_{euler.z:0.##}";
+
+            var rotation = Quaternion.Euler(euler);
+            var rotated = new AnimationCurve[RootRotationProperties.Length];
+            for (var index = 0; index < rotated.Length; index++)
+            {
+                rotated[index] = new AnimationCurve();
+            }
+
+            // 4本のカーブでキー時刻が揃っていない場合があるため、和集合で評価し直す。
+            foreach (var time in CollectKeyTimes(source))
+            {
+                var value = new Quaternion(
+                    source[0].Evaluate(time),
+                    source[1].Evaluate(time),
+                    source[2].Evaluate(time),
+                    source[3].Evaluate(time));
+
+                // Hipsの回転を、アバターのルート空間で回転させる。
+                var tilted = rotation * value;
+
+                rotated[0].AddKey(time, tilted.x);
+                rotated[1].AddKey(time, tilted.y);
+                rotated[2].AddKey(time, tilted.z);
+                rotated[3].AddKey(time, tilted.w);
+            }
+
+            for (var index = 0; index < RootRotationProperties.Length; index++)
+            {
+                var binding = rootBindings[RootRotationProperties[index]];
+                result.SetCurve(binding.path, binding.type, binding.propertyName, rotated[index]);
+            }
+
+            return result;
+        }
+
+        static IEnumerable<float> CollectKeyTimes(AnimationCurve[] curves)
+        {
+            var times = new List<float>();
+            foreach (var curve in curves)
+            {
+                if (curve == null) continue;
+                foreach (var key in curve.keys)
+                {
+                    times.Add(key.time);
+                }
+            }
+
+            times.Sort();
+
+            var previous = float.NaN;
+            foreach (var time in times)
+            {
+                if (!float.IsNaN(previous) && Mathf.Abs(time - previous) < 0.000001f)
+                {
+                    continue;
+                }
+
+                previous = time;
+                yield return time;
+            }
+        }
+
         /// <summary>
         /// 動きのあるアニメーションか返す
         /// </summary>
@@ -149,6 +281,31 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
             return false;
+        }
+
+        static readonly HashSet<int> WarnedRootlessClips = new HashSet<int>();
+
+        /// <summary>
+        /// LocomotionレイヤーはAnimator型（RootT/RootQ）のカーブしか保持しないため、
+        /// Humanoidでないクリップでは中身が空になり、VRChat標準の移動がポーズを突き抜けて見えます。
+        /// 何も出力されずサイレントに壊れるため、生成時に1回だけ警告します。
+        /// </summary>
+        public static void WarnIfNoRootCurves(AnimationClip anim)
+        {
+            if (anim == null) return;
+
+            var bindings = AnimationUtility.GetCurveBindings(anim);
+            if (bindings.Length == 0) return;
+            // PartAnimation(Locomotion) が残すのはAnimator型のバインディングだけです。
+            if (bindings.Any(binding => binding.type == typeof(Animator))) return;
+
+            // ラジアル生成時は同じクリップを steps^3 回変換するため、警告はクリップごとに1回だけ出します。
+            if (!WarnedRootlessClips.Add(anim.GetInstanceID())) return;
+
+            Debug.LogWarning(
+                $"AvatarPoseLibrary: Locomotion was empty for '{anim.name}' because the clip has no " +
+                "humanoid root curves (RootT/RootQ). Set the clip's Animation Type to Humanoid, " +
+                "or the avatar's built-in movement will show through the pose.");
         }
 
         public static bool IsLoopAnimation(AnimationClip anim)
@@ -295,11 +452,12 @@ namespace com.hhotatea.avatar_pose_library.logic
             {
                 var curve = AnimationUtility.GetEditorCurve(anim, binding);
                 bool isLocomotionAnimation = binding.type == typeof(Animator);
+                bool isVRCViseme = AnimatorUtility.IsVRCShapeKey(binding.type, binding.path, binding.propertyName);
                 if (isLocomotionAnimation && part == AnimationPart.Locomotion)
                 {
                     result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
                 }
-                else if (!isLocomotionAnimation && part == AnimationPart.Fx)
+                else if (!isLocomotionAnimation && part == AnimationPart.Fx && !isVRCViseme)
                 {
                     result.SetCurve(binding.path, binding.type, binding.propertyName, curve);
                 }
@@ -462,6 +620,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                 {
                     bool isLocomotionAnimation = binding.type == typeof(Animator);
                     if (isLocomotionAnimation)
+                    {
+                        continue;
+                    }
+                    if (AnimatorUtility.IsVRCShapeKey(binding.type, binding.path, binding.propertyName))
                     {
                         continue;
                     }

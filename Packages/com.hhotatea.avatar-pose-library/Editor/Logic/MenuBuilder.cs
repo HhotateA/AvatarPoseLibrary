@@ -26,6 +26,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                 poseLibrary.enableSpeedParam ||
                 poseLibrary.enableMirrorParam ||
                 poseLibrary.enablePoseSpace ||
+                poseLibrary.UseBodyRotationParam ||
                 poseLibrary.enableTrackingParam)
             {
                 // 設定メニュー
@@ -57,41 +58,79 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
 
-            // メニューの構造を作る
-            foreach (var category in poseLibrary.categories)
+            if (poseLibrary.enableVariationSlider)
             {
-                var folder = new GameObject(category.name);
-                folder.transform.SetParent(result.transform);
-                if (category.target != null)
+                // Variation mode: if single category, use category name (+count) like "Pose 1 (10)" so it matches inspector's [Category Name]
+                // If multiple categories, create one radial per category so each radial name == category name
+                var varMenu = DynamicVariables.Settings.Menu.variation;
+                if (poseLibrary.categories != null && poseLibrary.categories.Count == 1)
                 {
-                    var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
-                    installer.installTargetMenu = category.target;
+                    var cat = poseLibrary.categories[0];
+                    string catTitle = cat != null && !string.IsNullOrWhiteSpace(cat.name) ? cat.name : (varMenu != null && !string.IsNullOrWhiteSpace(varMenu.title) ? varMenu.title : "Pose Variation");
+                    // Append count if user hasn't already typed it like "Pose 1 (10)"
+                    if (cat != null && cat.poses != null && catTitle.IndexOf("(") < 0)
+                        catTitle = $"{catTitle} ({cat.poses.Count})";
+                    Texture2D thumb = varMenu != null ? varMenu.thumbnail : null;
+                    if (thumb == null) thumb = cat != null && cat.thumbnail ? cat.thumbnail : (poseLibrary.thumbnail ? poseLibrary.thumbnail : DynamicVariables.Settings.Menu.pose.thumbnail);
+                    string varParam = $"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}";
+                    CreateRadialMenu(result.transform, catTitle, thumb, varParam);
                 }
-
-                var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
-                mFolder.MenuSource = SubmenuSource.Children;
-                mFolder.Control.icon = category.thumbnail;
-                mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
-
-                // 各ポーズステート
-                foreach (var pose in category.poses)
+                else if (poseLibrary.categories != null && poseLibrary.categories.Count > 1)
                 {
-                    var item = new GameObject(pose.GetDisplayName(DynamicVariables.Settings.Menu.pose.title));
-                    item.transform.SetParent(folder.transform);
-                    if (pose.target != null)
+                    // Multiple categories: keep single global radial named after library (all poses flattened). Per-category radials would duplicate same param.
+                    string varTitle = !string.IsNullOrWhiteSpace(poseLibrary.name) ? poseLibrary.name : (varMenu != null && !string.IsNullOrWhiteSpace(varMenu.title) ? varMenu.title : "Pose Variation");
+                    Texture2D varThumb = varMenu != null ? varMenu.thumbnail : null;
+                    if (varThumb == null) varThumb = poseLibrary.thumbnail ? poseLibrary.thumbnail : DynamicVariables.Settings.Menu.pose.thumbnail;
+                    string varParam = $"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}";
+                    CreateRadialMenu(result.transform, varTitle, varThumb, varParam);
+                }
+                else
+                {
+                    string varTitle = !string.IsNullOrWhiteSpace(poseLibrary.name) ? poseLibrary.name : (varMenu != null && !string.IsNullOrWhiteSpace(varMenu.title) ? varMenu.title : "Pose Variation");
+                    Texture2D varThumb = varMenu != null ? varMenu.thumbnail : null;
+                    if (varThumb == null) varThumb = poseLibrary.thumbnail ? poseLibrary.thumbnail : DynamicVariables.Settings.Menu.pose.thumbnail;
+                    string varParam = $"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}";
+                    CreateRadialMenu(result.transform, varTitle, varThumb, varParam);
+                }
+            }
+            else
+            {
+                // メニューの構造を作る
+                foreach (var category in poseLibrary.categories)
+                {
+                    var folder = new GameObject(category.name);
+                    folder.transform.SetParent(result.transform);
+                    if (category.target != null)
                     {
-                        var installer = item.AddComponent<ModularAvatarMenuInstaller>();
-                        installer.installTargetMenu = pose.target;
+                        var installer = folder.AddComponent<ModularAvatarMenuInstaller>();
+                        installer.installTargetMenu = category.target;
                     }
 
-                    var mItem = item.AddComponent<ModularAvatarMenuItem>();
-                    mItem.Control.icon = pose.thumbnail;
-                    mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
-                    mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
+                    var mFolder = folder.AddComponent<ModularAvatarMenuItem>();
+                    mFolder.MenuSource = SubmenuSource.Children;
+                    mFolder.Control.icon = category.thumbnail;
+                    mFolder.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
+
+                    // 各ポーズステート
+                    foreach (var pose in category.poses)
                     {
-                        name = pose.Parameter
-                    };
-                    mItem.Control.value = pose.Value;
+                        var item = new GameObject(pose.GetDisplayName(DynamicVariables.Settings.Menu.pose.title));
+                        item.transform.SetParent(folder.transform);
+                        if (pose.target != null)
+                        {
+                            var installer = item.AddComponent<ModularAvatarMenuInstaller>();
+                            installer.installTargetMenu = pose.target;
+                        }
+
+                        var mItem = item.AddComponent<ModularAvatarMenuItem>();
+                        mItem.Control.icon = pose.thumbnail;
+                        mItem.Control.type = VRCExpressionsMenu.Control.ControlType.Toggle;
+                        mItem.Control.parameter = new VRCExpressionsMenu.Control.Parameter
+                        {
+                            name = pose.Parameter
+                        };
+                        mItem.Control.value = pose.Value;
+                    }
                 }
             }
 
@@ -121,6 +160,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     DynamicVariables.Settings.Menu.height.title,
                     DynamicVariables.Settings.Menu.height.thumbnail,
                     $"{ConstVariables.HeightParamPrefix}_{poseLibrary.Guid}",
+                    0.5f,
                     $"{ConstVariables.HeightUpdateParamPrefix}_{poseLibrary.Guid}"
                 );
             }
@@ -141,8 +181,20 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.speed.title,
                     DynamicVariables.Settings.Menu.speed.thumbnail,
-                    $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.Guid}"
+                    $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.Guid}",
+                    0.5f
                 );
+            }
+
+            if (poseLibrary.UseBodyRotationParam)
+            {
+                var bodyRotation = new GameObject(DynamicVariables.Settings.Menu.bodyRotation.title);
+                bodyRotation.transform.SetParent(parent.transform);
+                var mBodyRotation = bodyRotation.AddComponent<ModularAvatarMenuItem>();
+                mBodyRotation.MenuSource = SubmenuSource.Children;
+                mBodyRotation.Control.icon = DynamicVariables.Settings.Menu.bodyRotation.thumbnail;
+                mBodyRotation.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
+                BodyRotationMenu(mBodyRotation.transform, poseLibrary);
             }
 
             if (poseLibrary.enableMirrorParam)
@@ -161,7 +213,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.volume.title,
                     DynamicVariables.Settings.Menu.volume.thumbnail,
-                    $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}"
+                    $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
+                    1f
                 );
             }
 
@@ -175,6 +228,41 @@ namespace com.hhotatea.avatar_pose_library.logic
                 mTracking.Control.type = VRCExpressionsMenu.Control.ControlType.SubMenu;
                 TrackingMenu(mTracking.transform, poseLibrary);
             }
+        }
+
+        static void BodyRotationMenu(Transform parent, AvatarPoseData poseLibrary)
+        {
+            CreateRadialMenu(
+                parent,
+                DynamicVariables.Settings.Menu.bodyRotationX.title,
+                DynamicVariables.Settings.Menu.bodyRotationX.thumbnail,
+                $"{ConstVariables.BodyRotationXParamPrefix}_{poseLibrary.Guid}"
+            );
+            CreateRadialMenu(
+                parent,
+                DynamicVariables.Settings.Menu.bodyRotationY.title,
+                DynamicVariables.Settings.Menu.bodyRotationY.thumbnail,
+                $"{ConstVariables.BodyRotationYParamPrefix}_{poseLibrary.Guid}",
+                0.5f
+            );
+            CreateRadialMenu(
+                parent,
+                DynamicVariables.Settings.Menu.bodyRotationZ.title,
+                DynamicVariables.Settings.Menu.bodyRotationZ.thumbnail,
+                $"{ConstVariables.BodyRotationZParamPrefix}_{poseLibrary.Guid}"
+            );
+
+            // 3軸の傾きをまとめて無回転に戻す項目。
+            // タイトルは言語ファイルから取得し、未設定の古い MenuContext でも落ちないようにします。
+            var resetMenu = DynamicVariables.Settings.Menu.bodyRotationReset;
+            CreateToggleMenu(
+                parent,
+                resetMenu != null && !string.IsNullOrWhiteSpace(resetMenu.title)
+                    ? resetMenu.title
+                    : "Reset Rotation",
+                resetMenu != null ? resetMenu.thumbnail : null,
+                $"{ConstVariables.BodyRotationResetParamPrefix}_{poseLibrary.Guid}"
+            );
         }
 
         static void TrackingMenu(Transform parent, AvatarPoseData poseLibrary)
@@ -233,7 +321,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <summary>
         /// Radial型のメニュー項目を作成します（例: 身長、速度）
         /// </summary>
-        static void CreateRadialMenu(Transform parent, string name, Texture2D icon, string subParameterName, string parameterName = "")
+        static void CreateRadialMenu(Transform parent, string name, Texture2D icon, string subParameterName, float defaultValue = 0f, string parameterName = "")
         {
             var obj = new GameObject(name);
             obj.transform.SetParent(parent);
@@ -241,6 +329,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var item = obj.AddComponent<ModularAvatarMenuItem>();
             item.Control.icon = icon;
             item.Control.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
+            item.Control.value = defaultValue;
             if (!string.IsNullOrWhiteSpace(parameterName))
             {
                 item.Control.parameter = new VRCExpressionsMenu.Control.Parameter { name = parameterName };

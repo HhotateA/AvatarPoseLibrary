@@ -71,6 +71,8 @@ MonoBehaviour:
   enablePoseSpaceTooltip: Move the camera according to the pose.
   enableUseCache: Enable Use Cache
   enableUseCacheTooltip: Use caching to speed up builds.
+  enableBodyRotation: "\uBAB8 \uD68C\uC804 \uC870\uC815"
+  enableBodyRotationTooltip: "\uD3EC\uC988\uC758 \uD68C\uC804 \uBCF4\uC815\uC744 VRChat \uBA54\uB274 \uB77C\uB514\uC5BC\uB85C \uC870\uC815\uD560 \uC218 \uC788\uAC8C \uD569\uB2C8\uB2E4. \uD3EC\uC988\uBCC4 \uC124\uC815 \uAC01\uB3C4\uAC00 \uAE30\uC900\uC774 \uB418\uACE0, X/Z\uB294 \uC67C\uCABD \uB05D, Y\uB294 \uC911\uC559\uC5D0\uC11C \uCD94\uAC00 \uD68C\uC804\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
   createCategoryLabel: Create Category
   createCategoryTooltip: Create New Category.
   deleteCategoryLabel: Delete Category

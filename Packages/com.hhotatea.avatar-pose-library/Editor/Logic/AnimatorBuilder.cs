@@ -23,10 +23,16 @@ namespace com.hhotatea.avatar_pose_library.logic
             return result;
         }
 
-        public static AnimatorController BuildLocomotionAnimator(AvatarPoseData poseLibrary, bool writeDefault)
+        public static AnimatorController BuildLocomotionAnimator(AvatarPoseData poseLibrary, bool writeDefault, bool rigHeight)
         {
             var result = BaseAnimator(poseLibrary, writeDefault);
             var builder = new AnimationLayerBuilder(writeDefault, poseLibrary);
+
+            // 高さは、リグがあればリグ側（回らない Transform）で動かします。
+            // ポーズのクリップへ焼き込むと、体を回したときに高さの向きも一緒に傾き、
+            // 横倒しの状態でスライダーが横方向の移動になってしまいます。
+            // リグが無い場合だけ、従来どおりクリップ側で高さを持たせます。
+            var height = poseLibrary.enableHeightParam && !rigHeight;
 
             // レイヤー作成
             if (poseLibrary.enableLocomotionAnimator)
@@ -64,7 +70,10 @@ namespace com.hhotatea.avatar_pose_library.logic
                     foreach (var pose in category.poses)
                     {
                         builder.AddLocomotionLayer(pose, layer, defaultState,
-                            poseLibrary.enableHeightParam, poseLibrary.enableSpeedParam, poseLibrary.enableMirrorParam,
+                            height, poseLibrary.enableSpeedParam, poseLibrary.enableMirrorParam,
+                            // 体の回転はポーズへ焼き込まず、BodyRotationRigBuilder が
+                            // アーマチュアの親 Transform を回して合成します。
+                            false,
                             poseLibrary.Guid);
                     }
                 }
@@ -257,6 +266,19 @@ namespace com.hhotatea.avatar_pose_library.logic
             result.AddLayer(builder.ConstantTrackingLayer(TrackingType.Mirror, $"{ConstVariables.MirrorParamPrefix}_{poseLibrary.Guid}", poseLibrary.Guid));
             result.AddLayer(builder.ResetLayer($"{ConstVariables.ResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
 
+            if (poseLibrary.UseBodyRotationParam)
+            {
+                // 回転ラジアル専用のリセット。ポーズ選択を維持したまま傾きだけを戻します。
+                result.AddLayer(builder.BodyRotationResetLayer(
+                    $"{ConstVariables.BodyRotationResetParamPrefix}_{poseLibrary.Guid}", poseLibrary));
+
+                // 回転中だけ IK を切り、ポーズの姿勢がそのまま出るようにします。
+                // IK が有効なままだと、傾きが 90 度を超えたあたりで解が反転し、
+                // 体が一瞬別の向きへ飛んでから戻る（スナップする）ように見えます。
+                result.AddLayer(builder.BodyRotationTrackingLayer(
+                    $"{ConstVariables.BodyRotationTrackingLayerPrefix}_{poseLibrary.Guid}", poseLibrary));
+            }
+
             if (poseLibrary.EnableAudioMode)
             {
                 result.AddLayer(
@@ -318,14 +340,43 @@ namespace com.hhotatea.avatar_pose_library.logic
             };
             result.AddParameter(mirrorCycleOffsetParam);
 
+            if (poseLibrary.UseBodyRotationParam)
+            {
+                // ラジアルのブレンドツリーはコントローラー側のパラメーター名を参照するため、
+                // 式パラメーターに登録するだけでは足りません。アニメーターにも同じ名前で
+                // 登録しない場合、Unity はその名前を 0 として評価し、既定値とずれます。
+                foreach (var axis in ConstVariables.BodyRotationAxes)
+                {
+                    result.AddParameter(new AnimatorControllerParameter
+                    {
+                        name = $"{axis.ParameterPrefix}_{poseLibrary.Guid}",
+                        type = AnimatorControllerParameterType.Float,
+                        // 0 = 無回転。式パラメーターの既定値と必ず同じ値にしてください。
+                        // X/Z は 0、Y は 0.5 になります（ConstVariables.BodyRotationAxis 参照）。
+                        defaultFloat = axis.NeutralValue,
+                    });
+                }
+
+                // 「Reset Rotation」メニュー用のトリガー。
+                result.AddParameter(
+                    $"{ConstVariables.BodyRotationResetParamPrefix}_{poseLibrary.Guid}",
+                    AnimatorControllerParameterType.Bool);
+            }
+
             foreach (var param in poseLibrary.Parameters)
             {
                 // パラメーター追加
                 result.AddParameter(param, AnimatorControllerParameterType.Int);
             }
 
+            if (poseLibrary.enableVariationSlider)
+            {
+                result.AddParameter($"{ConstVariables.VariationParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Float);
+            }
+
             // Tracking制御ノード
-            result.AddParameter($"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            // 高さゲートのブレンドツリーがブレンドパラメーターとして参照するため Float にします。
+            result.AddParameter($"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Float);
             result.AddParameter($"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);

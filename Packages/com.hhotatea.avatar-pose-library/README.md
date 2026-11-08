@@ -28,23 +28,9 @@
 
 ## 📦 導入方法
 
-APL は 2つの方法で導入することができます。
-**VCC (VRChat Creator Companion)** 経由の導入がおすすめです。  
+APL は UnityPackage から導入します。
 
-### 1. VCC 経由での導入
-
-1. VCC を開き、**Settings** に移動  
-2. **Packages** タブをクリック  
-3. **Add Repository** をクリック  
-4. 入力欄に以下の URL を貼り付け  
-   ```text
-   https://HhotateA.github.io/AvatarPoseLibrary/index.json
-   ```  
-5. **Add** をクリック  
-6. リポジトリ情報を確認し、**I Understand** をクリック  
-7. 任意のプロジェクトの **Manage Project** から APL を追加
-
-### 2. UnityPackage 経由での導入
+### UnityPackage 経由での導入
 
 1. あらかじめ以下の依存パッケージをプロジェクトに追加しておく  
    ```json
@@ -54,10 +40,12 @@ APL は 2つの方法で導入することができます。
    ```
 2. 下記 URL から UnityPackage を取得  
    ```text
-   https://github.com/HhotateA/AvatarPoseLibrary/releases/latest/
+   https://github.com/GeoXTen/AvatarPoseLibrary/releases/latest/
    ```
 3. 任意の Unity プロジェクトを開き、UnityPackage をドラッグ＆ドロップ  
 4. 追加ファイルを確認し、**Import** をクリック
+
+> **注意:** このフォークはパッケージ ID が上流と同一（`com.hhotatea.avatar-pose-library`）です。上流の VCC リストを追加すると **1.2.44** が解決され、このビルドの変更（体の回転リグ、身長の修正）が反映されません。必ず上記の UnityPackage を使用してください。
 
 ---
 

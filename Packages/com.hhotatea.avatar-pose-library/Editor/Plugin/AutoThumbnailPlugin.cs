@@ -49,7 +49,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                                                 var control = SearchMenu(ctx.AvatarDescriptor.expressionsMenu, pose);
                                                 if (control != null)
                                                 {
-                                                    control.icon = capture.Capture(pose.animationClip, cameraSettings);
+                                                    control.icon = capture.Capture(
+                                                        pose.animationClip, cameraSettings);
                                                 }
                                             }
                                         }

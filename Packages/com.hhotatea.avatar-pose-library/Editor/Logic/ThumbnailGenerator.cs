@@ -24,6 +24,8 @@ namespace com.hhotatea.avatar_pose_library.logic
 
         private Camera camera;
         private RenderTexture renderTexture;
+        private GameObject keyLight;
+        private GameObject fillLight;
 
         public ThumbnailGenerator(GameObject contextObject)
         {
@@ -64,6 +66,15 @@ namespace com.hhotatea.avatar_pose_library.logic
             camera.backgroundColor = Color.clear;
             camera.cullingMask = 1 << DynamicVariables.Settings.thumbnailLayer;
             camera.orthographic = false;
+
+            // 撮影専用のライト。
+            // シーンのライトやアンビエントが撮影レイヤーを照らしているとは限らないため、
+            // そのまま撮影するとサムネイルが暗くなります。撮影中だけ専用のライトを当てます。
+            // 撮影レイヤーのみを照らすので、シーンには影響しません。
+            keyLight = CreateThumbnailLight(
+                "ThumbnailKeyLight", Quaternion.Euler(25f, 165f, 0f), 1.1f);
+            fillLight = CreateThumbnailLight(
+                "ThumbnailFillLight", Quaternion.Euler(-5f, 215f, 0f), 0.5f);
 
             // カメラ位置調整
             var cameraSettings = new CameraSettings();
@@ -170,11 +181,40 @@ namespace com.hhotatea.avatar_pose_library.logic
             return Capture(poseClip, cameraSettings);
         }
 
+        /// <summary>
+        /// 撮影レイヤーだけを照らすライトを作成します。
+        /// </summary>
+        private GameObject CreateThumbnailLight(string name, Quaternion rotation, float intensity)
+        {
+            var go = new GameObject(name);
+            go.transform.rotation = rotation;
+            var light = go.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.color = Color.white;
+            light.intensity = intensity;
+            light.shadows = LightShadows.None;
+            light.renderMode = LightRenderMode.ForcePixel;
+            light.cullingMask = 1 << DynamicVariables.Settings.thumbnailLayer;
+            return go;
+        }
+
         public void Dispose()
         {
             if (currentLayers != null)
             {
                 ResetLayers();
+            }
+
+            if (keyLight != null)
+            {
+                Object.DestroyImmediate(keyLight);
+                keyLight = null;
+            }
+
+            if (fillLight != null)
+            {
+                Object.DestroyImmediate(fillLight);
+                fillLight = null;
             }
 
             if (cameraGO != null)

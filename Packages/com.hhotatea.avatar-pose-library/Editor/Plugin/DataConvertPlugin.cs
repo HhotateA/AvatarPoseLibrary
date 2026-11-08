@@ -47,8 +47,26 @@ namespace com.hhotatea.avatar_pose_library.editor
                             var go = new GameObject(d.Guid);
                             var root = FindRootComponent(settings, d);
                             go.transform.SetParent(root?.transform ?? ctx.AvatarRootObject.transform);
+                            // リグを作れたかどうかで、高さスライダーの持ち方を変えます。
+                            // リグがあれば回らない Transform を動かし、無ければ従来どおり
+                            // ポーズのクリップへ焼き込みます。
+                            var rigHeight = false;
+                            if (d.UseBodyRotationParam)
+                            {
+                                // 体全体の回転はポーズへ焼き込まず、アーマチュアの親に
+                                // 挟んだ Transform を Animator で回して合成します。
+                                // ポーズ数に依存せず、クリップは 3 軸 * Steps 本で済みます。
+                                var rig = BodyRotationRigBuilder.EnsureRig(ctx.AvatarRootObject);
+                                // リグ側で高さを扱えるのは、ポーズ選択を検出できる
+                                // FX アニメーターがあるときだけです。
+                                rigHeight = rig != null && BodyRotationRigBuilder.UsesRigHeight(d);
+                                // Unity の Play モードは VRChat の制約を評価しないため、
+                                // プレビュー中だけ制約と同じ計算を毎フレーム適用します。
+                                // アップロードビルドでは追加されません。
+                                BodyRotationRigBuilder.AttachPreviewDriver(ctx.AvatarRootObject);
+                            }
 
-                            var assets = GetAssetCache(d, d.enableUseCache);
+                            var assets = GetAssetCache(d, d.enableUseCache, rigHeight);
                             if (d.EnableAudioMode)
                             {
                                 BuildAudioSource(ctx.AvatarRootObject.transform, d);
@@ -70,21 +88,35 @@ namespace com.hhotatea.avatar_pose_library.editor
                 });
         }
 
-        CacheModel GetAssetCache(AvatarPoseData data, bool useCache)
+        CacheModel GetAssetCache(AvatarPoseData data, bool useCache, bool rigHeight)
         {
             if (!useCache)
             {
-                return CreateAssets(data);
+                return CreateAssets(data, rigHeight);
             }
 
-            var cache = new CacheSave(data.ToHash());
+            var cache = new CacheSave($"{data.ToHash()}{ConstVariables.AssetCacheVersion}");
+            if (cache.ExceededSizeLimit)
+            {
+                // A previous build produced a cache larger than the limit. Rebuilding it
+                // would write several gigabytes to disk again, so stay transient instead.
+                return CreateAssets(data, rigHeight);
+            }
+
             var asset = cache.LoadAsset();
             if (asset)
             {
                 return asset;
             }
 
-            asset = CreateAssets(data);
+            if (cache.ExceededSizeLimit)
+            {
+                // The cache on disk was oversized and has just been removed. Rebuilding it
+                // would only write the same multi-gigabyte asset again.
+                return CreateAssets(data, rigHeight);
+            }
+
+            asset = CreateAssets(data, rigHeight);
 
             if (cache.SaveAsset(asset))
             {
@@ -98,15 +130,15 @@ namespace com.hhotatea.avatar_pose_library.editor
             // SaveAsset persists and imports the generated objects, so some of the references
             // in asset may already have been replaced or destroyed. Generate a fully transient
             // set instead of returning that potentially invalid instance.
-            return CreateAssets(data);
+            return CreateAssets(data, rigHeight);
         }
 
-        CacheModel CreateAssets(AvatarPoseData data)
+        CacheModel CreateAssets(AvatarPoseData data, bool rigHeight)
         {
             var overrideWriteDefault = data.writeDefaultType == WriteDefaultType.OverrideTrue;
 
             var cache = ScriptableObject.CreateInstance<CacheModel>();
-            cache.locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data, overrideWriteDefault);
+            cache.locomotionLayer = AnimatorBuilder.BuildLocomotionAnimator(data, overrideWriteDefault, rigHeight);
             cache.paramLayer = AnimatorBuilder.BuildFxAnimator(data, overrideWriteDefault);
             cache.trackingLayer = AnimatorBuilder.BuildTrackingAnimator(data, overrideWriteDefault);
             cache.menuObject = MenuBuilder.BuildPoseMenu(data);
@@ -144,6 +176,24 @@ namespace com.hhotatea.avatar_pose_library.editor
                 fxAnimator,
                 VRCAvatarDescriptor.AnimLayerType.FX,
                 matchAvatarWriteDefaults);
+
+            // リグを作れなかった場合（アーマチュア未検出など）はレイヤーも足しません。
+            if (data.UseBodyRotationParam &&
+                root.transform.Find(ConstVariables.BodyRotationRigRootName) != null)
+            {
+                // 体全体の回転。ポーズへ焼き込まず、アーマチュアの親に挟んだ
+                // Transform を実行時に回して合成します。
+                // クリップ数は 3 軸 * BodyRotationSteps 本だけで、ポーズ数に依存しません。
+                //
+                // Write Defaults を必ず false にする必要があるため、
+                // ポーズ側とは別コントローラーとして、WD 自動一致を無効にしてマージします。
+                var ma_rotation = result.AddComponent<ModularAvatarMergeAnimator>();
+                ConfigureMergeAnimator(
+                    ma_rotation,
+                    BodyRotationRigBuilder.BuildAnimator(data, root),
+                    VRCAvatarDescriptor.AnimLayerType.FX,
+                    false);
+            }
 
             var ma_tracking = result.AddComponent<ModularAvatarMergeAnimator>();
             ConfigureMergeAnimator(

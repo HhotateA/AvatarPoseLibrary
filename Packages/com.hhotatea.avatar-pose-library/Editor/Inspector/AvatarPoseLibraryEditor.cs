@@ -37,7 +37,7 @@ namespace com.hhotatea.avatar_pose_library.editor
                            _openAllLabel, _closeAllLabel, _poseListLabel, _openLabel, _closeLabel,
                            _thumbnailAutoLabel, _animationClipLabel, _trackingLabel, _isLoopLabel,
                            _motionSpeedLabel, _dropBoxLabel, _poseThumbnailLabel, _posePreviewLabel,
-                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel, _enablePoseSpace, _enableUseCache,
+                           _enableHeightLabel, _enableSpeedLabel, _enableMirrorLabel, _enableFxLabel, _enablePoseSpace, _enableUseCache, _enableVariationLabel, _enableBodyRotationLabel,
                            _createCategoryMenu, _cutCategoryMenu, _deleteCategoryMenu,
                            _createPoseMenu, _cutPoseMenu, _deletePoseMenu, _clearPosesMenu,
                            _copyCategoryMenu, _pasteCategoryMenu, _pasteNewCategoryMenu,
@@ -236,6 +236,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             _enableFxLabel = new(i.enableFxLabel, i.enableFxTooltip);
             _enablePoseSpace = new(i.enablePoseSpace, i.enablePoseSpaceTooltip);
             _enableUseCache = new(i.enableUseCache, i.enableUseCacheTooltip);
+            _enableVariationLabel = new(i.enableVariationLabel, i.enableVariationTooltip);
+            _enableBodyRotationLabel = new(i.enableBodyRotationLabel, i.enableBodyRotationTooltip);
             _poseThumbnailLabel = new("", i.poseThumbnailTooltip);
             _posePreviewLabel = new("", i.posePreviewTooltip);
             _createCategoryMenu = new(i.createCategoryLabel, i.createCategoryTooltip);
@@ -348,6 +350,8 @@ namespace com.hhotatea.avatar_pose_library.editor
             bool useCache = Data.enableUseCache;
             bool locoAnim = Data.enableLocomotionAnimator;
             bool fxAnim = Data.enableFxAnimator;
+            bool variation = Data.enableVariationSlider;
+            bool bodyRotation = Data.enableBodyRotationParam;
             bool presetApply = false;
 
             using (new GUILayout.HorizontalScope())
@@ -363,6 +367,11 @@ namespace com.hhotatea.avatar_pose_library.editor
             using (new GUILayout.HorizontalScope())
             {
                 mirror = EditorGUILayout.ToggleLeft(_enableMirrorLabel, mirror, GUILayout.MaxWidth(TextBoxWidth / 2));
+                bodyRotation = EditorGUILayout.ToggleLeft(_enableBodyRotationLabel, bodyRotation, GUILayout.MaxWidth(TextBoxWidth / 2));
+            }
+            using (new GUILayout.HorizontalScope())
+            {
+                variation = EditorGUILayout.ToggleLeft(_enableVariationLabel, variation, GUILayout.MaxWidth(TextBoxWidth / 2));
                 presetApply = PresetMenu(GUILayout.MaxWidth(TextBoxWidth / 2));
             }
 
@@ -392,6 +401,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                 useCache = Data.enableUseCache;
                 locoAnim = Data.enableLocomotionAnimator;
                 fxAnim = Data.enableFxAnimator;
+                variation = Data.enableVariationSlider;
+                bodyRotation = Data.enableBodyRotationParam;
             }
 
             if (height == Data.enableHeightParam &&
@@ -403,7 +414,10 @@ namespace com.hhotatea.avatar_pose_library.editor
                 useCache == Data.enableUseCache &&
                 locoAnim == Data.enableLocomotionAnimator &&
                 fxAnim == Data.enableFxAnimator &&
+                variation == Data.enableVariationSlider &&
+                bodyRotation == Data.enableBodyRotationParam &&
                 !presetApply) return;
+            bool variationToggled = variation != Data.enableVariationSlider;
             Apply("Toggle Global Flags", () =>
             {
                 foreach (var lib in _library.GetComponentMember())
@@ -418,9 +432,25 @@ namespace com.hhotatea.avatar_pose_library.editor
                     so.FindProperty("data.enableUseCache").boolValue = useCache;
                     so.FindProperty("data.enableLocomotionAnimator").boolValue = locoAnim;
                     so.FindProperty("data.enableFxAnimator").boolValue = fxAnim;
+                    so.FindProperty("data.enableVariationSlider").boolValue = variation;
+                    so.FindProperty("data.enableBodyRotationParam").boolValue = bodyRotation;
                     so.ApplyModifiedProperties();
                 }
             });
+            if (variationToggled)
+            {
+                // variation slider toggles pose count mapping -> invalidate cache hash
+                var member = _library.GetComponentMember();
+                var combine = AvatarPoseData.Combine(member.Select(e => e.data).ToArray());
+                if (combine.Count > 0)
+                {
+                    foreach (var c in combine)
+                    {
+                        var cache = new CacheSave(c.ToHash());
+                        cache.Delete();
+                    }
+                }
+            }
         }
 
         private void SyncGlobalToggles(string tag)
@@ -451,6 +481,8 @@ namespace com.hhotatea.avatar_pose_library.editor
                 FindData("enableUseCache").boolValue = comp.data.enableUseCache;
                 FindData("enableLocomotionAnimator").boolValue = comp.data.enableLocomotionAnimator;
                 FindData("enableFxAnimator").boolValue = comp.data.enableFxAnimator;
+                FindData("enableVariationSlider").boolValue = comp.data.enableVariationSlider;
+                FindData("enableBodyRotationParam").boolValue = comp.data.enableBodyRotationParam;
             });
         }
 
@@ -796,7 +828,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (Data.categories.Count - 1 < catIdx) return _lineHeight;
             if (Data.categories[catIdx].poses.Count - 1 < poseIdx) return _lineHeight;
 
-            return GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]) ? _lineHeight * 7f : _lineHeight * 1.5f;
+            return GetFoldoutBuffer(Data.categories[catIdx].poses[poseIdx]) ? _lineHeight * 7.5f : _lineHeight * 1.5f;
         }
 
         void PoseSubmenu(Rect rect, int catIdx, int poseIdx, SerializedProperty poseProp)
@@ -864,6 +896,7 @@ namespace com.hhotatea.avatar_pose_library.editor
             if (Data.categories.Count - 1 < catIdx) return;
             if (Data.categories[catIdx].poses.Count - 1 < poseIdx) return;
 
+            var pose = Data.categories[catIdx].poses[poseIdx];
             PoseSubmenu(rect, catIdx, poseIdx, poseProp);
             Rect fullRect = new Rect(rect.x, rect.y, rect.width, _lineHeight);
 
@@ -910,11 +943,11 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             if (autoTnProp.boolValue && clipProp.objectReferenceValue)
             {
-                var p = Data.categories[catIdx].poses[poseIdx];
+                var p = pose;
                 if (GetClipBuffer(p) != clipProp.objectReferenceValue)
                 {
                     SetClipBuffer(p, (AnimationClip)clipProp.objectReferenceValue);
-                    SetThumbnailBuffer(p, GenerateThumbnail(_library.gameObject, (AnimationClip)clipProp.objectReferenceValue));
+                    SetThumbnailBuffer(p, GenerateThumbnail(_library.gameObject, pose));
                     SetAnimWarm(p, (AnimationClip)clipProp.objectReferenceValue);
                 }
                 if (GetThumbnailBuffer(p))
@@ -1069,10 +1102,11 @@ namespace com.hhotatea.avatar_pose_library.editor
             });
         }
 
-        private Texture2D GenerateThumbnail(GameObject obj, AnimationClip clip)
+        private Texture2D GenerateThumbnail(GameObject obj, PoseEntry pose)
         {
             var avatar = obj.GetComponentInParent<VRCAvatarDescriptor>();
             if (!avatar) return null;
+            var clip = pose.animationClip;
             var clone = Object.Instantiate(avatar.gameObject);
             Texture2D tex;
             using (var cap = new ThumbnailGenerator(clone))
@@ -1081,6 +1115,10 @@ namespace com.hhotatea.avatar_pose_library.editor
                 tex = cap.Capture(clip, cs);
             }
             Object.DestroyImmediate(clone);
+            if (!ReferenceEquals(clip, pose.animationClip))
+            {
+                Object.DestroyImmediate(clip);
+            }
             return tex;
         }
 

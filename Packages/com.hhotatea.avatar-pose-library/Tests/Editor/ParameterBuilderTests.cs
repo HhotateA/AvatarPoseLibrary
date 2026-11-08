@@ -54,7 +54,9 @@ namespace com.hhotatea.avatar_pose_library.tests
                 Assert.That(height.syncType, Is.EqualTo(ParameterSyncType.Float));
                 Assert.That(height.localOnly, Is.False);
                 Assert.That(height.defaultValue, Is.EqualTo(0.5f));
-                Assert.That(height.saved, Is.True);
+                // Height applies regardless of pose selection now, so it must not be saved:
+                // a restored non-neutral value would leave the avatar floating while idle.
+                Assert.That(height.saved, Is.False);
 
                 var mirror = parameters.Single(item => item.nameOrPrefix == Name(ConstVariables.MirrorParamPrefix, data));
                 Assert.That(mirror.saved, Is.True);
@@ -133,7 +135,7 @@ namespace com.hhotatea.avatar_pose_library.tests
             {
                 Assert.That(MotionBuilder.IsMoveAnimation(clip), Is.True);
 
-                controller = AnimatorBuilder.BuildLocomotionAnimator(data, false);
+                controller = AnimatorBuilder.BuildLocomotionAnimator(data, false, false);
                 var poseState = controller.layers
                     .SelectMany(layer => layer.stateMachine.states)
                     .Select(child => child.state)

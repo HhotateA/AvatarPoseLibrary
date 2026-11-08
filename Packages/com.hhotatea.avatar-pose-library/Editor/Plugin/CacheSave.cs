@@ -14,14 +14,42 @@ namespace com.hhotatea.avatar_pose_library.editor
 {
     public class CacheSave
     {
+        /// <summary>
+        /// Upper bound for a single cache asset. Body rotation multiplies the generated
+        /// clips by BodyRotationSteps^3 and the height/speed parameters multiply them
+        /// again, so a large library can serialize to several gigabytes of YAML. Such a
+        /// cache is slower to clone than to rebuild and exhausts both disk and memory,
+        /// so oversized caches are discarded instead of being written.
+        /// </summary>
+        private const long MaxCacheFileBytes = 512L * 1024 * 1024;
+
         private readonly string fileName;
         private readonly string filePath;
+        private readonly string markerPath;
         private CacheModel cacheAsset;
+
+        /// <summary>
+        /// Set when a cache was rejected because it exceeded <see cref="MaxCacheFileBytes"/>.
+        /// Callers use this to stop retrying the cache for the same library.
+        /// </summary>
+        public bool ExceededSizeLimit { get; private set; }
 
         public CacheSave(string guid)
         {
             fileName = guid;
             filePath = EnsureFilePath(Path.ChangeExtension(guid, "asset"));
+            markerPath = EnsureFilePath($".{guid}.nocache");
+            // A marker is left behind when a previous build generated a graph larger than
+            // the cache limit. Regenerating it would write several gigabytes to disk again.
+            ExceededSizeLimit = File.Exists(markerPath);
+            if (ExceededSizeLimit)
+            {
+                Debug.LogWarning(
+                    $"AvatarPoseLibrary.CacheSave: Cache disabled for {fileName} because a previous build " +
+                    $"exceeded {CacheMenu.FormatBytes(MaxCacheFileBytes, "unknown")}. " +
+                    "Run Tools/Avatar Pose Library/Clear All Caches after shrinking the library to re-enable it.");
+            }
+
             cacheAsset = AssetDatabase.LoadAssetAtPath<CacheModel>(filePath);
             if (cacheAsset == null)
             {
@@ -132,6 +160,11 @@ namespace com.hhotatea.avatar_pose_library.editor
 
         public CacheModel LoadAsset()
         {
+            if (RejectIfOversized())
+            {
+                return null;
+            }
+
             if (!IsCacheValid())
             {
                 return null;
@@ -243,6 +276,13 @@ namespace com.hhotatea.avatar_pose_library.editor
 
                 EditorUtility.SetDirty(asset);
                 AssetDatabase.SaveAssets();
+                // Reject before the forced synchronous import: importing a multi-gigabyte
+                // cache is the most expensive part of the save.
+                if (RejectIfOversized())
+                {
+                    return false;
+                }
+
                 AssetDatabase.ImportAsset(filePath, ImportAssetOptions.ForceSynchronousImport);
 
                 // ImportAsset can replace the imported main asset and its sub-assets. Do not
@@ -346,6 +386,68 @@ namespace com.hhotatea.avatar_pose_library.editor
 
             AssetDatabase.AddObjectToAsset(o, path);
             EditorUtility.SetDirty(o);
+        }
+
+        /// <summary>
+        /// Discards a cache that grew past <see cref="MaxCacheFileBytes"/>.
+        /// A cache this large costs more to deserialize and clone than it saves, and it
+        /// forces Unity into several gigabytes of disk writes plus paging on every entry
+        /// into Play Mode, so it is deleted rather than kept.
+        /// </summary>
+        private bool RejectIfOversized()
+        {
+            var size = GetCacheFileSize();
+            if (size <= MaxCacheFileBytes)
+            {
+                return false;
+            }
+
+            ExceededSizeLimit = true;
+            Debug.LogError(
+                $"AvatarPoseLibrary.CacheSave: Cache size {CacheMenu.FormatBytes(size, "unknown")} " +
+                $"exceeds the {CacheMenu.FormatBytes(MaxCacheFileBytes, "unknown")} limit and was deleted: {filePath}\n" +
+                "The Height/Speed parameters multiply the generated clips. Reduce the pose count or " +
+                "disable those parameters, then rebuild.");
+            WriteSizeLimitMarker();
+            Delete();
+            return true;
+        }
+
+        private long GetCacheFileSize()
+        {
+            try
+            {
+                var info = new FileInfo(filePath);
+                return info.Exists ? info.Length : 0L;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"AvatarPoseLibrary.CacheSave: Failed to read cache size at {filePath}: {exception.Message}");
+                return 0L;
+            }
+        }
+
+        /// <summary>
+        /// Remembers that this library produces a cache larger than the limit. The marker
+        /// is a dot-file so Unity's asset pipeline ignores it, and it lives next to the
+        /// cache so "Clear All Caches" removes it.
+        /// </summary>
+        private void WriteSizeLimitMarker()
+        {
+            try
+            {
+                File.WriteAllText(
+                    markerPath,
+                    "AvatarPoseLibrary skipped caching because the generated graph exceeded " +
+                    $"{MaxCacheFileBytes} bytes ({DateTime.UtcNow:o}).\n" +
+                    "Delete this file, or run Tools/Avatar Pose Library/Clear All Caches, to try caching again.\n");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning(
+                    $"AvatarPoseLibrary.CacheSave: Failed to write the size limit marker at {markerPath}: {exception.Message}");
+            }
         }
 
         private static string EnsureFilePath(string fileName)

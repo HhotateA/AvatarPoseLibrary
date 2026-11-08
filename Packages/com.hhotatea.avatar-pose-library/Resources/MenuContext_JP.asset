@@ -63,3 +63,18 @@ MonoBehaviour:
   volume:
     title: "\u97F3\u91CF"
     thumbnail: {fileID: 0}
+  bodyRotation:
+    title: "\u4F53\u306E\u56DE\u8EE2"
+    thumbnail: {fileID: 2800000, guid: ac29411207f7438e8f7d2ffd83f256a6, type: 3}
+  bodyRotationX:
+    title: "\u4F53\u306E\u50BE\u304D X"
+    thumbnail: {fileID: 2800000, guid: c2d768d903234b2294cdfe7de4e3da19, type: 3}
+  bodyRotationY:
+    title: "\u4F53\u306E\u50BE\u304D Y"
+    thumbnail: {fileID: 2800000, guid: cb745fd1a3e7438f8afaad425689c603, type: 3}
+  bodyRotationZ:
+    title: "\u4F53\u306E\u50BE\u304D Z"
+    thumbnail: {fileID: 2800000, guid: 1aa51b1b57f946bda829c48f51636e79, type: 3}
+  bodyRotationReset:
+    title: "\u56DE\u8EE2\u30EA\u30BB\u30C3\u30C8"
+    thumbnail: {fileID: 2800000, guid: 59c1fcfb45762f449a016814ce5532f4, type: 3}
