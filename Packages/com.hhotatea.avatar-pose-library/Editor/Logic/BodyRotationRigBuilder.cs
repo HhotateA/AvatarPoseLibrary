@@ -20,15 +20,16 @@ namespace com.hhotatea.avatar_pose_library.logic
     ///
     /// 【この方式】
     /// アバタールート直下に「回すだけの」Transform の鎖を作り、
-    /// アーマチュア側は VRCRotationConstraint / VRCPositionConstraint で追従させます。
+    /// アーマチュア側は RotationConstraint / PositionConstraint で追従させます。
     ///
-    /// 【なぜ Unity の制約ではなく VRChat の制約なのか】
-    /// Unity の RotationConstraint / PositionConstraint を残したままアップロードすると、
-    /// PC 以外のプラットフォームではアップロード自体が失敗します。
-    /// PC では VRChat 側の自動変換に任せることになりますが、その変換は
-    /// アニメーションのバインディングパスを書き換えるため、
-    /// AnimPoseBodyRotateRig/Y/X/Z を指している回転クリップが解決できなくなる恐れがあります。
-    /// VRChat の制約を直接使えば変換を挟まないので、このリグのパスはそのまま残ります。
+    /// 【なぜ Unity の制約なのか】
+    /// Unity の RotationConstraint / PositionConstraint は Unity 自身が評価するため、
+    /// エディターおよび Play モードで傾きをそのまま確認できます。
+    /// アップロード時は VRChat SDK（AvatarDynamicsSetup の SubstituteConstraint）が
+    /// Unity の制約を VRChat の制約へ自動変換し、対象コンポーネントを指す
+    /// アニメーションのバインディングも合わせて付け替えます。
+    /// このリグが動かしているのは AnimPoseBodyRotateRig 以下の Transform なので、
+    /// そのパスは変換の影響を受けません。
     ///
     ///   AvatarRoot
     ///   ├─ Armature                ... 位置も親子関係も変えない（制約で追従するだけ）
@@ -70,7 +71,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <summary>
         /// 支点から見たアーマチュアの位置を持つ Transform の名前。
         ///
-        /// VRCPositionConstraint の PositionOffset はソースの回転で回されないため、
+        /// PositionConstraint の translationOffset はソースの回転で回されないため、
         /// オフセット側を鎖の子にして一緒に回す必要があります。
         /// </summary>
         const string OffsetName = "Offset";
@@ -228,9 +229,9 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             // 制約が外れていると、鎖だけが回って体が付いてきません。
             var hasRotation = false;
-            foreach (var constraint in armature.GetComponents<VRCRotationConstraint>())
+            foreach (var constraint in armature.GetComponents<UnityEngine.Animations.RotationConstraint>())
             {
-                if (!UsesSource(constraint, leaf))
+                if (!UsesLegacySource(constraint, leaf))
                 {
                     continue;
                 }
@@ -238,9 +239,9 @@ namespace com.hhotatea.avatar_pose_library.logic
                 // Locked が外れていると、アーマチュアが動くたびに
                 // RotationOffset が今の姿勢から計算し直され、支点がずれます。
                 // 見た目が静かに壊れるため、作り直しの対象にします。
-                if (!constraint.Locked)
+                if (!constraint.locked)
                 {
-                    reason = $"'{armature.name}' has a VRCRotationConstraint driven by the rig, but it is not locked.";
+                    reason = $"'{armature.name}' has a RotationConstraint driven by the rig, but it is not locked.";
                     return false;
                 }
 
@@ -250,21 +251,21 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             if (!hasRotation)
             {
-                reason = $"'{armature.name}' has no VRCRotationConstraint driven by the rig.";
+                reason = $"'{armature.name}' has no RotationConstraint driven by the rig.";
                 return false;
             }
 
             var hasPosition = false;
-            foreach (var constraint in armature.GetComponents<VRCPositionConstraint>())
+            foreach (var constraint in armature.GetComponents<UnityEngine.Animations.PositionConstraint>())
             {
-                if (!UsesSource(constraint, offset))
+                if (!UsesLegacySource(constraint, offset))
                 {
                     continue;
                 }
 
-                if (!constraint.Locked)
+                if (!constraint.locked)
                 {
-                    reason = $"'{armature.name}' has a VRCPositionConstraint driven by the rig, but it is not locked.";
+                    reason = $"'{armature.name}' has a PositionConstraint driven by the rig, but it is not locked.";
                     return false;
                 }
 
@@ -274,7 +275,7 @@ namespace com.hhotatea.avatar_pose_library.logic
 
             if (!hasPosition)
             {
-                reason = $"'{armature.name}' has no VRCPositionConstraint driven by the rig.";
+                reason = $"'{armature.name}' has no PositionConstraint driven by the rig.";
                 return false;
             }
 
@@ -315,67 +316,65 @@ namespace com.hhotatea.avatar_pose_library.logic
             // そのまま設定すると NullReferenceException でビルドが止まります。
             // VRCFury の ArmatureLink などが先に付けている場合があるため、再利用します。
             var rotation = GetOrAddRotationConstraint(armature);
-            rotation.IsActive = true;
-            rotation.GlobalWeight = 1f;
+            // Unity の制約は constraintActive が既定で false なので必ず立てます。
+            rotation.constraintActive = true;
+            rotation.weight = 1f;
             // 再利用した制約が無効（enabled = false）のまま残っている場合があります。
-            // 無効なコンポーネントは制約を解かないため、IsActive も GlobalWeight も
+            // 無効なコンポーネントは制約を解かないため、constraintActive も weight も
             // 立っているのに鎖だけが回って体が付いてこない、という状態になります。
             // 見た目からは原因が分からないので、ここで必ず有効にします。
             rotation.enabled = true;
             // 軸の除外が残っていると、その軸だけ回り切らないため解除します。
-            rotation.AffectsRotationX = true;
-            rotation.AffectsRotationY = true;
-            rotation.AffectsRotationZ = true;
-            // Unity の RotationConstraint と同じくワールド空間で解きます。
-            rotation.SolveInLocalSpace = false;
-            rotation.TargetTransform = null;
+            rotation.rotationAxis =
+                UnityEngine.Animations.Axis.X |
+                UnityEngine.Animations.Axis.Y |
+                UnityEngine.Animations.Axis.Z;
             // target.rotation = source.rotation * offset になるので、
             // 無回転時に元の姿勢へ戻るよう offset を決めます。
-            rotation.RotationOffset = (inverseSource * restRotation).eulerAngles;
-            // Locked を立てないと、アーマチュアが動くたびに VRChat が
+            rotation.rotationOffset = (inverseSource * restRotation).eulerAngles;
+            // Locked を立てないと、アーマチュアが動くたびに
             // 上のオフセットを今の姿勢から計算し直し、支点がずれます。
             // 値は必ずオフセットを書き終えてから固めます。
-            rotation.Locked = true;
+            rotation.locked = true;
             EnsureSingleSource(rotation, source);
 
             var position = GetOrAddPositionConstraint(armature);
-            position.IsActive = true;
-            position.GlobalWeight = 1f;
+            position.constraintActive = true;
+            position.weight = 1f;
             // 回転側と同じ理由で、無効なままの制約を有効に戻します。
             // 位置が効かないと、体を傾けたときに支点から弧を描いてずれます。
             position.enabled = true;
-            position.AffectsPositionX = true;
-            position.AffectsPositionY = true;
-            position.AffectsPositionZ = true;
-            position.SolveInLocalSpace = false;
-            position.TargetTransform = null;
+            position.translationAxis =
+                UnityEngine.Animations.Axis.X |
+                UnityEngine.Animations.Axis.Y |
+                UnityEngine.Animations.Axis.Z;
             // オフセットは鎖の内側で既に回っているので、ここでは何も足しません。
-            position.PositionOffset = Vector3.zero;
-            position.Locked = true;
+            position.translationOffset = Vector3.zero;
+            position.locked = true;
             EnsureSingleSource(position, offset);
         }
 
         /// <summary>
         /// アーマチュアに付ける回転制約を取得します。
         ///
-        /// VRCRotationConstraint は 1 オブジェクトに 1 つしか付かないため、
+        /// RotationConstraint は 1 オブジェクトに 1 つしか付かないため、
         /// 既に付いている場合は AddComponent が null を返します。
         /// VRCFury の ArmatureLink などが先に付けている場合があるので、
         /// その場合は再利用し、設定をこのリグ向けに上書きします。
         /// </summary>
-        static VRCRotationConstraint GetOrAddRotationConstraint(Transform armature)
+        static UnityEngine.Animations.RotationConstraint GetOrAddRotationConstraint(Transform armature)
         {
-            var existing = armature.GetComponent<VRCRotationConstraint>();
+            var existing = armature.GetComponent<UnityEngine.Animations.RotationConstraint>();
             if (existing != null)
             {
                 Debug.LogWarning(
                     "AvatarPoseLibrary: The armature root '" + armature.name + "' already has a " +
-                    "VRCRotationConstraint. It is reused for body rotation, so its previous sources, " +
+                    "RotationConstraint. It is reused for body rotation, so its previous sources, " +
                     "offset and excluded axes are replaced.");
                 return existing;
             }
 
-            return armature.gameObject.AddComponent<VRCRotationConstraint>();
+            return armature.gameObject.AddComponent<UnityEngine.Animations.RotationConstraint>();
         }
 
         /// <summary>
@@ -385,19 +384,19 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// 既存のものを再利用する場合、ルートモーションや
         /// 「足元に合わせる」設定と競合する可能性があります。
         /// </summary>
-        static VRCPositionConstraint GetOrAddPositionConstraint(Transform armature)
+        static UnityEngine.Animations.PositionConstraint GetOrAddPositionConstraint(Transform armature)
         {
-            var existing = armature.GetComponent<VRCPositionConstraint>();
+            var existing = armature.GetComponent<UnityEngine.Animations.PositionConstraint>();
             if (existing != null)
             {
                 Debug.LogWarning(
                     "AvatarPoseLibrary: The armature root '" + armature.name + "' already has a " +
-                    "VRCPositionConstraint. It is reused for body rotation, so its previous sources " +
+                    "PositionConstraint. It is reused for body rotation, so its previous sources " +
                     "and offset are replaced. Root motion or a move-to-feet setup may be overridden.");
                 return existing;
             }
 
-            return armature.gameObject.AddComponent<VRCPositionConstraint>();
+            return armature.gameObject.AddComponent<UnityEngine.Animations.PositionConstraint>();
         }
 
         /// <summary>
@@ -406,11 +405,28 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// Sources は構造体なので、一度変数へ受けると書き換えが制約へ反映されません。
         /// 制約そのものを受け取り、フィールドを直接触ります。
         /// </summary>
-        static void EnsureSingleSource<T>(T constraint, Transform source) where T : VRCConstraintBase
+        static void EnsureSingleSource(UnityEngine.Animations.RotationConstraint constraint, Transform source)
         {
-            var entry = new VRCConstraintSource(source, 1f);
-            constraint.Sources.Clear();
-            constraint.Sources.Add(entry);
+            constraint.SetSources(new List<UnityEngine.Animations.ConstraintSource>
+            {
+                new UnityEngine.Animations.ConstraintSource
+                {
+                    sourceTransform = source,
+                    weight = 1f,
+                },
+            });
+        }
+
+        static void EnsureSingleSource(UnityEngine.Animations.PositionConstraint constraint, Transform source)
+        {
+            constraint.SetSources(new List<UnityEngine.Animations.ConstraintSource>
+            {
+                new UnityEngine.Animations.ConstraintSource
+                {
+                    sourceTransform = source,
+                    weight = 1f,
+                },
+            });
         }
 
         /// <summary>
@@ -538,6 +554,12 @@ namespace com.hhotatea.avatar_pose_library.logic
                 });
             }
 
+            // ポーズ選択中だけ回転・高さを反映するためのゲートに使います。
+            // 軸レイヤーは常にこのパラメーターを参照するため、高さの有無に関係なく追加します。
+            controller.AddParameter(
+                $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
+                AnimatorControllerParameterType.Float);
+
             if (UsesRigHeight(poseLibrary))
             {
                 // 高さスライダーもこのコントローラーで扱います。
@@ -550,11 +572,6 @@ namespace com.hhotatea.avatar_pose_library.logic
                     type = AnimatorControllerParameterType.Float,
                     defaultFloat = 0.5f,
                 });
-
-                // ポーズが選ばれているかどうかの判定に使います。
-                controller.AddParameter(
-                    $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}",
-                    AnimatorControllerParameterType.Bool);
             }
 
             AddLayers(controller, poseLibrary, ResolveConstraintBindingPath(avatarRoot));
@@ -620,11 +637,17 @@ namespace com.hhotatea.avatar_pose_library.logic
             var layerIndex = controller.layers.Length - 1;
             var actualLayer = controller.layers[layerIndex];
 
+            // ポーズ選択中だけ回転を反映します。未選択時は鎖を無回転（中立）に保ちます。
+            var playParam = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}";
+
+            var idleState = actualLayer.stateMachine.AddState($"Idle_{axis.AxisName}");
+            idleState.writeDefaultValues = false;
+            idleState.motion = BuildAxisClip(axis.AxisName, axis.Axis, 0f, constraintPath);
+            actualLayer.stateMachine.defaultState = idleState;
+
             var state = actualLayer.stateMachine.AddState($"Rotate_{axis.AxisName}");
             // ポーズ側のクリップを消さないよう、Write Defaults は必ず切ります。
             state.writeDefaultValues = false;
-            // 既定ステートにしないとレイヤーが何も出力しません。
-            actualLayer.stateMachine.defaultState = state;
 
             var blendTree = new BlendTree
             {
@@ -634,6 +657,11 @@ namespace com.hhotatea.avatar_pose_library.logic
                 useAutomaticThresholds = false,
             };
             state.motion = blendTree;
+
+            var enter = idleState.MakeTransition(state, false);
+            enter.conditions = new[] { new AnimatorCondition { mode = AnimatorConditionMode.If, parameter = playParam } };
+            var exit = state.MakeTransition(idleState, false);
+            exit.conditions = new[] { new AnimatorCondition { mode = AnimatorConditionMode.IfNot, parameter = playParam } };
 
             var steps = Mathf.Max(2, ConstVariables.BodyRotationSteps);
             for (var index = 0; index < steps; index++)
@@ -683,8 +711,8 @@ namespace com.hhotatea.avatar_pose_library.logic
         ///
         /// 向きはポーズ側の高さスライダーと揃えます（0% が最も高く、100% が最も低い）。
         ///
-        /// ポーズが選ばれているかどうか（AnimPosePlay）では切り替えません。
-        /// ポーズを選んでいない待機状態でも高さを調整できるようにするためです。
+        /// ポーズが選ばれているかどうか（AnimPosePlay==1）で切り替え、
+        /// ポーズ未選択時は Height を 0（中立）に保ちます。
         /// 高さパラメーターは保存しないため、前回の値が別ワールドで
         /// アバターを浮かせたまま表示することはありません。
         /// </summary>
@@ -707,12 +735,17 @@ namespace com.hhotatea.avatar_pose_library.logic
             var layerIndex = controller.layers.Length - 1;
             var actualLayer = controller.layers[layerIndex];
 
-            // ポーズの選択状態によらず、常に高さを適用します。
+            // ポーズ選択中だけ高さを反映します。未選択時は Height を 0 に保ちます。
+            var playParam = $"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}";
+
+            var idleState = actualLayer.stateMachine.AddState("Idle_Height");
+            idleState.writeDefaultValues = false;
+            idleState.motion = BuildHeightClip(0f, constraintPath);
+            actualLayer.stateMachine.defaultState = idleState;
+
             var state = actualLayer.stateMachine.AddState("Height");
             // ポーズ側のクリップを消さないよう、Write Defaults は必ず切ります。
             state.writeDefaultValues = false;
-            // 既定ステートにしないとレイヤーが何も出力しません。
-            actualLayer.stateMachine.defaultState = state;
 
             var blendTree = new BlendTree
             {
@@ -722,6 +755,11 @@ namespace com.hhotatea.avatar_pose_library.logic
                 useAutomaticThresholds = false,
             };
             state.motion = blendTree;
+
+            var enter = idleState.MakeTransition(state, false);
+            enter.conditions = new[] { new AnimatorCondition { mode = AnimatorConditionMode.If, parameter = playParam } };
+            var exit = state.MakeTransition(idleState, false);
+            exit.conditions = new[] { new AnimatorCondition { mode = AnimatorConditionMode.IfNot, parameter = playParam } };
 
             // ポーズ側の BuildMotionLevel と同じ幅・同じ向きで動かします。
             var range = DynamicVariables.Settings.minMaxHeight;
@@ -768,14 +806,64 @@ namespace com.hhotatea.avatar_pose_library.logic
                 return;
             }
 
-            SetConstant(clip, constraintPath, typeof(VRCRotationConstraint), "m_Enabled", 1f);
-            SetConstant(clip, constraintPath, typeof(VRCPositionConstraint), "m_Enabled", 1f);
+            SetConstant(clip, constraintPath, typeof(UnityEngine.Animations.RotationConstraint), "m_Enabled", 1f);
+            SetConstant(clip, constraintPath, typeof(UnityEngine.Animations.PositionConstraint), "m_Enabled", 1f);
         }
 
         /// <summary>
         /// 制約が載っている Transform のバインディングパスを返します。
         /// アーマチュアはアバタールート直下にあるため、名前がそのままパスになります。
         /// 解決できない場合は null（カーブを足さない）を返します。
+        /// </summary>
+        /// <summary>
+        /// Play モード専用のプレビュー補助をアバタールートへ付けます。
+        ///
+        /// エディターの Play モードでは VRChat の制約が評価されないため、
+        /// 鎖を回してもアーマチュアが追従しません。制約と同じ計算を毎フレーム
+        /// 手で適用するコンポーネントを足して、傾きと高さを確認できるようにします。
+        /// アップロードビルドでは呼ばれないので、配布物には含まれません。
+        /// </summary>
+        public static void AttachPreviewDriver(GameObject avatarRoot)
+        {
+            if (avatarRoot == null || !Application.isPlaying)
+            {
+                return;
+            }
+
+            var armature = FindArmatureRoot(avatarRoot);
+            var rig = avatarRoot.transform.Find(ConstVariables.BodyRotationRigRootName);
+            if (armature == null || rig == null)
+            {
+                return;
+            }
+
+            var source = rig.Find($"{HeightName}/{AxisYName}/{AxisXName}/{AxisZName}");
+            if (source == null)
+            {
+                return;
+            }
+
+            var offset = source.Find(OffsetName);
+            if (offset == null)
+            {
+                return;
+            }
+
+            var root = avatarRoot.transform;
+            var driver = avatarRoot.GetComponent<com.hhotatea.avatar_pose_library.component.APLBodyRotationPreviewDriver>();
+            if (driver == null)
+            {
+                driver = avatarRoot.AddComponent<com.hhotatea.avatar_pose_library.component.APLBodyRotationPreviewDriver>();
+            }
+
+            driver.armaturePath = UnityEditor.AnimationUtility.CalculateTransformPath(armature, root);
+            driver.sourcePath = UnityEditor.AnimationUtility.CalculateTransformPath(source, root);
+            driver.offsetPath = UnityEditor.AnimationUtility.CalculateTransformPath(offset, root);
+            driver.rotationOffsetEuler = (Quaternion.Inverse(source.rotation) * armature.rotation).eulerAngles;
+        }
+
+        /// <summary>
+        /// 制約の m_Enabled を留めるカーブを書く先になる、アーマチュアのパスを返します。
         /// </summary>
         static string ResolveConstraintBindingPath(GameObject avatarRoot)
         {
@@ -964,7 +1052,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         }
 
         /// <summary>
-        /// 旧バージョン（Unity の制約を使っていた頃）のリグが残した制約を外します。
+        /// このリグが使う Unity の制約（RotationConstraint / PositionConstraint）を外します。
         ///
         /// 以前の実装は UnityEngine.Animations.RotationConstraint / PositionConstraint を
         /// アーマチュアに付けていました。これを残したままアップロードすると

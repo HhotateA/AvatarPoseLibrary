@@ -166,7 +166,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             AddParameter(
                 parameters,
                 Name(ConstVariables.OnPlayParamPrefix, library.Guid),
-                ParameterSyncType.Bool,
+                ParameterSyncType.Float,
                 !library.enableDeepSync);
             AddParameter(
                 parameters,

@@ -160,6 +160,7 @@ namespace com.hhotatea.avatar_pose_library.logic
                     DynamicVariables.Settings.Menu.height.title,
                     DynamicVariables.Settings.Menu.height.thumbnail,
                     $"{ConstVariables.HeightParamPrefix}_{poseLibrary.Guid}",
+                    0.5f,
                     $"{ConstVariables.HeightUpdateParamPrefix}_{poseLibrary.Guid}"
                 );
             }
@@ -180,7 +181,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.speed.title,
                     DynamicVariables.Settings.Menu.speed.thumbnail,
-                    $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.Guid}"
+                    $"{ConstVariables.SpeedParamPrefix}_{poseLibrary.Guid}",
+                    0.5f
                 );
             }
 
@@ -211,7 +213,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                     parent,
                     DynamicVariables.Settings.Menu.volume.title,
                     DynamicVariables.Settings.Menu.volume.thumbnail,
-                    $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}"
+                    $"{ConstVariables.AudioParamPrefix}_{poseLibrary.Guid}",
+                    1f
                 );
             }
 
@@ -239,7 +242,8 @@ namespace com.hhotatea.avatar_pose_library.logic
                 parent,
                 DynamicVariables.Settings.Menu.bodyRotationY.title,
                 DynamicVariables.Settings.Menu.bodyRotationY.thumbnail,
-                $"{ConstVariables.BodyRotationYParamPrefix}_{poseLibrary.Guid}"
+                $"{ConstVariables.BodyRotationYParamPrefix}_{poseLibrary.Guid}",
+                0.5f
             );
             CreateRadialMenu(
                 parent,
@@ -317,7 +321,7 @@ namespace com.hhotatea.avatar_pose_library.logic
         /// <summary>
         /// Radial型のメニュー項目を作成します（例: 身長、速度）
         /// </summary>
-        static void CreateRadialMenu(Transform parent, string name, Texture2D icon, string subParameterName, string parameterName = "")
+        static void CreateRadialMenu(Transform parent, string name, Texture2D icon, string subParameterName, float defaultValue = 0f, string parameterName = "")
         {
             var obj = new GameObject(name);
             obj.transform.SetParent(parent);
@@ -325,6 +329,7 @@ namespace com.hhotatea.avatar_pose_library.logic
             var item = obj.AddComponent<ModularAvatarMenuItem>();
             item.Control.icon = icon;
             item.Control.type = VRCExpressionsMenu.Control.ControlType.RadialPuppet;
+            item.Control.value = defaultValue;
             if (!string.IsNullOrWhiteSpace(parameterName))
             {
                 item.Control.parameter = new VRCExpressionsMenu.Control.Parameter { name = parameterName };

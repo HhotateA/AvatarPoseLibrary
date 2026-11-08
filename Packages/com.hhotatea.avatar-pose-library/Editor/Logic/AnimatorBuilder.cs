@@ -375,7 +375,8 @@ namespace com.hhotatea.avatar_pose_library.logic
             }
 
             // Tracking制御ノード
-            result.AddParameter($"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
+            // 高さゲートのブレンドツリーがブレンドパラメーターとして参照するため Float にします。
+            result.AddParameter($"{ConstVariables.OnPlayParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Float);
             result.AddParameter($"{ConstVariables.BaseParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.HeadParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);
             result.AddParameter($"{ConstVariables.ArmParamPrefix}_{poseLibrary.Guid}", AnimatorControllerParameterType.Bool);

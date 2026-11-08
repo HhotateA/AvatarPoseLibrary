@@ -60,6 +60,10 @@ namespace com.hhotatea.avatar_pose_library.editor
                                 // リグ側で高さを扱えるのは、ポーズ選択を検出できる
                                 // FX アニメーターがあるときだけです。
                                 rigHeight = rig != null && BodyRotationRigBuilder.UsesRigHeight(d);
+                                // Unity の Play モードは VRChat の制約を評価しないため、
+                                // プレビュー中だけ制約と同じ計算を毎フレーム適用します。
+                                // アップロードビルドでは追加されません。
+                                BodyRotationRigBuilder.AttachPreviewDriver(ctx.AvatarRootObject);
                             }
 
                             var assets = GetAssetCache(d, d.enableUseCache, rigHeight);

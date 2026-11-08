@@ -212,13 +212,14 @@ namespace com.hhotatea.avatar_pose_library.logic
         {
             if (isMoveAnimation)
             {
-                AnimationClip motionClip0 = height ? MotionBuilder.BuildMotionLevel(anim, DynamicVariables.Settings.minMaxHeight) : anim;
-                AnimationClip motionClip1 = height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim;
                 var moveTree = new BlendTree();
                 moveTree.blendParameter = $"{ConstVariables.HeightParamPrefix}_{guid}";
-                moveTree.AddChild(motionClip0, 0);
-                moveTree.AddChild(motionClip1, 1);
-                return moveTree;
+                moveTree.useAutomaticThresholds = false;
+                moveTree.AddChild(height ? MotionBuilder.BuildMotionLevel(anim, DynamicVariables.Settings.minMaxHeight) : anim, 0);
+                moveTree.AddChild(height ? MotionBuilder.BuildMotionLevel(anim, -DynamicVariables.Settings.minMaxHeight) : anim, 1);
+                if (!height) return moveTree;
+                // ポーズ未選択時（AnimPosePlay=0）は高さをニュートラルに固定し、選択時だけ効かせます。
+                return BuildPlayGate(guid, anim, moveTree);
             }
 
             var motionClipIdle0 = speed ? MotionBuilder.IdleAnimation(anim, 0f) : anim;
@@ -236,7 +237,28 @@ namespace com.hhotatea.avatar_pose_library.logic
             blendTree.AddChild(motionClip01, new Vector2(1f, 0f));
             blendTree.AddChild(motionClip10, new Vector2(0f, 1f));
             blendTree.AddChild(motionClip11, new Vector2(1f, 1f));
-            return blendTree;
+            if (!height) return blendTree;
+
+            // 未選択時は高さオフセットを 0 にし、速度だけを残したニュートラル側を用意します。
+            var neutralIdle = new BlendTree();
+            neutralIdle.blendType = BlendTreeType.Simple1D;
+            neutralIdle.blendParameter = $"{ConstVariables.SpeedParamPrefix}_{guid}";
+            neutralIdle.useAutomaticThresholds = false;
+            neutralIdle.AddChild(motionClipIdle0, 0f);
+            neutralIdle.AddChild(motionClipIdle1, 1f);
+            return BuildPlayGate(guid, neutralIdle, blendTree);
+        }
+
+        // ポーズ選択中だけ onMotion を反映し、未選択時は offMotion（ニュートラル）に戻すゲート。
+        static BlendTree BuildPlayGate(string guid, Motion offMotion, Motion onMotion)
+        {
+            var gate = new BlendTree();
+            gate.blendType = BlendTreeType.Simple1D;
+            gate.blendParameter = $"{ConstVariables.OnPlayParamPrefix}_{guid}";
+            gate.useAutomaticThresholds = false;
+            gate.AddChild(offMotion, 0f);
+            gate.AddChild(onMotion, 1f);
+            return gate;
         }
 
         public static AnimatorStateTransition CreateLoopTransition(AnimatorState state, string param, bool invert)
